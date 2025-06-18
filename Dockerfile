@@ -2,6 +2,6 @@ FROM python
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
-COPY *.py ./
+COPY *.py ./app/
 
-CMD ["python", "main.py"]
+CMD ["fastapi", "run", "app/main.py", "--port", "80"]
