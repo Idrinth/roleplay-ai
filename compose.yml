@@ -1,0 +1,63 @@
+volumes:
+  mariadbdata: {}
+  ollama: {}
+  qdrant_storage: {}
+  mongodata_db: {}
+  mongodata_config: {}
+  redis: {}
+services:
+  redis:
+    image: redis
+    ports:
+      - '6379:6379'
+    restart: always
+    volumes:
+      - redis:/data
+  ollama:
+    image: ollama/ollama
+    ports:
+      - '11434:11434'
+    post_start:
+      - command: ollama run gemma3
+    restart: always
+    volumes:
+      - ollama:/root/.ollama
+  qdrant:
+    image: qdrant/qdrant
+    ports:
+      - '6333:6333'
+      - '6334:6334'
+    restart: always
+    volumes:
+      - qdrant_storage:/qdrant/storage
+  mariadb:
+    image: mariadb
+    ports:
+      - '3306:3306'
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: example
+    volumes:
+      - mariadbdata:/var/lib/mysql
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongodata_db:/data/db
+      - mongodata_config:/data/configdb
+  app:
+    build:
+      dockerfile: Dockerfile
+      no_cache: true
+    ports:
+      - '80:80'
+    depends_on:
+      - ollama
+      - qdrant
+      - mariadb
+      - mongo
