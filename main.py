@@ -17,7 +17,7 @@ def simplify_result(query_result: QueryResponse):
 app = FastAPI()
 
 ollama = Client(host="http://ollama:11434")
-qdrant = QdrantClient("http://quadrant:6333")
+qdrant = QdrantClient("http://qdrant:6333")
 qdrant.set_model(qdrant.DEFAULT_EMBEDDING_MODEL, providers=["CPUExecutionProvider"])
 redis = Redis(host="redis", port=6379, db=0)
 mongo = MongoClient("mongodb://mongo:27017/")
@@ -27,11 +27,15 @@ mdbconn = mariadb.connect(
     host="mariadb",
     port=3306
 )
+mdbconn.autocommit = True
 
 
 
 class Action(BaseModel):
     description: str | None = None
+
+class Character(BaseModel):
+    sheet: str | None = None
 
 
 @app.get("/")
@@ -39,24 +43,31 @@ def index():
     return {"message": "Hello, World!"}
 
 
+@app.post("/chat/{uuid}/characters")
+def chat(uuid: str, character: Character):
+    mydb = mongo[uuid]
+
+
+
 @app.put("/chat/{uuid}")
 def chat(uuid: str, action: Action):
-    search_result = qdrant.query(
-        collection_name=uuid,
-        query_text=body,
-        limit=25
-    )
-    result = []
-    for res in search_result:
-        result.append(simplify_result(res))
+    results = []
+    if qdrant.collection_exists(uuid):
+        search_result = qdrant.query(
+            collection_name=uuid,
+            query_text=action.description,
+            limit=25
+        )
+        for res in search_result:
+            results.append(simplify_result(res))
     #mydb = myclient["mydatabase"]
     long_term_summary = redis.get(uuid + ".long_text_summary") or ""
     medium_term_summary = redis.get(uuid + ".medium_text_summary") or ""
     short_term_summary = redis.get(uuid + ".short_text_summary") or ""
     messages = [
         {
-            "role": "agent",
-            "content": "Personality:\n\nYou are a game master. React to provided texts with in character responses and try to progress the story appropriately taking the provided context into account."
+            "role": "system",
+            "content": "Personality:\n\nYou are a game master. React to provided actions with in character responses. Try to progress the story in small steps. Take the provided context into account. The player character's/characters' action(s) are not yours to define. Do keep your responses below 1000 characters."
                        "\n\n"
                        "Short Term Summary:\n\n" + short_term_summary +
                        "\n\n"
@@ -64,29 +75,39 @@ def chat(uuid: str, action: Action):
                        "\n\n"
                        "Long Term Summary:\n\n" + long_term_summary +
                        "\n\n"
-                       "Further Information:\n\n" + json.dumps(result),
+                       "Further Information:\n\n" + json.dumps(results),
         },
     ]
     try:
+        mdbconn.cursor().execute("CREATE DATABASE IF NOT EXISTS `"+uuid+"`;")
+        mdbconn.cursor().execute("USE `"+uuid+"`;")
+        mdbconn.cursor().execute(
+            "CREATE TABLE IF NOT EXISTS messages (aid BIGINT NOT NULL AUTO_INCREMENT, creator varchar(6),content text, PRIMARY KEY(aid)) charset=utf8;")
         cursor = mdbconn.cursor()
-        cursor.execute("CREATE DATABASE `"+uuid+"` IF NOT EXISTS")
-        cursor.execute("USE DATABASE `"+uuid+"`")
-        cursor.execute(
-            "CREATE TABLE IF NOT EXISTS  messages {aid BIGINT NOT NULL autoincrement, creator char(5),content text, PRIMARY KEY aid} charset=utf8;")
-        old_messages = cursor.execute("SELECT creator, content FROM messages LIMIT 20 SORT BY aid DESC").fetchall()
+        cursor.execute("SELECT creator, content FROM messages ORDER BY aid DESC LIMIT 20;")
+        old_messages = cursor.fetchall()
         for message in old_messages:
-            messages += {
-                "role": message["creator"],
-                "content": message["content"],
-            }
+            messages.append({
+                "role": message[0],
+                "content": message[1],
+            })
+        mdbconn.cursor().execute("INSERT INTO messages (`creator`, `content`) VALUES ('user', ?);", [action.description])
+        messages.append({
+            "role": "user",
+            "content": action.description,
+        })
+        response: ChatResponse = ollama.chat(
+            model="Tohur/natsumura-storytelling-rp-llama-3.1",
+            messages=messages
+        )
+        response_content = response["message"]["content"]
+        qdrant.add(
+            collection_name=uuid,
+            documents=[action.description + "\n\n" + response_content],
+        )
+        mdbconn.cursor().execute("INSERT INTO messages (`creator`, `content`) VALUES ('agent', ?);", [response_content])
+        return {"message": response_content}
+    except mariadb.Error as e:
+        return {"error": f"{e}"}
     except Exception as e:
-        print(e)
-    messages += {
-        "role": "user",
-        "content": "Action:\n\n" + action.description,
-    }
-    response: ChatResponse = ollama.chat(
-        model="gemma3",
-        messages=messages
-    )
-    return {"message": response["message"]["content"]}
+        return {"exception": e}

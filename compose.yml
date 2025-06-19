@@ -18,7 +18,7 @@ services:
     ports:
       - '11434:11434'
     post_start:
-      - command: ollama run gemma3
+      - command: ollama run Tohur/natsumura-storytelling-rp-llama-3.1
     restart: always
     volumes:
       - ollama:/root/.ollama
