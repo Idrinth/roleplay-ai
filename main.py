@@ -84,7 +84,7 @@ def chat(uuid: str, action: Action):
         mdbconn.cursor().execute(
             "CREATE TABLE IF NOT EXISTS messages (aid BIGINT NOT NULL AUTO_INCREMENT, creator varchar(6),content text, PRIMARY KEY(aid)) charset=utf8;")
         cursor = mdbconn.cursor()
-        cursor.execute("SELECT creator, content FROM messages ORDER BY aid DESC LIMIT 20;")
+        cursor.execute("SELECT * FROM (SELECT creator, content, aid FROM messages ORDER BY aid DESC LIMIT 20) as a ORDER BY aid ASC;")
         old_messages = cursor.fetchall()
         for message in old_messages:
             messages.append({
