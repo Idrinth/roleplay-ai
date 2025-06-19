@@ -90,6 +90,8 @@ def chat(uuid: str, action: Action):
     long_term_summary = redis.get(uuid + ".long_text_summary") or ""
     medium_term_summary = redis.get(uuid + ".medium_text_summary") or ""
     short_term_summary = redis.get(uuid + ".short_text_summary") or ""
+    characters = "Idrinth Thalui, Lienne Thalui"
+    world = "dark fantasy, Warhammer Fantasy inspired"
     messages = [
         {
             "role": "system",
@@ -97,9 +99,9 @@ def chat(uuid: str, action: Action):
                        "\n\n"
                        "Rules: DO NOT resolve narrative tensions. DO NOT change character names. DO play NPCs. FOCUS on immediate consequences and reactions to player actions. DO describe environmental changes. DO add dialogue, sensory details and atmosphere. DO keep the core situation intact for players to resolve. DO NOT invent details, ask for clarification instead."
                        "\n\n"
-                       "Player Character(s): Idrinth Thalui, Lienne Thalui"
+                       "Player Character(s): " + characters +
                        "\n\n"
-                       "World: dark fantasy, Warhammer Fantasy inspired"
+                       "World: " + world +
                        "\n\n"
                        "Short Term Summary:\n\n" + short_term_summary +
                        "\n\n"
