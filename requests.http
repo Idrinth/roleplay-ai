@@ -3,7 +3,7 @@
 PUT http://127.0.0.1/chat/{{CHAT_ID}}
 Content-Type: application/json
 
-{"description": "At the northern gate of Lothern the morning travel is unusually thick. Among the merchants and visitors, there are also two very light skinned elves in rags of loremaster and handmaiden garbs slowly closing in on the gate. Neither reacts to the other, after all they are way to preoccupied with building a cover story, but they fall into synchronised steps as they approach the gate wardens. Both worry if their last coin is sufficient to get a ship to the old world."}
+{"description": "At the northern gate of Lothern the morning travel is unusually thick. Among the merchants and visitors, there are also two very light skinned elves in rags of loremaster and handmaiden garbs slowly closing in on the gate. Neither reacts to the other, after all they are way to preoccupied with building a cover story, but they fall into synchronised steps as they approach the gate wardens. Both Idrinth, the former loremaster, and Lienne, the former handmaiden, worry if their last coin is sufficient to get a ship from Ulthuan to the old world."}
 
 ### UPLOAD CHARACTER
 #@timeout 600

@@ -8,6 +8,7 @@ import mariadb
 from redis import Redis
 from pymongo import MongoClient
 from pydantic import BaseModel
+from fastapi.responses import HTMLResponse
 
 
 def simplify_result(query_result: QueryResponse):
@@ -38,16 +39,41 @@ class Character(BaseModel):
     sheet: str | None = None
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def index():
-    return {"message": "Hello, World!"}
+    data = "ERROR!"
+    with open('./app/index.html', 'r') as file:
+        data = file.read()
+    return HTMLResponse(content=data, status_code=200)
 
 
 @app.post("/chat/{uuid}/characters")
-def chat(uuid: str, character: Character):
+def chat_character(uuid: str, character: Character):
     mydb = mongo[uuid]
 
 
+
+@app.get("/chat/{uuid}")
+def chat_history(uuid: str, action: Action):
+    try:
+        messages = []
+        mdbconn.cursor().execute("CREATE DATABASE IF NOT EXISTS `"+uuid+"`;")
+        mdbconn.cursor().execute("USE `"+uuid+"`;")
+        mdbconn.cursor().execute(
+            "CREATE TABLE IF NOT EXISTS messages (aid BIGINT NOT NULL AUTO_INCREMENT, creator varchar(6),content text, PRIMARY KEY(aid)) charset=utf8;")
+        cursor = mdbconn.cursor()
+        cursor.execute("SELECT creator, content, aid FROM messages;")
+        old_messages = cursor.fetchall()
+        for message in old_messages:
+            messages.append({
+                "role": message[0],
+                "content": message[1],
+            })
+        return {"messages": messages}
+    except mariadb.Error as e:
+        return {"error": f"{e}"}
+    except Exception as e:
+        return {"exception": e}
 
 @app.put("/chat/{uuid}")
 def chat(uuid: str, action: Action):
@@ -69,13 +95,19 @@ def chat(uuid: str, action: Action):
             "role": "system",
             "content": "Personality:\n\nYou are a game master. React to provided actions with in character responses. Try to progress the story in small steps. Take the provided context into account. The player character's/characters' action(s) are not yours to define. Do keep your responses below 1000 characters."
                        "\n\n"
+                       "Rules: DO NOT resolve narrative tensions. DO NOT change character names. DO play NPCs. FOCUS on immediate consequences and reactions to player actions. DO describe enviromental changes. DO add dialogue, sensory details and atmosphere. DO keep the core situation intact for players to resolve. DO NOT invent details, ask for clarification insted."
+                       "\n\n"
+                       "Player Character(s): Idrinth Thalui, Lienne Thalui"
+                       "\n\n"
+                       "World: dark fantasy, Warhammer Fantasy inspired"
+                       "\n\n"
                        "Short Term Summary:\n\n" + short_term_summary +
                        "\n\n"
                        "Medium Term Summary:\n\n" + medium_term_summary +
                        "\n\n"
                        "Long Term Summary:\n\n" + long_term_summary +
                        "\n\n"
-                       "Further Information:\n\n" + json.dumps(results),
+                       "Related Information:\n\n" + json.dumps(results),
         },
     ]
     try:
