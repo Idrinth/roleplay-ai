@@ -82,7 +82,7 @@ def chat(uuid: str, action: Action):
         search_result = qdrant.query(
             collection_name=uuid,
             query_text=action.description,
-            limit=25
+            limit=10
         )
         for res in search_result:
             results.append(simplify_result(res))
