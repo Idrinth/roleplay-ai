@@ -1,4 +1,5 @@
 import json
+import re
 
 from ollama import ChatResponse, Client
 from qdrant_client import QdrantClient
@@ -142,6 +143,7 @@ def chat(uuid: str, action: Action):
                 "- NEVER exceed 500 characters in your response.\n"
                 "- TRY to stay below 250 characters in your response.\n"
                 "- DO NOT rewrite the player's actions.\n"
+                "- SKIP any thinking output.\n"
                 "- ASSUME characters don't know each other if no information exists.\n"
                 "\n\n"
                 "# Personality:"
@@ -166,8 +168,8 @@ def chat(uuid: str, action: Action):
                 "\n\n"
                 "# Validation:"
                 "\n\n"
-                "- If you accidentally describe a player character’s thoughts or resolve tension, stop immediately and issue a correction in-world. Do not continue the mistake.\n"
-                "- If you accidentally write more than 250 characters, shorten the response if possible."
+                "- If you describe a player character’s thoughts or resolve tension, stop immediately and issue a correction in-world. Do not continue the mistake.\n"
+                "- If you write more than 250 characters, shorten the response if possible."
         },
     ]
     try:
@@ -194,13 +196,13 @@ def chat(uuid: str, action: Action):
             model=os.getenv("LLM_MODEL"),
             messages=messages
         )
-        response_content = response["message"]["content"]
+        response_content = re.sub("^(\n|.)*</think>\n*", "", response["message"]["content"])
         qdrant.add(
             collection_name=uuid,
             documents=[previous_response + "\n\n" + action.description + "\n\n" + response_content],
         )
         mdbconn.cursor().execute("INSERT INTO messages (`creator`, `content`) VALUES ('agent', ?);", [response_content])
-        return {"message": response_content, "prompt": messages}
+        return {"message": response_content}
     except mariadb.Error as e:
         return {"error": f"{e}"}
     except Exception as e:
