@@ -18,8 +18,10 @@ services:
     ports:
       - '11434:11434'
     post_start:
-      - command: ollama run Tohur/natsumura-storytelling-rp-llama-3.1
+      - command: ollama run $${LLM_MODEL}
     restart: always
+    env_file:
+      - .env
     volumes:
       - ollama:/root/.ollama
   qdrant:
@@ -54,6 +56,8 @@ services:
     build:
       dockerfile: Dockerfile
       no_cache: true
+    env_file:
+      - .env
     ports:
       - '80:80'
     depends_on:

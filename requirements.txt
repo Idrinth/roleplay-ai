@@ -5,3 +5,4 @@ fastapi[standard]~=0.115.12
 mariadb~=1.1.12
 redis~=6.1.1
 pymongo~=4.13.2
+pyyaml~=6.0.2

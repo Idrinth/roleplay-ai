@@ -1,13 +1,27 @@
 ### POST TO CHAT
 # @timeout 6000
-PUT http://127.0.0.1/chat/{{CHAT_ID}}
+PUT http://127.0.0.1/chat/3224f296-3946-485b-b649-33862e869f42
 Content-Type: application/json
 
-{"description": "At the northern gate of Lothern the morning travel is unusually thick. Among the merchants and visitors, there are also two very light skinned elves in rags of loremaster and handmaiden garbs slowly closing in on the gate. Neither reacts to the other, after all they are way to preoccupied with building a cover story, but they fall into synchronised steps as they approach the gate wardens. Both Idrinth, the former loremaster, and Lienne, the former handmaiden, worry if their last coin is sufficient to get a ship from Ulthuan to the old world."}
+{"description": "\"I am here to travel to the Old World, Marienburg to be precise.\" Idrinth offers the warden. \"I am here to travel to the Old World as well. Though I would prefer Couronne,\" Lienne provides. Both noting, that their lack of planning and communication might prove fatal given their similar looks."}
 
-### UPLOAD CHARACTER
+### POST TO RANDOM CHAT
+# @timeout 6000
+PUT http://127.0.0.1/chat/3224f296-3946-485b-b649-33862e869f42
+Content-Type: application/json
+
+{"description": "At the northern gate of Lothern the morning travel is unusually thick. Among the merchants and visitors, there are also two very light skinned elves in rags of loremaster(Idrinth) and handmaiden(Lienne) garbs slowly closing in on the gate. They have never met each other before. Neither reacts to the other, after all they are way to preoccupied with building a cover story, but they fall into synchronised steps as they approach the gate wardens. Both worry if their respective last coin is sufficient to get a ship from Ulthuan to the old world."}
+
+### UPLOAD CHARACTER LIENNE
 #@timeout 600
 POST 127.0.0.1/chat/{{CHAT_ID}}/characters
-Content-Type: application/json
+Content-Type: text/yaml
 
-{"sheet": ""}
+< lienne.character-sheet.yaml
+
+### UPLOAD CHARACTER IDRINTH
+#@timeout 600
+POST 127.0.0.1/chat/{{CHAT_ID}}/characters
+Content-Type: text/yaml
+
+< idrinth.character-sheet.yaml
