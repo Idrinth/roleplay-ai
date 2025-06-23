@@ -1,16 +1,16 @@
 ### POST TO CHAT 1
 # @timeout 6000
-PUT http://127.0.0.1/chat/1224f296-3946-485b-b649-33862e869f42
+PUT http://127.0.0.1/chat/{{$random.uuid}}
 Content-Type: application/json
 
 {"description": "At the northern gate of Lothern the morning travel is unusually thick. Among the merchants and visitors, there are also two very light skinned elves in rags of loremaster(Idrinth) and handmaiden(Lienne) garbs slowly closing in on the gate. They have never met each other before. Neither reacts to the other, after all they are way to preoccupied with building a cover story, but they fall into synchronised steps as they approach the gate wardens. Both worry if their respective last coin is sufficient to get a ship from Ulthuan to the old world."}
 
 ### POST TO CHAT 2
 # @timeout 6000
-PUT http://127.0.0.1/chat/1224f296-3946-485b-b649-33862e869f42
+PUT http://127.0.0.1/chat/3224f296-3946-485b-b649-33862e869f42
 Content-Type: application/json
 
-{"description": "\"I am here to travel to the Old World, Marienburg to be precise.\" Idrinth offers the warden. \"I am here to travel to the Old World as well. Though I would prefer Couronne,\" Lienne provides. Both noting, that their lack of planning and communication might prove fatal given their similar looks."}
+{"description": "It is evening in Duskhollow, a human village. Grimek the dwarf has had a few to many drinks at the Dancing Ogre, the settlement's inn, already, so he approaches the innkeeper for a room to stay for the night. \"Would you have space for a dwarf?\" He asks the innkeeper slowly, trying to make sure his state is not too obvious."}
 
 ### UPLOAD CHARACTER LIENNE
 #@timeout 600

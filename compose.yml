@@ -14,11 +14,15 @@ services:
     volumes:
       - redis:/data
   ollama:
-    image: ollama/ollama
+    build:
+      dockerfile: Ollama/Dockerfile
+      no_cache: true
     ports:
       - '11434:11434'
     post_start:
-      - command: ollama run $${LLM_MODEL}
+      - command: "ollama rm $LLM_MODEL || true;"
+      - command: "ollama create $LLM_MODEL -f /custom/Modelfile"
+      - command: "ollama run $LLM_MODEL"
     restart: always
     env_file:
       - .env
@@ -54,7 +58,7 @@ services:
       - mongodata_config:/data/configdb
   app:
     build:
-      dockerfile: Dockerfile
+      dockerfile: App/Dockerfile
       no_cache: true
     env_file:
       - .env
