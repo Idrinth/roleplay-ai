@@ -115,42 +115,30 @@ def chat(uuid: str, action: Action):
     with open('./app/character-sheet.schema.json', 'r') as file:
         schema = json.dumps(json.load(file))
     world = "dark fantasy, Warhammer Fantasy"
-    location = "Warhammer Fantasy, Ulthuan, Lothern, Gate"
     messages = [
         {
             "role": "system",
             "content": "# Rules:"
                 "\n\n"
-                "- You are NOT a co-author.\n"
-                "- You are NOT the narrator.\n"
-                "- You are the world reacting to the players, nothing more.\n"
-                "- You only control the world and NPCs. You never describe player intent or motivation.\n"
-                "- If uncertain, wait. Do not assume.\n"
-                "- NEVER speak for player characters.\n"
-                "- NEVER act for player characters.\n"
-                "- NEVER define player character motivation.\n"
-                "- DO NOT resolve narrative tensions.\n"
-                "- DO NOT change character names.\n"
-                "- DO play NPCs.\n"
-                "- DO NOT assume what the player is thinking.\n"
-                "- DO NOT speculate on relationships.\n"
-                "- DO NOT describe PC inner state.\n"
-                "- DO NOT mirror or echo player phrasing or emotions.\n"
-                "- FOCUS on immediate consequences and reactions to player actions.\n"
-                "- DO describe environmental changes.\n"
-                "- DO add dialogue, sensory details and atmosphere.\n"
-                "- DO keep the core situation intact for players to resolve.\n"
-                "- DO NOT invent details, unless they are minor.\n"
-                "- DO NOT contradict previously established facts.\n"
-                "- NEVER exceed 1500 characters in your response.\n"
-                "- TRY to stay below 750 characters in your response.\n"
-                "- DO NOT rewrite the player's actions.\n"
-                "- SKIP any thinking output.\n"
-                "- ASSUME characters don't know each other if no information exists.\n"
-                "- DO NOT summarize, paraphrase, or analyze.\n"
-                "- Do not output JSON or scene metadata.\n"
-                "- You are in-world only.\n"
-                "- DO NOT list out action options.\n"
+                "## Role Boundaries:\n"
+                "- You are the world reacting to players - control NPCs and environment only\n"
+                "- NEVER control, speak for, or describe the inner state of player characters\n"
+                "- If uncertain about player intent, wait - do not assume\n"
+                "\n"
+                "## Response Guidelines:\n"
+                "- Focus on immediate consequences and NPC reactions to player actions\n"
+                "- Add dialogue, sensory details, and atmosphere\n"
+                "- Keep responses under 750 characters (max 1500)\n"
+                "- Do not resolve tensions - leave situations for players to handle\n"
+                "\n"
+                "## World Consistency:\n"
+                "- Do not contradict established facts or change character names\n"
+                "- Only invent minor details when needed\n"
+                "- Assume characters don't know each other unless stated\n"
+                "\n"
+                "## Format:\n"
+                "- Stay in-world only - no JSON, summaries, or action lists\n"
+                "- If you accidentally control a PC, immediately correct in-world\n"
                 "\n\n"
                 "# Personality:"
                 "\n\n"
@@ -162,8 +150,6 @@ def chat(uuid: str, action: Action):
                 "\n```\n\n"
                 "# World:\n\n" + world +
                 "\n\n"
-                "# Starting Location:\n\n" + location +
-                "\n\n"
                 "# Short Term Summary:\n\n" + short_term_summary +
                 "\n\n"
                 "# Medium Term Summary:\n\n" + medium_term_summary +
@@ -171,11 +157,6 @@ def chat(uuid: str, action: Action):
                 "# Long Term Summary:\n\n" + long_term_summary +
                 "\n\n"
                 "# Potentially Related Information:\n\n```json\n" + json.dumps(results) + "\n```"
-                "\n\n"
-                "# Validation:"
-                "\n\n"
-                "- If you describe a player character’s thoughts or resolve tension, stop immediately and issue a correction in-world. Do not continue the mistake.\n"
-                "- If you write more than 250 characters, shorten the response if possible."
         },
     ]
     try:
@@ -202,7 +183,7 @@ def chat(uuid: str, action: Action):
             model=os.getenv("LLM_MODEL"),
             messages=messages
         )
-        response_content = re.sub("^(\n|.)*</think>\s*", "", response["message"]["content"]).trim()
+        response_content = re.sub("^(\n|.)*</think>\s*", "", response["message"]["content"]).strip()
         qdrant.add(
             collection_name=uuid,
             documents=[previous_response + "\n\n" + action.description + "\n\n" + response_content],
@@ -212,4 +193,4 @@ def chat(uuid: str, action: Action):
     except mariadb.Error as e:
         return {"error": f"{e}"}
     except Exception as e:
-        return {"exception": f"{e}"}
+        return {"exception": f"{e}", "data": e}

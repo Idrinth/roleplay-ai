@@ -5,6 +5,7 @@ volumes:
   mongodata_db: {}
   mongodata_config: {}
   redis: {}
+  open_webui: {}
 services:
   redis:
     image: redis
@@ -70,3 +71,14 @@ services:
       - mariadb
       - mongo
       - redis
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:ollama
+    restart: always
+    ports:
+      - '8080:3000'
+    environment:
+      OLLAMA_BASE_URL: "http://ollama:11434"
+    volumes:
+      - open_webui:/app/backend/data
+    depends_on:
+      - ollama
