@@ -6,6 +6,7 @@ volumes:
   mongodata_config: {}
   redis: {}
   open_webui: {}
+  trained: {}
 services:
   redis:
     image: redis
@@ -15,20 +16,28 @@ services:
     volumes:
       - redis:/data
   ollama:
-    build:
-      dockerfile: Ollama/Dockerfile
-      no_cache: true
+    image: ollama/ollama
     ports:
       - '11434:11434'
     post_start:
       - command: "ollama rm $LLM_MODEL || true;"
-      - command: "ollama create $LLM_MODEL -f /custom/Modelfile"
+      - command: "while [! -f \"/trained/$LLM_MODEL-unsloth.gguf\" ]; do sleep 1; done"
+      - command: "ollama create $LLM_MODEL -f /trained/$LLM_MODEL-unsloth.gguf"
       - command: "ollama run $LLM_MODEL"
     restart: always
     env_file:
       - .env
     volumes:
       - ollama:/root/.ollama
+      - trained:/trained
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities:
+              - gpu
   qdrant:
     image: qdrant/qdrant
     ports:
@@ -82,3 +91,20 @@ services:
       - open_webui:/app/backend/data
     depends_on:
       - ollama
+  training:
+    build:
+      dockerfile: Training/Dockerfile
+      no_cache: true
+    env_file:
+      - .env
+    volumes:
+      - trained:/trained
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+              - gpu

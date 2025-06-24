@@ -31,7 +31,9 @@ mdbconn = mariadb.connect(
     port=3306
 )
 mdbconn.autocommit = True
-
+schema = "{}"
+with open('./app/character-sheet.schema.json', 'r') as file:
+    schema = json.load(file)
 
 
 class Action(BaseModel):
@@ -107,13 +109,10 @@ def chat(uuid: str, action: Action):
     medium_term_summary = redis.get(uuid + ".medium_text_summary") or "Nothing happened yet."
     short_term_summary = redis.get(uuid + ".short_text_summary") or "Nothing happened yet."
     characters = []
-    schema = "{}"
     with open('./app/idrinth.character-sheet.yaml', 'r') as file:
         characters.append(yaml.safe_load(file))
     with open('./app/lienne.character-sheet.yaml', 'r') as file:
         characters.append(yaml.safe_load(file))
-    with open('./app/character-sheet.schema.json', 'r') as file:
-        schema = json.dumps(json.load(file))
     world = "dark fantasy, Warhammer Fantasy"
     messages = [
         {
@@ -163,9 +162,10 @@ def chat(uuid: str, action: Action):
         mdbconn.cursor().execute("CREATE DATABASE IF NOT EXISTS `"+uuid+"`;")
         mdbconn.cursor().execute("USE `"+uuid+"`;")
         mdbconn.cursor().execute(
-            "CREATE TABLE IF NOT EXISTS messages (aid BIGINT NOT NULL AUTO_INCREMENT, creator varchar(6),content text, PRIMARY KEY(aid)) charset=utf8;")
+            "CREATE TABLE IF NOT EXISTS messages (aid BIGINT NOT NULL AUTO_INCREMENT, creator varchar(6),"
+            "content text, PRIMARY KEY(aid)) charset=utf8;")
         cursor = mdbconn.cursor()
-        cursor.execute("SELECT * FROM (SELECT creator, content, aid FROM messages ORDER BY aid DESC LIMIT 20) as a ORDER BY aid ASC;")
+        cursor.execute("SELECT * FROM (SELECT creator, content, aid FROM messages ORDER BY aid DESC LIMIT 20) as a ORDER BY aid;")
         old_messages = cursor.fetchall()
         previous_response = ""
         for message in old_messages:

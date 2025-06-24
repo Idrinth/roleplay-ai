@@ -1,9 +1,0 @@
-FROM mistral:instruct
-
-PARAMETER top_k 35
-PARAMETER top_p 0.85
-
-TEMPLATE """<s>[INST] <<SYS>>
-{{ .System }}
-<</SYS>>
-{{ .Prompt }} [/INST] {{ .Response }}</s>"""

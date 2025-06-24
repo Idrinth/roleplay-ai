@@ -14,14 +14,14 @@ Content-Type: application/json
 
 ### UPLOAD CHARACTER LIENNE
 #@timeout 600
-POST 127.0.0.1/chat/{{CHAT_ID}}/characters
+POST 127.0.0.1/chat/{{$random.uuid}}/characters
 Content-Type: text/yaml
 
 < lienne.character-sheet.yaml
 
 ### UPLOAD CHARACTER IDRINTH
 #@timeout 600
-POST 127.0.0.1/chat/{{CHAT_ID}}/characters
+POST 127.0.0.1/chat/{{$random.uuid}}/characters
 Content-Type: text/yaml
 
 < idrinth.character-sheet.yaml
