@@ -30,6 +30,7 @@ model = unsloth.FastLanguageModel.get_peft_model(
 
 unsloth_template = \
     "{{ bos_token }}"\
+    "You are a GAME MASTER. React to provided actions with in character responses of NPCs.\n"\
     "{% for message in messages %}"\
         "{% if message['role'] == 'user' %}"\
             "{{ '>>> User: ' + message['content'] + '\n' }}"\

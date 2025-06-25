@@ -9,16 +9,22 @@ import mariadb
 from redis import Redis
 from pymongo import MongoClient
 from pydantic import BaseModel
-from fastapi.responses import HTMLResponse, PlainTextResponse
 import yaml
 import os
+from fastapi.middleware.cors import CORSMiddleware
 
 def simplify_result(query_result: QueryResponse):
     return query_result.model_dump(mode="json")
 
 
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['http://localhost', 'http://127.0.0.1'],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 ollama = Client(host="http://ollama:11434")
 qdrant = QdrantClient("http://qdrant:6333")
 qdrant.set_model(qdrant.DEFAULT_EMBEDDING_MODEL, providers=["CPUExecutionProvider"])
@@ -31,9 +37,8 @@ mdbconn = mariadb.connect(
     port=3306
 )
 mdbconn.autocommit = True
-schema = "{}"
-with open('./app/character-sheet.schema.json', 'r') as file:
-    schema = json.load(file)
+with open('./app/character-sheet.schema.json', 'r') as schemafile:
+    schema = json.dumps(json.load(schemafile))
 
 
 class Action(BaseModel):
@@ -42,35 +47,24 @@ class Action(BaseModel):
 class Character(BaseModel):
     sheet: str | None = None
 
-
-@app.get("/", response_class=HTMLResponse)
-def index():
-    data = "ERROR!"
-    with open('./app/index.html', 'r') as file:
-        data = file.read()
-    return HTMLResponse(content=data, status_code=200)
-
-
-@app.get("/showdown.min.js", response_class=PlainTextResponse)
-def index():
-    data = "ERROR!"
-    with open('./app/showdown.min.js', 'r') as file:
-        data = file.read()
-    return PlainTextResponse(content=data, status_code=200, media_type="application/javascript")
-
-
 @app.post("/chat/{uuid}/characters")
 def chat_character(uuid: str, character: Character):
     mydb = mongo[uuid]
+    return mydb.insert_one(character)
+
+@app.put("/chat/{uuid}/characters/{id}")
+def chat_character(uuid: str, id: str, character: Character):
+    mydb = mongo[uuid]
+    mydb.delete_one({"_id": id})
+    return mydb.insert_one(character)
 
 @app.get("/chat/{uuid}/characters")
 def chat_character(uuid: str):
     mydb = mongo[uuid]
-
-
+    return list(mydb.find(limit=20))
 
 @app.get("/chat/{uuid}")
-def chat_history(uuid: str, action: Action):
+def chat_history(uuid: str):
     try:
         messages = []
         mdbconn.cursor().execute("CREATE DATABASE IF NOT EXISTS `"+uuid+"`;")
@@ -91,11 +85,13 @@ def chat_history(uuid: str, action: Action):
     except Exception as e:
         return {"exception": e}
 
-@app.put("/chat/{uuid}")
+@app.post("/chat/{uuid}")
 def chat(uuid: str, action: Action):
     if not os.getenv("LLM_MODEL"):
         return {"error": "A model is needed."}
-    results = []
+    if not action.description:
+        return {"error": "A description is required."}
+    vectordb_results = []
     if qdrant.collection_exists(uuid):
         search_result = qdrant.query(
             collection_name=uuid,
@@ -103,8 +99,7 @@ def chat(uuid: str, action: Action):
             limit=10
         )
         for res in search_result:
-            results.append(simplify_result(res))
-    #mydb = myclient["mydatabase"]
+            vectordb_results.append(simplify_result(res))
     long_term_summary = redis.get(uuid + ".long_text_summary") or "Nothing happened yet."
     medium_term_summary = redis.get(uuid + ".medium_text_summary") or "Nothing happened yet."
     short_term_summary = redis.get(uuid + ".short_text_summary") or "Nothing happened yet."
@@ -142,8 +137,10 @@ def chat(uuid: str, action: Action):
                 "# Personality:"
                 "\n\n"
                 "You are a GAME MASTER. React to provided actions with in character responses of NPCs."
-                "\n\n"
-                "# Player Characters:\n\nThe following character sheets are for reference ONLY. Do not use these to infer motivations or write actions for player characters..\n```json\n" + json.dumps(characters) +
+        },
+        {
+            "role": "system",
+            "content": "# Player Characters:\n\nThe following character sheets are for reference ONLY. Do not use these to infer motivations or write actions for player characters..\n```json\n" + json.dumps(characters) +
                 "\n```\n\n"
                 "## Character Sheet Schema:\n\n```json\n" + schema +
                 "\n```\n\n"
@@ -155,7 +152,7 @@ def chat(uuid: str, action: Action):
                 "\n\n"
                 "# Long Term Summary:\n\n" + long_term_summary +
                 "\n\n"
-                "# Potentially Related Information:\n\n```json\n" + json.dumps(results) + "\n```"
+                "# Potentially Related Information:\n\n```json\n" + json.dumps(vectordb_results) + "\n```"
         },
     ]
     try:
@@ -183,7 +180,7 @@ def chat(uuid: str, action: Action):
             model=os.getenv("LLM_MODEL"),
             messages=messages
         )
-        response_content = re.sub("^(\n|.)*</think>\s*", "", response["message"]["content"]).strip()
+        response_content = re.sub("^(\n|.)*</think>\\s*", "", response["message"]["content"]).strip()
         qdrant.add(
             collection_name=uuid,
             documents=[previous_response + "\n\n" + action.description + "\n\n" + response_content],

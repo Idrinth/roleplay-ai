@@ -27,19 +27,21 @@ services:
       - command: "ollama run $LLM_MODEL"
     restart: always
     runtime: nvidia
+    environment:
+      OLLAMA_KEEP_ALIVE: -1
     env_file:
       - .env
     volumes:
       - ollama:/root/.ollama
       - trained:/trained
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities:
-              - gpu
+#    deploy:
+#      resources:
+#        reservations:
+#          devices:
+#            - driver: nvidia
+#              count: all
+#              capabilities:
+#              - gpu
   qdrant:
     image: qdrant/qdrant
     ports:
@@ -75,7 +77,7 @@ services:
     env_file:
       - .env
     ports:
-      - '80:80'
+      - '8000:80'
     depends_on:
       - ollama
       - qdrant
@@ -93,6 +95,14 @@ services:
       - open_webui:/app/backend/data
     depends_on:
       - ollama
+  ui:
+    build:
+      dockerfile: Ui/Dockerfile
+      no_cache: true
+    depends_on:
+      - app
+    ports:
+      - '80:80'
   training:
     build:
       dockerfile: Training/Dockerfile
@@ -104,7 +114,6 @@ services:
       - hugging_face:/hugging_face_cache
     runtime: nvidia
     environment:
-      CUDA_LAUNCH_BLOCKING: 1
       HF_HOME: /hugging_face_cache
     deploy:
       resources:
