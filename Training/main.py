@@ -1,24 +1,24 @@
 import json
 
-from unsloth import FastLanguageModel, get_chat_template
+import unsloth
+from datasets import load_dataset
 import torch
 import os
 from trl import SFTConfig, SFTTrainer
 
 max_seq_length = 2048
 
-model, tokenizer = FastLanguageModel.from_pretrained(
+model, tokenizer = unsloth.FastLanguageModel.from_pretrained(
     model_name = "unsloth/mistral-7b-instruct-v0.3-bnb-4bit",
     max_seq_length = max_seq_length,
     dtype = None,
     load_in_4bit = True,
 )
 
-model = FastLanguageModel.get_peft_model(
+model = unsloth.FastLanguageModel.get_peft_model(
     model,
     r = 8,
-    target_modules = ["q_proj", "k_proj", "v_proj", "o_proj",
-                      "gate_proj", "up_proj", "down_proj",],
+    target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
     lora_alpha = 16,
     lora_dropout = 0,
     bias = "none",
@@ -30,7 +30,6 @@ model = FastLanguageModel.get_peft_model(
 
 unsloth_template = \
     "{{ bos_token }}"\
-    "{{ 'You are a helpful assistant to the user\n' }}"\
     "{% for message in messages %}"\
         "{% if message['role'] == 'user' %}"\
             "{{ '>>> User: ' + message['content'] + '\n' }}"\
@@ -43,36 +42,49 @@ unsloth_template = \
     "{% endif %}"
 unsloth_eos_token = "eos_token"
 
-tokenizer = get_chat_template(
+tokenizer = unsloth.get_chat_template(
     tokenizer,
     chat_template = (unsloth_template, unsloth_eos_token,),
     mapping = {"role" : "role", "content" : "content", "user" : "user", "assistant" : "assistant"},
     map_eos_token = True,
 )
 
-with open('./training.json', 'r') as file:
-    raw_dataset = json.load(file)
-dataset = []
-for dts in raw_dataset:
-    dataset.append({
-        "messages": [
-            {
-                "role": "user",
-                "content": dts["Prompt"],
-            },
-            {
-                "role": "assistant",
-                "content": dts["Response"],
-            }
-        ]
-    })
+for fname in ["dwarf-at-inn", "gate-of-lothern"]:
+    try:
+        with open(f"/raw-data/{fname}.json", "r") as file:
+            dataset = []
+            for dts in json.load(file):
+                dataset.append({
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": dts["Prompt"],
+                        },
+                        {
+                            "role": "assistant",
+                            "content": dts["Response"],
+                        }
+                    ],
+                    "text": [
+                        ">>> User: " + dts["Prompt"] + "\n",
+                        ">>> Assistant: " + dts["Response"] + "\n"
+                    ]
+                })
+            with open(f"/training-data/{fname}.json", "w") as file2:
+                file2.write(json.dumps(dataset))
+    except Exception as e:
+        print(f"{fname}: {e}")
+
+def formatting_func(examples):
+    return {"text": examples["text"]}
 
 trainer = SFTTrainer(
     model = model,
     tokenizer = tokenizer,
-    train_dataset = dataset,
+    train_dataset = load_dataset('/training-data')['train'],
     dataset_text_field = "text",
     max_seq_length = max_seq_length,
+    formatting_function = formatting_func,
     dataset_num_proc = 2,
     packing = False,
     args = SFTConfig(

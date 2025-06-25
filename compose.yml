@@ -7,6 +7,7 @@ volumes:
   redis: {}
   open_webui: {}
   trained: {}
+  hugging_face: {}
 services:
   redis:
     image: redis
@@ -25,6 +26,7 @@ services:
       - command: "ollama create $LLM_MODEL -f /trained/$LLM_MODEL-unsloth.gguf"
       - command: "ollama run $LLM_MODEL"
     restart: always
+    runtime: nvidia
     env_file:
       - .env
     volumes:
@@ -98,8 +100,12 @@ services:
     env_file:
       - .env
     volumes:
-      - trained:/trained
+      - trained:/training/outputs
+      - hugging_face:/hugging_face_cache
     runtime: nvidia
+    environment:
+      CUDA_LAUNCH_BLOCKING: 1
+      HF_HOME: /hugging_face_cache
     deploy:
       resources:
         reservations:
