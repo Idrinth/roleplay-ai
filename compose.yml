@@ -21,12 +21,11 @@ services:
     ports:
       - '11434:11434'
     post_start:
-      - command: "ollama rm $LLM_MODEL || true;"
-      - command: "while [! -f \"/trained/$LLM_MODEL-unsloth.gguf\" ]; do sleep 1; done"
-      - command: "ollama create $LLM_MODEL -f /trained/$LLM_MODEL-unsloth.gguf"
+      #- command: "ollama rm $LLM_MODEL || true;"
+      #- command: "while [! -f \"/trained/$LLM_MODEL-unsloth.gguf\" ]; do sleep 1; done"
+      #- command: "ollama create $LLM_MODEL -f /trained/$LLM_MODEL-unsloth.gguf"
       - command: "ollama run $LLM_MODEL"
     restart: always
-    runtime: nvidia
     environment:
       OLLAMA_KEEP_ALIVE: -1
     env_file:
@@ -34,14 +33,6 @@ services:
     volumes:
       - ollama:/root/.ollama
       - trained:/trained
-#    deploy:
-#      resources:
-#        reservations:
-#          devices:
-#            - driver: nvidia
-#              count: all
-#              capabilities:
-#              - gpu
   qdrant:
     image: qdrant/qdrant
     ports:
@@ -76,6 +67,7 @@ services:
       no_cache: true
     env_file:
       - .env
+    restart: always
     ports:
       - '8000:80'
     depends_on:
@@ -86,7 +78,6 @@ services:
       - redis
   open-webui:
     image: ghcr.io/open-webui/open-webui:ollama
-    restart: always
     ports:
       - '8080:3000'
     environment:
@@ -99,6 +90,7 @@ services:
     build:
       dockerfile: Ui/Dockerfile
       no_cache: true
+    restart: always
     depends_on:
       - app
     ports:

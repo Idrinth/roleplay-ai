@@ -9,6 +9,7 @@ body, html {
   margin:0;
   color: #ddd;
   background: #111;
+  font-size: 16px;
 }
 body {
   overflow-y: auto;
@@ -32,14 +33,14 @@ ul {
 li {
   list-style: none;
   margin: 0;
-  padding: 0 1em;
+  padding: 0.5em 1em;
   display: block;
 }
 li.user {
-  background-color: rgba(0,255,0,0.25);
+  background-color: rgba(0,255,0,0.125);
 }
 li.agent {
-  background-color: rgba(255, 0, 0, 0.25);
+  background-color: rgba(255, 0, 0, 0.125);
 }
 textarea {
   resize: none;
