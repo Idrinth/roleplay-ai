@@ -12,31 +12,36 @@
         document.getElementsByTagName('ul')[0].appendChild(document.createElement('li'));
         document.getElementsByTagName('ul')[0].lastChild.appendChild(document.createTextNode(value));
         document.getElementsByTagName('ul')[0].lastChild.classList.add('user');
-        document.getElementsByTagName('ul')[0].appendChild(document.createElement('img'));
-        document.getElementsByTagName('ul')[0].lastChild.setAttribute('src', '/loader.gif')
-        const response = await fetch(`http://localhost:8000/chat/${chatId}`, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({description: value}),
-            signal: AbortSignal.timeout(3600000),
-        });
-        if (response.ok) {
-            const json = await response.json();
-            if (json.error) {
-                console.error(json.error);
-            } else if (json.exception) {
-                console.error(json.exception);
-            } else {
-                document.getElementsByTagName('ul')[0].appendChild(document.createElement('li'));
-                document.getElementsByTagName('ul')[0].lastChild.appendChild(document.createTextNode(json.message));
-                document.getElementsByTagName('ul')[0].lastChild.classList.add('agent');
+        document.getElementsByTagName('ul')[0].appendChild(document.createElement('li'));
+        document.getElementsByTagName('ul')[0].lastChild.appendChild(document.createElement('img'));
+        document.getElementsByTagName('ul')[0].lastChild.lastChild.setAttribute('src', '/loader.gif')
+        try {
+            const response = await fetch(`http://localhost:8000/chat/${chatId}`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({description: value}),
+                signal: AbortSignal.timeout(3600000),
+            });
+            if (response.ok) {
+                const json = await response.json();
+                if (json.error) {
+                    console.error(json.error);
+                } else if (json.exception) {
+                    console.error(json.exception);
+                } else {
+                    document.getElementsByTagName('ul')[0].appendChild(document.createElement('li'));
+                    document.getElementsByTagName('ul')[0].lastChild.appendChild(document.createTextNode(json.message));
+                    document.getElementsByTagName('ul')[0].lastChild.classList.add('agent');
+                }
             }
+        } catch(e) {
+            console.error(e);
         }
         document.getElementsByTagName('button')[0].disabled = false;
-        document.getElementsByTagName('img')[0].parentNode.removeChild(document.getElementsByTagName('img')[0]);
+        document.getElementsByTagName('img')[1].parentNode.parentNode.removeChild(document.getElementsByTagName('img')[1].parentNode);
         console.log(`Reply took ${Date.now() / 1000 - now / 1000}s`);
     });
     const response = await fetch(`http://localhost:8000/chat/${chatId}`, {

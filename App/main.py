@@ -37,6 +37,7 @@ mdbconn = mariadb.connect(
     port=3306
 )
 mdbconn.autocommit = True
+mdbconn.auto_reconnect = True
 with open('./app/character-sheet.schema.json', 'r') as schemafile:
     schema = json.dumps(json.load(schemafile))
 
@@ -67,7 +68,7 @@ def chat_character(uuid: str):
 def chat_history(uuid: str):
     try:
         messages = []
-        mdbconn.ping(reconnect=True)
+        mdbconn.ping()
         mdbconn.cursor().execute("CREATE DATABASE IF NOT EXISTS `"+uuid+"`;")
         mdbconn.cursor().execute("USE `"+uuid+"`;")
         mdbconn.cursor().execute(
@@ -92,72 +93,28 @@ def chat(uuid: str, action: Action):
         return {"error": "A model is needed."}
     if not action.description:
         return {"error": "A description is required."}
-    vectordb_results = []
-    if qdrant.collection_exists(uuid):
-        search_result = qdrant.query(
-            collection_name=uuid,
-            query_text=action.description,
-            limit=10
-        )
-        for res in search_result:
-            vectordb_results.append(simplify_result(res))
     long_term_summary = redis.get(uuid + ".long_text_summary") or "Nothing happened yet."
     medium_term_summary = redis.get(uuid + ".medium_text_summary") or "Nothing happened yet."
     short_term_summary = redis.get(uuid + ".short_text_summary") or "Nothing happened yet."
     characters = []
-    with open('./app/idrinth.character-sheet.yaml', 'r') as file:
-        characters.append(yaml.safe_load(file))
-    with open('./app/lienne.character-sheet.yaml', 'r') as file:
-        characters.append(yaml.safe_load(file))
-    world = "dark fantasy, Warhammer Fantasy"
-    messages = [
-        {
-            "role": "system",
-            "content": "# Rules:"
-                "\n\n"
-                "## Role Boundaries:\n"
-                "- You are the world reacting to players - control NPCs and environment only\n"
-                "- NEVER control, speak for, or describe the inner state of player characters\n"
-                "- If uncertain about player intent, wait - do not assume\n"
-                "\n"
-                "## Response Guidelines:\n"
-                "- Focus on immediate consequences and NPC reactions to player actions\n"
-                "- Add dialogue, sensory details, and atmosphere\n"
-                "- Keep responses under 750 characters (max 1500)\n"
-                "- Do not resolve tensions - leave situations for players to handle\n"
-                "\n"
-                "## World Consistency:\n"
-                "- Do not contradict established facts or change character names\n"
-                "- Only invent minor details when needed\n"
-                "- Assume characters don't know each other unless stated\n"
-                "\n"
-                "## Format:\n"
-                "- Stay in-world only - no JSON, summaries, or action lists\n"
-                "- If you accidentally control a PC, immediately correct in-world\n"
-                "\n\n"
-                "# Personality:"
-                "\n\n"
-                "You are a GAME MASTER. React to provided actions with in character responses of NPCs."
-        },
-        {
-            "role": "system",
-            "content": "# Player Characters:\n\nThe following character sheets are for reference ONLY. Do not use these to infer motivations or write actions for player characters..\n```json\n" + json.dumps(characters) +
-                "\n```\n\n"
-                "## Character Sheet Schema:\n\n```json\n" + schema +
-                "\n```\n\n"
-                "# World:\n\n" + world +
-                "\n\n"
-                "# Short Term Summary:\n\n" + short_term_summary +
-                "\n\n"
-                "# Medium Term Summary:\n\n" + medium_term_summary +
-                "\n\n"
-                "# Long Term Summary:\n\n" + long_term_summary +
-                "\n\n"
-                "# Potentially Related Information:\n\n```json\n" + json.dumps(vectordb_results) + "\n```"
-        },
-    ]
     try:
-        mdbconn.ping(reconnect=True)
+        mongo.create_collection(uuid)
+        mydb = mongo[uuid]
+        characters = list(mydb.find())
+    except Exception as e:
+        print(e)
+        try:
+            with open('./app/idrinth.character-sheet.yaml', 'r') as file:
+                characters.append(yaml.safe_load(file))
+            with open('./app/lienne.character-sheet.yaml', 'r') as file:
+                characters.append(yaml.safe_load(file))
+            mongo[uuid].insert_many(characters)
+        except Exception as e2:
+            print(e2)
+    world = "dark fantasy, Warhammer Fantasy"
+    messages = []
+    try:
+        mdbconn.ping()
         mdbconn.cursor().execute("CREATE DATABASE IF NOT EXISTS `"+uuid+"`;")
         mdbconn.cursor().execute("USE `"+uuid+"`;")
         mdbconn.cursor().execute(
@@ -173,6 +130,55 @@ def chat(uuid: str, action: Action):
                 "content": message[1],
             })
             previous_response = message[1]
+        messages.append({
+            "role": "system",
+            "content": "# Rules:\n"
+                "## Role Boundaries:\n"
+                "- You are the world reacting to players - control NPCs and environment only\n"
+                "- NEVER control, speak for, or describe the inner state of player characters\n"
+                "- If uncertain about player intent, wait - do not assume\n"
+                "## Response Guidelines:\n"
+                "- Focus on immediate consequences and NPC reactions to player actions\n"
+                "- Add dialogue, sensory details, and atmosphere\n"
+                "- Keep responses under 750 characters (max 1500)\n"
+                "- Do not resolve tensions - leave situations for players to handle\n"
+                "## World Consistency:\n"
+                "- Do not contradict established facts or change character names\n"
+                "- Only invent minor details when needed\n"
+                "- Assume characters don't know each other unless stated\n"
+                "## Format:\n"
+                "- Stay in-world only - no JSON, summaries, or action lists\n"
+                "- If you accidentally control a PC, immediately correct in-world\n"
+                "\n"
+                "# Personality:"
+                "\n"
+                "You are a GAME MASTER. React to provided actions with in character responses of NPCs."
+        })
+        vectordb_results = []
+        if qdrant.collection_exists(uuid):
+            search_result = qdrant.query(
+                collection_name=uuid,
+                query_text=previous_response + "\n" + action.description,
+                limit=10
+            )
+            for res in search_result:
+                vectordb_results.append(simplify_result(res))
+        messages.append({
+            "role": "system",
+            "content": "# Player Characters:\nThe following character sheets are for reference ONLY. Do not use these to infer motivations or write actions for player characters.\n```json\n" + json.dumps(characters) +
+                "\n```\n"
+                "## Character Sheet Schema:\n```json\n" + schema +
+                "\n```\n"
+                "# World:\n" + world +
+                "\n"
+                "# Short Term Summary:\n" + short_term_summary +
+                "\n"
+                "# Medium Term Summary:\n" + medium_term_summary +
+                "\n"
+                "# Long Term Summary:\n" + long_term_summary +
+                "\n"
+                "# Potentially Related Information:\n```json\n" + json.dumps(vectordb_results) + "\n```"
+        })
         mdbconn.cursor().execute("INSERT INTO messages (`creator`, `content`) VALUES ('user', ?);", [action.description])
         messages.append({
             "role": "user",
