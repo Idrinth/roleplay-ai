@@ -67,6 +67,7 @@ def chat_character(uuid: str):
 def chat_history(uuid: str):
     try:
         messages = []
+        mdbconn.ping(reconnect=True)
         mdbconn.cursor().execute("CREATE DATABASE IF NOT EXISTS `"+uuid+"`;")
         mdbconn.cursor().execute("USE `"+uuid+"`;")
         mdbconn.cursor().execute(
@@ -156,6 +157,7 @@ def chat(uuid: str, action: Action):
         },
     ]
     try:
+        mdbconn.ping(reconnect=True)
         mdbconn.cursor().execute("CREATE DATABASE IF NOT EXISTS `"+uuid+"`;")
         mdbconn.cursor().execute("USE `"+uuid+"`;")
         mdbconn.cursor().execute(
