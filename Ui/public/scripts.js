@@ -7,10 +7,11 @@ const chatId = '398a21e2-34a1-43b0-b524-5341cf55e060';
         if (!value) {
             return;
         }
+        const converter = new showdown.Converter();
         document.getElementById('send').disabled = true;
         document.getElementById('chat-entry').value = '';
         document.getElementById('chat').appendChild(document.createElement('li'));
-        document.getElementById('chat').lastChild.appendChild(document.createTextNode(value));
+        document.getElementById('chat').lastChild.innerHTML = converter.makeHtml(value);
         document.getElementById('chat').lastChild.classList.add('user');
         document.getElementById('chat').appendChild(document.createElement('li'));
         document.getElementById('chat').lastChild.appendChild(document.createElement('img'));
@@ -32,7 +33,7 @@ const chatId = '398a21e2-34a1-43b0-b524-5341cf55e060';
                     console.error(json.exception);
                 } else {
                     document.getElementsByTagName('ul')[0].appendChild(document.createElement('li'));
-                    document.getElementsByTagName('ul')[0].lastChild.appendChild(document.createTextNode(json.message));
+                    document.getElementsByTagName('ul')[0].lastChild.innerHTML = converter.makeHtml(json.message);
                     document.getElementsByTagName('ul')[0].lastChild.classList.add('agent');
                 }
             }
@@ -53,6 +54,7 @@ const chatId = '398a21e2-34a1-43b0-b524-5341cf55e060';
             }
     });
     if (response.ok) {
+        const converter = new showdown.Converter();
         const json = await response.json();
         if (json.error) {
             console.error(json.error);
@@ -61,7 +63,7 @@ const chatId = '398a21e2-34a1-43b0-b524-5341cf55e060';
         } else {
             for (const message of json.messages) {
                 document.getElementById('chat').appendChild(document.createElement('li'));
-                document.getElementById('chat').lastChild.appendChild(document.createTextNode(message.content));
+                document.getElementById('chat').lastChild.innerHTML = converter.makeHtml(message.content);
                 document.getElementById('chat').lastChild.classList.add(message.role);
             }
         }
