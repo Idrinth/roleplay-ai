@@ -35,10 +35,10 @@ li {
   display: block;
 }
 li.user {
-  background-color: rgba(0,255,0,0.125);
+  background-color: rgba(0, 125, 0, 0.0625);
 }
 li.agent {
-  background-color: rgba(255, 0, 0, 0.125);
+  background-color: rgba(0, 0, 125, 0.0625);
 }
 textarea {
   resize: none;
@@ -59,4 +59,28 @@ pre {
   overflow-x: auto;
   background: #111;
   box-shadow: #333 0 0 0.125em;
+}
+#logo {
+  background-image: url('/logo.light.svg');
+  background-size: 100% 100%;
+  width: 1.5em;
+  height: 1.5em;
+  display: inline-block;
+}
+@media (prefers-color-scheme: light) {
+  body, html {
+    color: #333;
+    background: #eee;
+  }
+  textarea {
+    color: #333;
+    background: #eee;
+  }
+  pre {
+    background: #eee;
+    box-shadow: #ddd 0 0 0.125em;
+  }
+  #logo {
+    background-image: url('/logo.dark.svg');
+  }
 }
