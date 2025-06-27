@@ -56,7 +56,8 @@ def chat_character(uuid: str, character: BaseModel):
 def chat_character(uuid: str, id: str, character: BaseModel):
     mydb = mongo[uuid]
     mydb['characters'].delete_one({"_id": id})
-    return mydb['characters'].insert_one(character)
+    mydb['characters'].insert_one(character)
+    return True
 
 @app.delete("/chat/{uuid}/characters/{id}")
 def chat_character(uuid: str, id: str):
@@ -67,10 +68,9 @@ def chat_character(uuid: str, id: str):
 @app.get("/chat/{uuid}/characters")
 def chat_character(uuid: str):
     try:
-        mydb = mongo[uuid]
-        return {"characters": list(mydb['characters'].find())}
+        return json.loads(json.dumps({"characters": list(mongo[uuid]['characters'].find())}, default=json_util.default))
     except Exception as e:
-        return {"exception": e}
+        return {"exception": f"{e}"}
 
 @app.get("/chat/{uuid}")
 def chat_history(uuid: str):
