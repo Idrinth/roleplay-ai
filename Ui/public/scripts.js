@@ -1,6 +1,6 @@
-(async () => {
-    const chatId = '398a21e2-34a1-43b0-b524-5341cf55e060';
+const chatId = '398a21e2-34a1-43b0-b524-5341cf55e060';
 
+(async () => {
     document.getElementsByTagName('button')[0].addEventListener('click', async function () {
         const now = Date.now();
         const value = document.getElementsByTagName('textarea')[0].value;
@@ -23,7 +23,6 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({description: value}),
-                signal: AbortSignal.timeout(3600000),
             });
             if (response.ok) {
                 const json = await response.json();
@@ -41,7 +40,9 @@
             console.error(e);
         }
         document.getElementsByTagName('button')[0].disabled = false;
-        document.getElementsByTagName('img')[1].parentNode.parentNode.removeChild(document.getElementsByTagName('img')[1].parentNode);
+        document.getElementsByTagName('img')[1].parentNode.parentNode.removeChild(
+            document.getElementsByTagName('img')[1].parentNode
+        );
         console.log(`Reply took ${Date.now() / 1000 - now / 1000}s`);
     });
     const response = await fetch(`http://localhost:8000/chat/${chatId}`, {
@@ -49,8 +50,7 @@
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
-            },
-            signal: AbortSignal.timeout(3600000),
+            }
     });
     if (response.ok) {
         const json = await response.json();
@@ -67,3 +67,25 @@
         }
     }
 })();
+(async() => {
+    const response = await fetch(`http://localhost:8000/chat/${chatId}/characters`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+    });
+    if (response.ok) {
+        const json = await response.json();
+        if (json.error) {
+            console.error(json.error);
+        } else if (json.exception) {
+            console.error(json.exception);
+        } else {
+            for (const character in json.characters) {
+                document.getElementsByTagName('ul')[1].appendChild(document.createElement('li'));
+                document.getElementsByTagName('ul')[1].lastChild.appendChild(document.createTextNode(character.name.taken));
+            }
+        }
+    }
+})()

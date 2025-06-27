@@ -9,9 +9,9 @@ import mariadb
 from redis import Redis
 from pymongo import MongoClient
 from pydantic import BaseModel
-import yaml
 import os
 from fastapi.middleware.cors import CORSMiddleware
+from bson import json_util
 
 def simplify_result(query_result: QueryResponse):
     return query_result.model_dump(mode="json")
@@ -29,7 +29,7 @@ ollama = Client(host="http://ollama:11434")
 qdrant = QdrantClient("http://qdrant:6333")
 qdrant.set_model(qdrant.DEFAULT_EMBEDDING_MODEL, providers=["CPUExecutionProvider"])
 redis = Redis(host="redis", port=6379, db=0)
-mongo = MongoClient("mongodb://mongo:27017/")
+mongo = MongoClient("mongodb://root:example@mongo:27017/")
 mdbconn = mariadb.connect(
     user="root",
     password="example",
@@ -40,29 +40,37 @@ mdbconn.autocommit = True
 mdbconn.auto_reconnect = True
 with open('./app/character-sheet.schema.json', 'r') as schemafile:
     schema = json.dumps(json.load(schemafile))
+with open('./app/rules.md', 'r') as mdfile:
+    rules = mdfile.read()
 
 
 class Action(BaseModel):
     description: str | None = None
 
-class Character(BaseModel):
-    sheet: str | None = None
-
 @app.post("/chat/{uuid}/characters")
-def chat_character(uuid: str, character: Character):
+def chat_character(uuid: str, character: BaseModel):
     mydb = mongo[uuid]
-    return mydb.insert_one(character)
+    return mydb['characters'].insert_one(character)
 
 @app.put("/chat/{uuid}/characters/{id}")
-def chat_character(uuid: str, id: str, character: Character):
+def chat_character(uuid: str, id: str, character: BaseModel):
     mydb = mongo[uuid]
-    mydb.delete_one({"_id": id})
-    return mydb.insert_one(character)
+    mydb['characters'].delete_one({"_id": id})
+    return mydb['characters'].insert_one(character)
+
+@app.delete("/chat/{uuid}/characters/{id}")
+def chat_character(uuid: str, id: str):
+    mydb = mongo[uuid]
+    mydb['characters'].delete_one({"_id": id})
+    return True
 
 @app.get("/chat/{uuid}/characters")
 def chat_character(uuid: str):
-    mydb = mongo[uuid]
-    return list(mydb.find(limit=20))
+    try:
+        mydb = mongo[uuid]
+        return {"characters": list(mydb['characters'].find())}
+    except Exception as e:
+        return {"exception": e}
 
 @app.get("/chat/{uuid}")
 def chat_history(uuid: str):
@@ -98,19 +106,11 @@ def chat(uuid: str, action: Action):
     short_term_summary = redis.get(uuid + ".short_text_summary") or "Nothing happened yet."
     characters = []
     try:
-        mongo.create_collection(uuid)
         mydb = mongo[uuid]
-        characters = list(mydb.find())
+        mycol = mydb["characters"]
+        characters = list(mycol.find())
     except Exception as e:
-        print(e)
-        try:
-            with open('./app/idrinth.character-sheet.yaml', 'r') as file:
-                characters.append(yaml.safe_load(file))
-            with open('./app/lienne.character-sheet.yaml', 'r') as file:
-                characters.append(yaml.safe_load(file))
-            mongo[uuid].insert_many(characters)
-        except Exception as e2:
-            print(e2)
+        print(f"{e}")
     world = "dark fantasy, Warhammer Fantasy"
     messages = []
     try:
@@ -132,27 +132,7 @@ def chat(uuid: str, action: Action):
             previous_response = message[1]
         messages.append({
             "role": "system",
-            "content": "# Rules:\n"
-                "## Role Boundaries:\n"
-                "- You are the world reacting to players - control NPCs and environment only\n"
-                "- NEVER control, speak for, or describe the inner state of player characters\n"
-                "- If uncertain about player intent, wait - do not assume\n"
-                "## Response Guidelines:\n"
-                "- Focus on immediate consequences and NPC reactions to player actions\n"
-                "- Add dialogue, sensory details, and atmosphere\n"
-                "- Keep responses under 750 characters (max 1500)\n"
-                "- Do not resolve tensions - leave situations for players to handle\n"
-                "## World Consistency:\n"
-                "- Do not contradict established facts or change character names\n"
-                "- Only invent minor details when needed\n"
-                "- Assume characters don't know each other unless stated\n"
-                "## Format:\n"
-                "- Stay in-world only - no JSON, summaries, or action lists\n"
-                "- If you accidentally control a PC, immediately correct in-world\n"
-                "\n"
-                "# Personality:"
-                "\n"
-                "You are a GAME MASTER. React to provided actions with in character responses of NPCs."
+            "content": rules
         })
         vectordb_results = []
         if qdrant.collection_exists(uuid):
@@ -165,7 +145,9 @@ def chat(uuid: str, action: Action):
                 vectordb_results.append(simplify_result(res))
         messages.append({
             "role": "system",
-            "content": "# Player Characters:\nThe following character sheets are for reference ONLY. Do not use these to infer motivations or write actions for player characters.\n```json\n" + json.dumps(characters) +
+            "content": "# Player Characters:\nThe following character sheets are for reference ONLY."
+                " Do not use these to infer motivations or write actions for player characters."
+                "\n```json\n" + json.dumps(characters, default=json_util.default) +
                 "\n```\n"
                 "## Character Sheet Schema:\n```json\n" + schema +
                 "\n```\n"
