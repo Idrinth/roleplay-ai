@@ -15,7 +15,8 @@ const chatId = '398a21e2-34a1-43b0-b524-5341cf55e060';
         document.getElementById('chat').lastChild.classList.add('user');
         document.getElementById('chat').appendChild(document.createElement('li'));
         document.getElementById('chat').lastChild.appendChild(document.createElement('img'));
-        document.getElementById('chat').lastChild.lastChild.setAttribute('src', '/loader.gif')
+        document.getElementById('chat').lastChild.lastChild.setAttribute('src', '/loader.gif');
+        document.getElementById('chat').lastChild.lastChild.setAttribute('id', 'loader');
         try {
             const response = await fetch(`http://localhost:8000/chat/${chatId}`, {
                 method: 'POST',
@@ -32,17 +33,17 @@ const chatId = '398a21e2-34a1-43b0-b524-5341cf55e060';
                 } else if (json.exception) {
                     console.error(json.exception);
                 } else {
-                    document.getElementsByTagName('ul')[0].appendChild(document.createElement('li'));
-                    document.getElementsByTagName('ul')[0].lastChild.innerHTML = converter.makeHtml(json.message);
-                    document.getElementsByTagName('ul')[0].lastChild.classList.add('agent');
+                    document.getElementById('chat').appendChild(document.createElement('li'));
+                    document.getElementById('chat').lastChild.innerHTML = converter.makeHtml(json.message);
+                    document.getElementById('chat').lastChild.classList.add('agent');
                 }
             }
         } catch(e) {
             console.error(e);
         }
         document.getElementById('send').disabled = false;
-        document.getElementsByTagName('img')[1].parentNode.parentNode.removeChild(
-            document.getElementsByTagName('img')[1].parentNode
+        document.getElementById('loader').parentNode.parentNode.removeChild(
+            document.getElementById('loader').parentNode
         );
         console.log(`Reply took ${Date.now() / 1000 - now / 1000}s`);
     });
