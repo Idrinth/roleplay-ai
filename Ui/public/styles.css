@@ -45,7 +45,7 @@ textarea {
   color: #ddd;
   background: #111;
 }
-pre {
+#charactersheet {
   display: block;
   position: absolute;
   z-index: 11111;
@@ -76,7 +76,7 @@ pre {
     color: #333;
     background: #eee;
   }
-  pre {
+  #charactersheet {
     background: #eee;
     box-shadow: #ddd 0 0 0.125em;
   }

@@ -70,15 +70,35 @@ const chatId = '398a21e2-34a1-43b0-b524-5341cf55e060';
         }
     }
 })();
-(async() => {
-    document.body.onclick = (event) => {
-        const el = document.getElementsByTagName('pre');
-        if (el && el.length > 0) {
-            if (event.target !== el[0]) {
-                document.body.removeChild(el[0]);
+document.body.onclick = (event) => {
+    const el = document.getElementById('charactersheet');
+    if (el) {
+        if (event.target !== el) {
+            if (el.hasAttribute('data-id')) {
+                const id = el.getAttribute('data-id');
+                fetch(`http://localhost:8000/chat/${chatId}/characters/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(jsyaml.load(el.value))
+                })
+            } else {
+                fetch(`http://localhost:8000/chat/${chatId}/characters`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(jsyaml.load(el.value))
+                })
             }
+            document.body.removeChild(el);
         }
     }
+}
+(async() => {
     const response = await fetch(`http://localhost:8000/chat/${chatId}/characters`, {
             method: 'GET',
             headers: {
@@ -98,13 +118,23 @@ const chatId = '398a21e2-34a1-43b0-b524-5341cf55e060';
                 document.getElementById('characters').lastChild.appendChild(document.createTextNode(character.name.taken));
                 document.getElementById('characters').lastChild.onclick = (event) => {
                     event.stopPropagation();
-                    const el = document.createElement('pre');
+                    const el = document.createElement('textarea');
+                    el.setAttribute('id', 'charactersheet')
                     const char = {...character};
                     char._id = undefined;
-                    el.appendChild(document.createTextNode(jsyaml.dump(char)));
+                    el.setAttribute('data-id', character._id['$oid'])
+                    el.value = jsyaml.dump(char);
                     document.body.appendChild(el);
                 }
             }
         }
     }
-})()
+})();
+(async() => {
+    document.getElementById('add-character').onclick = (event) => {
+        event.stopPropagation();
+        const el = document.createElement('textarea');
+        el.setAttribute('id', 'charactersheet');
+        document.body.appendChild(el);
+    }
+})();

@@ -8,10 +8,13 @@ from fastapi import FastAPI
 import mariadb
 from redis import Redis
 from pymongo import MongoClient
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import os
+import enum
 from fastapi.middleware.cors import CORSMiddleware
 from bson import json_util
+from enum import Enum, StrEnum
+from typing import Dict, List, Optional
 
 def simplify_result(query_result: QueryResponse):
     return query_result.model_dump(mode="json")
@@ -47,16 +50,184 @@ with open('./app/rules.md', 'r') as mdfile:
 class Action(BaseModel):
     description: str | None = None
 
+class OathType(StrEnum):
+    THALUI = "Thalui"
+
+class ElvenRace(StrEnum):
+    ASUR = "Asur"
+    ASRAI = "Asrai"
+    DRUCHII = "Druchii"
+
+class VampireBloodline(StrEnum):
+    BLOOD_DRAGON = "Blood Dragon"
+    LAHMIAN = "Lahmian"
+    VON_CARSTEIN = "von Carstein"
+    NECRARCH = "Necrarch"
+    STRIGOI = "Strigoi"
+    VAMPIRE_COAST = "Vampire Coast"
+
+class LanguageLevel(StrEnum):
+    NONE = "none"
+    BASIC = "basic"
+    ADVANCED = "advanced"
+    NATIVE = "native"
+
+class MagicLevel(StrEnum):
+    NONE = "none"
+    NOVICE = "novice"
+    APPRENTICE = "apprentice"
+    JOURNEYMAN = "journeyman"
+    EXPERT = "expert"
+    MASTER = "master"
+
+class Sex(StrEnum):
+    MALE = "male"
+    FEMALE = "female"
+
+class Name(BaseModel):
+    taken: str
+    given: str
+    oath: OathType
+    family: str
+    titles: List[str] = Field(min_length=1)
+
+class Heritage(BaseModel):
+    race: ElvenRace
+    bloodline: VampireBloodline
+
+class WhileAlive(BaseModel):
+    haircolor: str
+    eyecolor: str
+
+class Eltharin(BaseModel):
+    Old: Optional[LanguageLevel] = None
+    Asur: Optional[LanguageLevel] = None
+    Asrai: Optional[LanguageLevel] = None
+    Druchii: Optional[LanguageLevel] = None
+
+class Human(BaseModel):
+    Classical: Optional[LanguageLevel] = None
+    Nehekharan: Optional[LanguageLevel] = None
+    Reikspiel: Optional[LanguageLevel] = None
+    Bretonnian: Optional[LanguageLevel] = None
+
+class Languages(BaseModel):
+    Eltharin: Eltharin
+    Human: Human
+    high_magic_ritual_tongues: Optional[LanguageLevel] = Field(
+        default=None,
+        alias="High Magic ritual tongues"
+    )
+
+    class Config:
+        allow_population_by_field_name = True
+
+class Background(BaseModel):
+    former_occupation: str = Field(alias="former occupation")
+    while_alive: WhileAlive = Field(alias="while alive")
+    description: str
+    personality: List[str] = Field(min_length=1)
+    place_of_birth: str = Field(alias="place of birth")
+    favorite_weapon: List[str] = Field(min_length=1, alias="favorite weapon")
+    combat_style: str = Field(alias="combat style")
+    siblings: Dict[str, str]
+    parents: Optional[Dict[str, str]] = None
+    connections: Optional[Dict[str, str]] = None
+
+    class Config:
+        allow_population_by_field_name = True
+
+class MagicLores(BaseModel):
+    Death: MagicLevel
+    Shadow: MagicLevel
+    Vampire: MagicLevel
+    Depth: MagicLevel
+    Life: MagicLevel
+    Athel_Loren: MagicLevel = Field(alias="Athel Loren")
+    High_Magic: MagicLevel = Field(alias="High Magic")
+    Dark_Magic: MagicLevel = Field(alias="Dark Magic")
+
+    class Config:
+        allow_population_by_field_name = True
+
+class Magic(BaseModel):
+    capacity: int = Field(ge=0)
+    wind_strength_increase: int = Field(ge=0, alias="wind strength increase")
+    lores: MagicLores
+
+    class Config:
+        allow_population_by_field_name = True
+
+class Statblock(BaseModel):
+    strength: int = Field(ge=1)
+    movement_speed: int = Field(ge=1, alias="movement speed")
+    reaction_speed: int = Field(ge=1, alias="reaction speed")
+    weapon_skill: int = Field(ge=1, alias="weapon skill")
+    ballistic_skill: int = Field(ge=1, alias="ballistic skill")
+    toughness: int = Field(ge=1)
+    fatigue: int = Field(ge=1)
+
+    class Config:
+        allow_population_by_field_name = True
+
+class Age(BaseModel):
+    physical: int = Field(ge=0)
+    human_equivalent: int = Field(ge=0, alias="human-equivalent")
+
+    class Config:
+        allow_population_by_field_name = True
+
+class YearsAgo(BaseModel):
+    born: int = Field(ge=0)
+    turned: int = Field(ge=0)
+
+class Roles(BaseModel):
+    combat: str
+    diplomacy: str
+    civil: str
+
+class Character(BaseModel):
+    name: Name
+    heritage: Heritage
+    background: Background
+    languages: Languages
+    magic: Magic
+    statblock: Statblock
+    age: Age
+    years_ago: YearsAgo = Field(alias="years ago")
+    roles: Roles
+    Sex: Sex
+
+    class Config:
+        allow_population_by_field_name = True
+        use_enum_values = True
+
+def to_mongo_compatible(obj:BaseModel, id: str|None = None):
+    dc = obj.dict()
+    for k, v in dc.items():
+        if isinstance(v, BaseModel):
+            dc[k] = to_mongo_compatible(v)
+        elif isinstance(v, StrEnum) or isinstance(v, Enum):
+            dc[k] = v.value
+    if id is not None:
+        dc["_id"] = id
+    return dc
+
+@app.get('/')
+async def root():
+    return 'OK'
+
 @app.post("/chat/{uuid}/characters")
-def chat_character(uuid: str, character: BaseModel):
+def chat_character(uuid: str, character: Character):
     mydb = mongo[uuid]
-    return mydb['characters'].insert_one(character)
+    mydb['characters'].insert_one(to_mongo_compatible(character))
+    return True
 
 @app.put("/chat/{uuid}/characters/{id}")
-def chat_character(uuid: str, id: str, character: BaseModel):
+def chat_character(uuid: str, id: str, character: Character):
     mydb = mongo[uuid]
     mydb['characters'].delete_one({"_id": id})
-    mydb['characters'].insert_one(character)
+    mydb['characters'].insert_one(to_mongo_compatible(character, id))
     return True
 
 @app.delete("/chat/{uuid}/characters/{id}")
