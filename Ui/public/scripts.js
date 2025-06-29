@@ -1,5 +1,41 @@
 const chatId = '398a21e2-34a1-43b0-b524-5341cf55e060';
 
+const updateCharacters = async() => {
+    const response = await fetch(`http://localhost:8000/chat/${chatId}/characters`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+    });
+    if (response.ok) {
+        const json = await response.json();
+        if (json.error) {
+            console.error(json.error);
+        } else if (json.exception) {
+            console.error(json.exception);
+        } else {
+            while (document.getElementById('characters').children.length > 1) {
+                document.getElementById('characters').removeChild(document.getElementById('characters').lastChild);
+            }
+            for (const character of json.characters) {
+                document.getElementById('characters').appendChild(document.createElement('li'));
+                document.getElementById('characters').lastChild.appendChild(document.createTextNode(character.name.taken));
+                document.getElementById('characters').lastChild.onclick = (event) => {
+                    event.stopPropagation();
+                    const el = document.createElement('textarea');
+                    el.setAttribute('id', 'charactersheet')
+                    const char = {...character};
+                    char._id = undefined;
+                    el.setAttribute('data-id', character._id['$oid']);
+                    el.value = jsyaml.dump(char);
+                    el.setAttribute('data-raw', el.value);
+                    document.body.appendChild(el);
+                }
+            }
+        }
+    }
+};
 (async () => {
     document.getElementById('send').addEventListener('click', async function () {
         const now = Date.now();
@@ -70,22 +106,24 @@ const chatId = '398a21e2-34a1-43b0-b524-5341cf55e060';
         }
     }
 })();
-document.body.onclick = (event) => {
+document.body.onclick = async(event) => {
     const el = document.getElementById('charactersheet');
     if (el) {
         if (event.target !== el) {
             if (el.hasAttribute('data-id')) {
-                const id = el.getAttribute('data-id');
-                fetch(`http://localhost:8000/chat/${chatId}/characters/${id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(jsyaml.load(el.value))
-                })
+                if (el.getAttribute('data-raw') !== el.value) {
+                    const id = el.getAttribute('data-id');
+                    await fetch(`http://localhost:8000/chat/${chatId}/characters/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(jsyaml.load(el.value))
+                    });
+                }
             } else {
-                fetch(`http://localhost:8000/chat/${chatId}/characters`, {
+                await fetch(`http://localhost:8000/chat/${chatId}/characters`, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
@@ -95,41 +133,11 @@ document.body.onclick = (event) => {
                 })
             }
             document.body.removeChild(el);
+            updateCharacters();
         }
     }
 }
-(async() => {
-    const response = await fetch(`http://localhost:8000/chat/${chatId}/characters`, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-    });
-    if (response.ok) {
-        const json = await response.json();
-        if (json.error) {
-            console.error(json.error);
-        } else if (json.exception) {
-            console.error(json.exception);
-        } else {
-            for (const character of json.characters) {
-                document.getElementById('characters').appendChild(document.createElement('li'));
-                document.getElementById('characters').lastChild.appendChild(document.createTextNode(character.name.taken));
-                document.getElementById('characters').lastChild.onclick = (event) => {
-                    event.stopPropagation();
-                    const el = document.createElement('textarea');
-                    el.setAttribute('id', 'charactersheet')
-                    const char = {...character};
-                    char._id = undefined;
-                    el.setAttribute('data-id', character._id['$oid'])
-                    el.value = jsyaml.dump(char);
-                    document.body.appendChild(el);
-                }
-            }
-        }
-    }
-})();
+updateCharacters();
 (async() => {
     document.getElementById('add-character').onclick = (event) => {
         event.stopPropagation();
