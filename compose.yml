@@ -27,9 +27,8 @@ services:
     ports:
       - '11434:11434'
     post_start:
-      #- command: "ollama rm $LLM_MODEL || true;"
-      #- command: "while [! -f \"/trained/$LLM_MODEL-unsloth.gguf\" ]; do sleep 1; done"
-      #- command: "ollama create $LLM_MODEL -f /trained/$LLM_MODEL-unsloth.gguf"
+      - command: "echo \"FROM /trained/$LLM_MODEL.gguf\" > /trained/$LLM_MODEL/Modelfile"
+      - command: "ollama create $LLM_MODEL -f /trained/$LLM_MODEL/Modelfile"
       - command: "ollama run $LLM_MODEL"
     restart: always
     healthcheck:
@@ -145,7 +144,7 @@ services:
     env_file:
       - .env
     volumes:
-      - trained:/training/outputs
+      - trained:/trained
       - hugging_face:/hugging_face_cache
     runtime: nvidia
     environment:

@@ -1,18 +1,24 @@
 import json
 
 import unsloth
-from datasets import load_dataset
+import subprocess
+from datasets import Dataset
 import torch
 import os
 from trl import SFTConfig, SFTTrainer
+from peft import PeftModel
+import transformers
+import huggingface_hub
 
 max_seq_length = 2048
 
 model, tokenizer = unsloth.FastLanguageModel.from_pretrained(
     model_name = "unsloth/mistral-7b-instruct-v0.3-bnb-4bit",
     max_seq_length = max_seq_length,
+    max_memory = {"cpu": "40GIB", 0: "4GIB"},
     dtype = None,
     load_in_4bit = True,
+    device_map="auto",
 )
 
 model = unsloth.FastLanguageModel.get_peft_model(
@@ -29,7 +35,6 @@ model = unsloth.FastLanguageModel.get_peft_model(
 )
 
 unsloth_template = \
-    "{{ bos_token }}"\
     "You are a GAME MASTER. React to provided actions with in character responses of NPCs.\n"\
     "{% for message in messages %}"\
         "{% if message['role'] == 'user' %}"\
@@ -50,12 +55,12 @@ tokenizer = unsloth.get_chat_template(
     map_eos_token = True,
 )
 
+dataset_list = []
 for fname in ["dwarf-at-inn", "gate-of-lothern"]:
     try:
         with open(f"/raw-data/{fname}.json", "r") as file:
-            dataset = []
             for dts in json.load(file):
-                dataset.append({
+                dataset_list.append({
                     "messages": [
                         {
                             "role": "user",
@@ -66,26 +71,18 @@ for fname in ["dwarf-at-inn", "gate-of-lothern"]:
                             "content": dts["Response"],
                         }
                     ],
-                    "text": [
-                        ">>> User: " + dts["Prompt"] + "\n",
+                    "text": ">>> User: " + dts["Prompt"] + "\n"
                         ">>> Assistant: " + dts["Response"] + "\n"
-                    ]
                 })
-            with open(f"/training-data/{fname}.json", "w") as file2:
-                file2.write(json.dumps(dataset))
     except Exception as e:
         print(f"{fname}: {e}")
-
-def formatting_func(examples):
-    return {"text": examples["text"]}
 
 trainer = SFTTrainer(
     model = model,
     tokenizer = tokenizer,
-    train_dataset = load_dataset('/training-data')['train'],
+    train_dataset = Dataset.from_list(dataset_list),
     dataset_text_field = "text",
     max_seq_length = max_seq_length,
-    formatting_function = formatting_func,
     dataset_num_proc = 2,
     packing = False,
     args = SFTConfig(
@@ -106,4 +103,58 @@ trainer = SFTTrainer(
 
 trainer.train()
 
-model.save_pretrained_gguf(os.getenv("LLM_MODEL"), tokenizer,)
+try:
+    model.to("cpu")
+    model_name = os.getenv("LLM_MODEL")
+    if model_name is None:
+        model_name = "trained_model"
+        print("Warning: LLM_MODEL environment variable not set, using 'trained_model' as filename")
+
+    save_path = f"/trained/{model_name}"
+    model.to("cpu")
+    model.save_pretrained(save_path)
+    tokenizer.save_pretrained(save_path)
+    print(f"Saved HF-Model at: {save_path}")
+
+    huggingface_hub.login(
+        token=os.getenv("HF_TOKEN"),
+        new_session=False,
+    )
+    base_model = transformers.AutoModelForCausalLM.from_pretrained(
+        "mistralai/Mistral-7B-Instruct-v0.3",
+        max_memory = {"cpu": "40GIB", 0: "4GIB"},
+        torch_dtype=torch.float16,
+        device_map={"": "cpu"},
+    )
+
+    merged_model = PeftModel.from_pretrained(base_model, save_path)
+    merged_model = merged_model.merge_and_unload()
+    print(f"Model merged")
+    merged_path = f"{save_path}_merged"
+    merged_model.to("cpu")
+    merged_model.save_pretrained(merged_path)
+    tokenizer.save_pretrained(merged_path)
+    print(f"Saved Merged HF-Model at: {merged_path}")
+    #subprocess.run(
+    #    [
+    #        "cp",
+    #        "/training/config.json",
+    #        f"{save_path}_merged/config.json",
+    #    ]
+    #)
+    out = subprocess.run(
+        [
+            "/ollama/.venv/bin/python3",
+            "/ollama/convert_hf_to_gguf.py",
+            merged_path,
+            "--outfile",
+            f"{save_path}.gguf",
+        ],
+        stderr=subprocess.STDOUT,
+        text=True,
+        stdout=subprocess.PIPE,
+    )
+    print(out.stdout)
+    print(f"Saved OLLAMA-Model at: {save_path}.gguf")
+except Exception as e:
+    print(f"Error: {e}")
