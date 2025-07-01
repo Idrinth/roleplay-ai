@@ -1,10 +1,12 @@
-const apiHost = location.protocol +'://'+ location.host + ':8000'
+(async () => {
+    const apiHost = location.protocol + '://' + location.host + ':8000'
 
-const chatId = (location.hash.replace(/[^0-9a-f-]+/g, '') || (await(await fetch(`${apiHost}/new`)).json()).chat);
+    const chatId = (location.hash.replace(/[^0-9a-f-]+/g, '') || (await (await fetch(`${apiHost}/new`)).json()).chat);
 
-if (!chatId || !chatId.match(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i)) {
-    window.location = location.protocol +'://'+ location.host + ':8080';
-} else {
+    if (!chatId || !chatId.match(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i)) {
+        window.location = location.protocol + '://' + location.host + ':8080';
+        return;
+    }
     const updateCharacters = async () => {
         const response = await fetch(`${apiHost}/chat/${chatId}/characters`, {
             method: 'GET',
@@ -151,4 +153,4 @@ if (!chatId || !chatId.match(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-
             document.body.appendChild(el);
         }
     })();
-}
+})();
