@@ -1,5 +1,5 @@
 (async () => {
-    const apiHost = location.protocol + '://' + location.host + ':8000'
+    const apiHost = location.protocol + '://' + location.hostname + ':8000'
 
     const chatId = (location.hash.replace(/[^0-9a-f-]+/g, '') || (await (await fetch(`${apiHost}/new`)).json()).chat);
 
