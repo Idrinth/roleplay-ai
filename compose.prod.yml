@@ -31,9 +31,9 @@ services:
     deploy:
       resources:
         reservations:
-          cpus: 0.25
+          cpus: 1
         limits:
-          cpus: 0.5
+          cpus: 4
     healthcheck:
       test: ["CMD", "ollama", "ps"]
       interval: 10s
