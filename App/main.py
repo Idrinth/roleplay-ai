@@ -4,7 +4,7 @@ import re
 from ollama import ChatResponse, Client
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import QueryResponse
-from fastapi import FastAPI
+from fastapi import FastAPI, Cookie
 import mariadb
 from redis import Redis
 from pymongo import MongoClient
@@ -15,11 +15,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from bson import json_util
 from enum import Enum, StrEnum
 from typing import Dict, List, Optional
+import uuid
 
 def simplify_result(query_result: QueryResponse):
     return query_result.model_dump(mode="json")
 
-
+def is_uuid_like(string: str):
+    try:
+        uuid.UUID(string)
+        return True
+    except ValueError:
+        return False
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -237,14 +243,22 @@ def update_summary(start: int, end: int, redis_key: str):
 async def root():
     return 'OK'
 
+@app.get('/new')
+async def new_chat():
+    return {'chat': uuid.uuid4()}
+
 @app.post("/chat/{uuid}/characters")
 def chat_character(uuid: str, character: Character):
+    if not is_uuid_like(uuid):
+        return False
     mydb = mongo[uuid]
     mydb['characters'].insert_one(to_mongo_compatible(character))
     return True
 
 @app.put("/chat/{uuid}/characters/{id}")
 def chat_character(uuid: str, id: str, character: Character):
+    if not is_uuid_like(uuid):
+        return False
     mydb = mongo[uuid]
     mydb['characters'].delete_one({"_id": id})
     mydb['characters'].insert_one(to_mongo_compatible(character, id))
@@ -252,12 +266,16 @@ def chat_character(uuid: str, id: str, character: Character):
 
 @app.delete("/chat/{uuid}/characters/{id}")
 def chat_character(uuid: str, id: str):
+    if not is_uuid_like(uuid):
+        return False
     mydb = mongo[uuid]
     mydb['characters'].delete_one({"_id": id})
     return True
 
 @app.get("/chat/{uuid}/characters")
 def chat_character(uuid: str):
+    if not is_uuid_like(uuid):
+        return {"error": "Not a valid UUID"}
     try:
         return json.loads(json.dumps({"characters": list(mongo[uuid]['characters'].find())}, default=json_util.default))
     except Exception as e:
@@ -265,6 +283,8 @@ def chat_character(uuid: str):
 
 @app.get("/chat/{uuid}")
 def chat_history(uuid: str):
+    if not is_uuid_like(uuid):
+        return {"error": "Not a valid UUID"}
     try:
         messages = []
         mdbconn.ping()
@@ -288,6 +308,8 @@ def chat_history(uuid: str):
 
 @app.post("/chat/{uuid}")
 def chat(uuid: str, action: Action):
+    if not is_uuid_like(uuid):
+        return {"error": "Not a valid UUID"}
     if not os.getenv("LLM_MODEL_SUMMARY"):
         return {"error": "A model for the summary is needed."}
     if not os.getenv("LLM_MODEL_PLAY"):
