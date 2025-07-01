@@ -7,6 +7,7 @@
         window.location = location.protocol + '://' + location.host + ':8080';
         return;
     }
+    location.hash = `#${chatId}`;
     const updateCharacters = async () => {
         const response = await fetch(`${apiHost}/chat/${chatId}/characters`, {
             method: 'GET',
