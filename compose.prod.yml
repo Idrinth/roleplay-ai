@@ -1,0 +1,118 @@
+name: roleplay-ai
+volumes:
+  mariadbdata: {}
+  ollama: {}
+  qdrant_storage: {}
+  mongodata_db: {}
+  mongodata_config: {}
+  redis: {}
+  open_webui: {}
+  trained: {}
+  hugging_face: {}
+services:
+  redis:
+    image: redis
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis:/data
+  ollama:
+    image: ollama/ollama
+    post_start:
+      - command: "ollama cp mistral:instruct $LLM_MODEL_PLAY"
+      - command: "ollama cp mistral:instruct $LLM_MODEL_SUMMARY"
+      - command: "ollama run $LLM_MODEL_PLAY"
+      - command: "ollama run $LLM_MODEL_SUMMARY"
+    restart: always
+    healthcheck:
+      test: ["CMD", "ollama", "ps"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      OLLAMA_KEEP_ALIVE: -1
+    env_file:
+      - .env
+    volumes:
+      - ollama:/root/.ollama
+      - trained:/trained
+  qdrant:
+    image: qdrant/qdrant
+    restart: always
+    healthcheck:
+      test: ["CMD", "echo", "0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - qdrant_storage:/qdrant/storage
+  mariadb:
+    image: mariadb
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: example
+    healthcheck:
+      test: ["CMD", "echo", "0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - mariadbdata:/var/lib/mysql
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    healthcheck:
+      test: ["CMD", "echo", "0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - mongodata_db:/data/db
+      - mongodata_config:/data/configdb
+  app:
+    build:
+      dockerfile: App/Dockerfile
+      no_cache: true
+    env_file:
+      - .env
+    restart: always
+    ports:
+      - '8000:80'
+    healthcheck:
+      test: ["CMD", "curl", "http://0.0.0.0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      ollama:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      mariadb:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+  ui:
+    build:
+      dockerfile: Ui/Dockerfile
+      no_cache: true
+    restart: always
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "http://0.0.0.0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - '8080:80'

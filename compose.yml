@@ -27,9 +27,12 @@ services:
     ports:
       - '11434:11434'
     post_start:
-      - command: "echo \"FROM /trained/$LLM_MODEL.gguf\" > /trained/$LLM_MODEL/Modelfile"
-      - command: "ollama create $LLM_MODEL -f /trained/$LLM_MODEL/Modelfile"
-      - command: "ollama run $LLM_MODEL"
+      #- command: "echo \"FROM /trained/$LLM_MODEL.gguf\" > /trained/$LLM_MODEL/Modelfile"
+      #- command: "ollama create $LLM_MODEL -f /trained/$LLM_MODEL/Modelfile"
+      - command: "ollama cp mistral:instruct $LLM_MODEL_PLAY"
+      - command: "ollama cp mistral:instruct $LLM_MODEL_SUMMARY"
+      - command: "ollama run $LLM_MODEL_PLAY"
+      - command: "ollama run $LLM_MODEL_SUMMARY"
     restart: always
     healthcheck:
       test: ["CMD", "ollama", "ps"]

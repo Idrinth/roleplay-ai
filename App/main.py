@@ -165,7 +165,7 @@ class Statblock(BaseModel):
     weapon_skill: int = Field(ge=1, alias="weapon skill")
     ballistic_skill: int = Field(ge=1, alias="ballistic skill")
     toughness: int = Field(ge=1)
-    fatigue: int = Field(ge=1)
+    fatigue: int = Field(ge=0)
 
     class Config:
         allow_population_by_field_name = True
@@ -212,6 +212,26 @@ def to_mongo_compatible(obj:BaseModel, id: str|None = None):
     if id is not None:
         dc["_id"] = id
     return dc
+
+def update_summary(start: int, end: int, redis_key: str):
+    cursor = mdbconn.cursor()
+    cursor.execute(
+        f"SELECT * FROM (SELECT content, aid FROM messages ORDER BY aid DESC LIMIT {start},{end}) as a ORDER BY aid;")
+    summary = ""
+    for message in cursor2.fetchall():
+        summary += message[1] + "\n"
+    if summary:
+        response: ChatResponse = ollama.chat(
+            model=os.getenv("LLM_MODEL_SUMMARY"),
+            messages=[{
+                "role": "user",
+                "content": \
+                    "Please summarize the following story extract in a brief paragraph, so that the major developments are known:\n"
+                    + summary,
+            }]
+        )
+        response_content = re.sub("^(\n|.)*</think>\\s*", "", response["message"]["content"]).strip()
+        redis.set(redis_key, response_content)
 
 @app.get('/')
 async def root():
@@ -268,8 +288,10 @@ def chat_history(uuid: str):
 
 @app.post("/chat/{uuid}")
 def chat(uuid: str, action: Action):
-    if not os.getenv("LLM_MODEL"):
-        return {"error": "A model is needed."}
+    if not os.getenv("LLM_MODEL_SUMMARY"):
+        return {"error": "A model for the summary is needed."}
+    if not os.getenv("LLM_MODEL_PLAY"):
+        return {"error": "A model for playing is needed."}
     if not action.description:
         return {"error": "A description is required."}
     long_term_summary = redis.get(uuid + ".long_text_summary") or "Nothing happened yet."
@@ -338,7 +360,7 @@ def chat(uuid: str, action: Action):
             "content": action.description,
         })
         response: ChatResponse = ollama.chat(
-            model=os.getenv("LLM_MODEL"),
+            model=os.getenv("LLM_MODEL_PLAY"),
             messages=messages
         )
         response_content = re.sub("^(\n|.)*</think>\\s*", "", response["message"]["content"]).strip()
@@ -347,6 +369,9 @@ def chat(uuid: str, action: Action):
             documents=[previous_response + "\n\n" + action.description + "\n\n" + response_content],
         )
         mdbconn.cursor().execute("INSERT INTO messages (`creator`, `content`) VALUES ('agent', ?);", [response_content])
+        update_summary(20, 40, uuid + ".short_text_summary")
+        update_summary(40, 80, uuid + ".medium_text_summary")
+        update_summary(80, 160, uuid + ".long_text_summary")
         return {"message": response_content}
     except mariadb.Error as e:
         return {"error": f"{e}"}
