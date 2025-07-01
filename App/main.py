@@ -224,7 +224,7 @@ def update_summary(start: int, end: int, redis_key: str):
     cursor.execute(
         f"SELECT * FROM (SELECT content, aid FROM messages ORDER BY aid DESC LIMIT {start},{end}) as a ORDER BY aid;")
     summary = ""
-    for message in cursor2.fetchall():
+    for message in cursor.fetchall():
         summary += message[1] + "\n"
     if summary:
         response: ChatResponse = ollama.chat(
