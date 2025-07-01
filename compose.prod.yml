@@ -28,6 +28,10 @@ services:
       - command: "ollama run $LLM_MODEL_PLAY"
       - command: "ollama run $LLM_MODEL_SUMMARY"
     restart: always
+    deploy:
+      resources:
+        reservations:
+          cpus: 4
     healthcheck:
       test: ["CMD", "ollama", "ps"]
       interval: 10s
