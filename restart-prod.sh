@@ -1,1 +1,1 @@
-git pull && docker compose -f compose.prod.yml down && docker-compose -f compose.prod.yml up -d --build
+git pull && docker compose -f compose.prod.yml down && docker-compose -f compose.prod.yml up -d --build && service nginx stop && service nginx start
