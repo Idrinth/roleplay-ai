@@ -375,7 +375,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks):
     long_term_summary = redis.get(chat_id + ".long_text_summary") or ""
     medium_term_summary = redis.get(chat_id + ".medium_text_summary") or ""
     short_term_summary = redis.get(chat_id + ".short_text_summary") or ""
-    world = "".join(json.loads(redis.get(chat_id + ".world") or ""))
+    world = ", ".join(json.loads(redis.get(chat_id + ".world") or "[]"))
     characters = []
     try:
         characters = list(mongo[chat_id]["characters"].find())
