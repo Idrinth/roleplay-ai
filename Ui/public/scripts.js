@@ -1,6 +1,6 @@
 (async () => {
     const apiHost = location.protocol + '//' + location.hostname + '/api/v1'
-
+    const characterFiller = await (await fetch('/char-template.yaml')).text();
     const chatId = (location.hash.replace(/[^0-9a-f-]+/g, '') || (await (await fetch(`${apiHost}/new`)).json()).chat);
 
     if (!chatId || !chatId.match(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i)) {
@@ -21,30 +21,48 @@
             const json = await response.json();
             if (json.error) {
                 console.error(json.error);
-            } else if (json.exception) {
+                return;
+            }
+            if (json.exception) {
                 console.error(json.exception);
-            } else {
-                while (document.getElementById('characters').children.length > 2) {
-                    document.getElementById('characters').removeChild(document.getElementById('characters').lastChild);
+                return;
+            }
+            while (document.getElementById('characters').children.length > 2) {
+                document.getElementById('characters').removeChild(document.getElementById('characters').lastChild);
+            }
+            for (const character of json.characters) {
+                document.getElementById('characters').appendChild(document.createElement('li'));
+                document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
+                document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode(character.name.taken));
+                document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
+                document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode('[E]'));
+                document.getElementById('characters').lastChild.lastChild.onclick = (event) => {
+                    event.stopPropagation();
+                    const el = document.createElement('textarea');
+                    el.setAttribute('id', 'charactersheet')
+                    const char = {...character};
+                    char._id = undefined;
+                    el.setAttribute('data-id', character._id['$oid']);
+                    el.value = jsyaml.dump(char);
+                    el.setAttribute('data-raw', el.value);
+                    document.body.appendChild(el);
                 }
-                for (const character of json.characters) {
-                    document.getElementById('characters').appendChild(document.createElement('li'));
-                    document.getElementById('characters').lastChild.appendChild(document.createTextNode(character.name.taken));
-                    document.getElementById('characters').lastChild.onclick = (event) => {
+                document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
+                document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode('[D]'));
+                document.getElementById('characters').lastChild.lastChild.onclick = (event) => {
+                    document.getElementById('characters').lastChild.lastChild.onclick = async (event) => {
                         event.stopPropagation();
-                        const el = document.createElement('textarea');
-                        el.setAttribute('id', 'charactersheet')
-                        const char = {...character};
-                        char._id = undefined;
-                        el.setAttribute('data-id', character._id['$oid']);
-                        el.value = jsyaml.dump(char);
-                        el.setAttribute('data-raw', el.value);
-                        document.body.appendChild(el);
+                        if (confirm("Do you want to delete this character sheet?")) {
+                            await fetch(`${apiHost}/chat/${chatId}/characters/${character._id['$oid']}`, {
+                                method: 'DELETE'
+                            });
+                            await updateCharacters();
+                        }
                     }
                 }
             }
         }
-    };
+    }
     document.getElementById('send').addEventListener('click', async function () {
         const now = Date.now();
         const value = document.getElementById('chat-entry').value;
@@ -91,56 +109,60 @@
             document.getElementById('loader').parentNode
         );
     });
-    const response = await fetch(`${apiHost}/chat/${chatId}`, {
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        credentials: "include"
-    });
-    if (response.ok) {
-        const converter = new showdown.Converter();
-        const json = await response.json();
-        if (json.error) {
-            console.error(json.error);
-        } else if (json.exception) {
-            console.error(json.exception);
-        } else {
-            for (const message of json.messages) {
-                document.getElementById('chat').appendChild(document.createElement('li'));
-                document.getElementById('chat').lastChild.innerHTML = (message.role==='agent' ? '<span class="gamemaster"></span>' : '') + converter.makeHtml(message.content);
-                document.getElementById('chat').lastChild.classList.add(message.role);
+    await (async() => {
+        const response = await fetch(`${apiHost}/chat/${chatId}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            credentials: "include"
+        });
+        if (response.ok) {
+            const converter = new showdown.Converter();
+            const json = await response.json();
+            if (json.error) {
+                console.error(json.error);
+            } else if (json.exception) {
+                console.error(json.exception);
+            } else {
+                for (const message of json.messages) {
+                    document.getElementById('chat').appendChild(document.createElement('li'));
+                    document.getElementById('chat').lastChild.innerHTML = (message.role === 'agent' ? '<span class="gamemaster"></span>' : '') + converter.makeHtml(message.content);
+                    document.getElementById('chat').lastChild.classList.add(message.role);
+                }
             }
         }
-    }
+    })();
     document.body.onclick = async (event) => {
         const el = document.getElementById('charactersheet');
         if (el) {
             if (event.target !== el) {
-                if (el.hasAttribute('data-id')) {
-                    if (el.value && el.getAttribute('data-raw') !== el.value) {
-                        const id = el.getAttribute('data-id');
-                        await fetch(`${apiHost}/chat/${chatId}/characters/${id}`, {
-                            method: 'PUT',
+                if (confirm("Do you want to save this character sheet?")) {
+                    if (el.hasAttribute('data-id')) {
+                        if (el.value && el.getAttribute('data-raw') !== el.value) {
+                            const id = el.getAttribute('data-id');
+                            await fetch(`${apiHost}/chat/${chatId}/characters/${id}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(jsyaml.load(el.value)),
+                                credentials: "include"
+                            });
+                        }
+                    } else if(el.value) {
+                        await fetch(`${apiHost}/chat/${chatId}/characters`, {
+                            method: 'POST',
                             headers: {
                                 'Accept': 'application/json',
                                 'Content-Type': 'application/json'
                             },
                             body: JSON.stringify(jsyaml.load(el.value)),
                             credentials: "include"
-                        });
+                        })
                     }
-                } else if(el.value) {
-                    await fetch(`${apiHost}/chat/${chatId}/characters`, {
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(jsyaml.load(el.value)),
-                        credentials: "include"
-                    })
                 }
                 document.body.removeChild(el);
                 await updateCharacters();
@@ -152,7 +174,7 @@
         event.stopPropagation();
         const el = document.createElement('textarea');
         el.setAttribute('id', 'charactersheet');
-        el.value = await (await fetch('/char-template.yaml')).text();
+        el.value = characterFiller;
         document.body.appendChild(el);
     }
     await (async() => {
@@ -161,11 +183,12 @@
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
-            }
+            },
+            credentials: "include"
         });
         if (response.ok) {
             const keywords = (await response.json()).world;
-        document.getElementById('world').previousElementSibling.setAttribute('title', keywords.join("\n"))
+            document.getElementById('world').previousElementSibling.setAttribute('title', keywords.join("\n"))
             document.getElementById('world').setAttribute('data-original', JSON.stringify(keywords))
             document.getElementById('world').value = keywords.join(", ")
         }
