@@ -369,7 +369,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks):
         return {"error": "A model for playing is needed."}
     if not action.description:
         return {"error": "A description is required."}
-    if not  redis.set(chat_id + ".active") == "true":
+    if not  redis.get(chat_id + ".active") == "true":
         return {"error": "Chat is already active."}
     redis.set(chat_id + ".active", "true")
     long_term_summary = redis.get(chat_id + ".long_text_summary") or ""
