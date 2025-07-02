@@ -95,16 +95,16 @@ textarea {
 }
 .button, button {
   cursor: pointer;
-  background: var(--main-striking);
-  color: var(--main-color);
+  background: var(--main-color);
+  color: var(--main-bg);
   border-radius: 5%;
   padding: 0.2em;
   border: 1px solid var(--main-color);
-  box-shadow: inset 2px 2px 5px var(--main-shadow);
+  box-shadow: inset 2px 2px 5px #fff;
   margin: 1px;
 }
 .button:hover, button:hover {
-  box-shadow: inset 2px 2px 5px var(--main-striking);
+  box-shadow: inset 2px 2px 5px #000;
 }
 input, textarea {
   border-radius: 3px;
