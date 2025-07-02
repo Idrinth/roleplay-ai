@@ -234,9 +234,9 @@
         })
     }
     if (window.matchMedia && !window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.getElementsByTagName('html')[0]?.classList.toggle('color-inverted');
+        document.getElementsByTagName('html')[0]?.classList.toggle('inverted-colors');
     }
     document.getElementById('logo').onclick = () => {
-        document.getElementsByTagName('html')[0]?.classList.toggle('color-inverted');
+        document.getElementsByTagName('html')[0]?.classList.toggle('inverted-colors');
     }
 })();
