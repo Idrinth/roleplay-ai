@@ -14,7 +14,8 @@
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
-            }
+            },
+            credentials: "include"
         });
         if (response.ok) {
             const json = await response.json();
@@ -68,6 +69,7 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({description: value}),
+                credentials: "include"
             });
             if (response.ok) {
                 const json = await response.json();
@@ -94,7 +96,8 @@
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
-        }
+        },
+        credentials: "include"
     });
     if (response.ok) {
         const converter = new showdown.Converter();
@@ -124,7 +127,8 @@
                                 'Accept': 'application/json',
                                 'Content-Type': 'application/json'
                             },
-                            body: JSON.stringify(jsyaml.load(el.value))
+                            body: JSON.stringify(jsyaml.load(el.value)),
+                            credentials: "include"
                         });
                     }
                 } else if(el.value) {
@@ -134,7 +138,8 @@
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify(jsyaml.load(el.value))
+                        body: JSON.stringify(jsyaml.load(el.value)),
+                        credentials: "include"
                     })
                 }
                 document.body.removeChild(el);
