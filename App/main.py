@@ -123,7 +123,7 @@ class Human(BaseModel):
 class Languages(BaseModel):
     Eltharin: Eltharin
     Human: Human
-    high_magic_ritual_tongues: Optional[LanguageLevel] = Field(default=LanguageLevel.None)
+    high_magic_ritual_tongues: Optional[LanguageLevel] = Field(default=LanguageLevel.NONE)
 
     class Config:
         allow_population_by_field_name = True
