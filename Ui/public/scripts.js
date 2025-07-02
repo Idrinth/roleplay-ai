@@ -26,7 +26,7 @@
                 }
             }
         } catch (e) {
-            console.error(e);
+            //this is expected
         }
         document.getElementById('send').disabled = true;
         document.getElementById('loader').setAttribute('style', '');
