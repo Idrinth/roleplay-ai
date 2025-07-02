@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Gamemaster AI</title>
-    <link rel="stylesheet" href="/styles.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-<h1><span id="logo" title="click to switch color mode" class="gamemaster"></span> Gamemaster AI</h1>
-    <ul id="chat"></ul>
-    <ul id="characters">
-        <li>
-            <label for="world">World keywords</label>
-            <input type="text" title="keyword, other keyword,..." id="world"/>
-        </li>
-        <li><button id="add-character" type="button">+</button></li>
-    </ul>
-    <textarea id="chat-entry" placeholder="Please enter your action(s) and your surrounding to have the bot create a story with you!"></textarea>
-    <button id="send" type="button" disabled>Send</button>
-    <div id="loader" style="display:none"><img src="loader.gif" alt="Loading"/></div>
-    <script type="text/javascript" src="/showdown.min.js"></script>
-    <script type="text/javascript" src="/js-yaml.min.js"></script>
-    <script type="text/javascript"  src="/scripts.js"></script>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <title>Gamemaster AI</title>
+        <link rel="stylesheet" href="/styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+    <h1><span id="logo" title="click to switch color mode" class="gamemaster"></span> Gamemaster AI</h1>
+        <ul id="chat"></ul>
+        <ul id="characters">
+            <li>
+                <label for="world">World keywords</label>
+                <input type="text" title="keyword, other keyword,..." id="world"/>
+            </li>
+            <li><button id="add-character" title="Add new character sheet" type="button">+</button></li>
+        </ul>
+        <textarea id="chat-entry" placeholder="Please enter your action(s) and your surrounding to have the bot create a story with you!"></textarea>
+        <button id="send" type="button" disabled>Send</button>
+        <div id="loader" style="display:none"><img src="loader.gif" alt="Loading"/></div>
+        <script type="text/javascript" src="/showdown.min.js"></script>
+        <script type="text/javascript" src="/js-yaml.min.js"></script>
+        <script type="text/javascript"  src="/scripts.js"></script>
+    </body>
 </html>
