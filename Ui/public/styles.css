@@ -86,6 +86,14 @@ textarea {
   cursor: pointer;
   background: #111111;
   color: #eeeeee;
+  border-radius: 5%;
+  padding: 0.2em;
+  border: 1px solid #ddd;
+  box-shadow: inset 2px 2px 5px #eee;
+  margin: 1px;
+}
+.button:hover, button:hover {
+  box-shadow: inset 2px 2px 5px #111;
 }
 @media (prefers-color-scheme: light) {
   body, html {
@@ -95,6 +103,7 @@ textarea {
   .button, button {
     color: #111111;
     background: #eeeeee;
+    border: 1px solid #222;
   }
   textarea {
     color: #333;
