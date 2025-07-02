@@ -13,6 +13,7 @@ import os
 import enum
 from fastapi.middleware.cors import CORSMiddleware
 from bson import json_util
+from bson.objectid import ObjectId
 from enum import Enum, StrEnum
 from typing import Dict, List, Optional
 import uuid
@@ -216,7 +217,7 @@ def to_mongo_compatible(obj: BaseModel, id: str|None = None):
         elif isinstance(v, StrEnum) or isinstance(v, Enum):
             dc[k] = v.value
     if id is not None:
-        dc["_id"] = id
+        dc["_id"] = ObjectId(id)
     return dc
 
 def update_summary(start: int, end: int, redis_key: str):
@@ -308,7 +309,7 @@ async def chat_character_update(chat_id: str, id: str, character: Character):
     if not is_uuid_like(chat_id):
         return False
     mydb = mongo[chat_id]
-    mydb['characters'].delete_one({"_id": id})
+    mydb['characters'].delete_one({"_id": ObjectId(id)})
     mydb['characters'].insert_one(to_mongo_compatible(character, id))
     return True
 
@@ -317,7 +318,7 @@ async def chat_character_delete(chat_id: str, id: str):
     if not is_uuid_like(chat_id):
         return False
     mydb = mongo[chat_id]
-    mydb['characters'].delete_one({"_id": id})
+    mydb['characters'].delete_one({"_id": ObjectId(id)})
     return True
 
 @app.get("/chat/{chat_id}/characters")
