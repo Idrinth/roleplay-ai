@@ -159,10 +159,23 @@
             }
         });
         if (response.ok) {
-            document.getElementById('world').value = (await response.json()).world.join(", ")
+            const keywords = (await response.json()).world;
+            document.getElementById('world').setAttribute('data-original', JSON.stringify(keywords))
+            document.getElementById('world').value = keywords.join(", ")
         }
     })();
     document.getElementById("world").onchange = () => {
+        const keywords = document.getElementById('world').value.split(",").map((keyword) => {
+            return keyword.replace(/^\s+|\s+$/g, '').replace(/\s{2,}/g, ' ')
+        }).filter((keyword) => {
+            return !!keyword;
+        });
+        keywords.sort();
+        const oldKeywords = JSON.parse(document.getElementById('world').getAttribute('data-original')).sort();
+        if (keywords.join() === oldKeywords.join()) {
+            return;
+        }
+        document.getElementById('world').setAttribute('data-original', JSON.stringify(keywords))
         fetch(`${apiHost}/chat/${chatId}/world`, {
             method: "PUT",
             headers: {
@@ -170,11 +183,7 @@
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                keywords: document.getElementById('world').value.split(",").map((keyword) => {
-                    return keyword.replace(/^\s+|\s+$/g, '').replace(/\s{2,}/g, ' ')
-                }).filter((keyword) => {
-                    return !!keyword;
-                })
+                keywords
             })
         })
     }
