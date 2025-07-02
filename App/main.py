@@ -98,7 +98,7 @@ class Name(BaseModel):
     given: str
     oath: OathType
     family: str
-    titles: List[str] = Field(min_length=1)
+    titles: List[str] = Field(min_length=0)
 
 class Heritage(BaseModel):
     race: ElvenRace
@@ -123,22 +123,19 @@ class Human(BaseModel):
 class Languages(BaseModel):
     Eltharin: Eltharin
     Human: Human
-    high_magic_ritual_tongues: Optional[LanguageLevel] = Field(
-        default=None,
-        alias="High Magic ritual tongues"
-    )
+    high_magic_ritual_tongues: Optional[LanguageLevel] = Field(default=LanguageLevel.None)
 
     class Config:
         allow_population_by_field_name = True
 
 class Background(BaseModel):
-    former_occupation: str = Field(alias="former occupation")
-    while_alive: WhileAlive = Field(alias="while alive")
+    former_occupation: str
+    while_alive: WhileAlive
     description: str
     personality: List[str] = Field(min_length=1)
-    place_of_birth: str = Field(alias="place of birth")
-    favorite_weapon: List[str] = Field(min_length=1, alias="favorite weapon")
-    combat_style: str = Field(alias="combat style")
+    place_of_birth: str
+    favorite_weapon: List[str] = Field(min_length=1, max_length=2)
+    combat_style: str
     siblings: Dict[str, str]
     parents: Optional[Dict[str, str]] = None
     connections: Optional[Dict[str, str]] = None
@@ -152,16 +149,16 @@ class MagicLores(BaseModel):
     Vampire: MagicLevel
     Depth: MagicLevel
     Life: MagicLevel
-    Athel_Loren: MagicLevel = Field(alias="Athel Loren")
-    High_Magic: MagicLevel = Field(alias="High Magic")
-    Dark_Magic: MagicLevel = Field(alias="Dark Magic")
+    Athel_Loren: MagicLevel
+    High_Magic: MagicLevel
+    Dark_Magic: MagicLevel
 
     class Config:
         allow_population_by_field_name = True
 
 class Magic(BaseModel):
     capacity: int = Field(ge=0)
-    wind_strength_increase: int = Field(ge=0, alias="wind strength increase")
+    wind_strength_increase: int = Field(ge=0)
     lores: MagicLores
 
     class Config:
@@ -169,10 +166,10 @@ class Magic(BaseModel):
 
 class Statblock(BaseModel):
     strength: int = Field(ge=1)
-    movement_speed: int = Field(ge=1, alias="movement speed")
-    reaction_speed: int = Field(ge=1, alias="reaction speed")
-    weapon_skill: int = Field(ge=1, alias="weapon skill")
-    ballistic_skill: int = Field(ge=1, alias="ballistic skill")
+    movement_speed: int = Field(ge=1)
+    reaction_speed: int = Field(ge=1)
+    weapon_skill: int = Field(ge=1)
+    ballistic_skill: int = Field(ge=1)
     toughness: int = Field(ge=1)
     fatigue: int = Field(ge=0)
 
@@ -181,7 +178,7 @@ class Statblock(BaseModel):
 
 class Age(BaseModel):
     physical: int = Field(ge=0)
-    human_equivalent: int = Field(ge=0, alias="human-equivalent")
+    human_equivalent: int = Field(ge=0)
 
     class Config:
         allow_population_by_field_name = True
@@ -203,7 +200,7 @@ class Character(BaseModel):
     magic: Magic
     statblock: Statblock
     age: Age
-    years_ago: YearsAgo = Field(alias="years ago")
+    years_ago: YearsAgo
     roles: Roles
     Sex: Sex
 
