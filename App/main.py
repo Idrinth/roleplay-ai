@@ -369,9 +369,9 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks):
         return {"error": "A model for playing is needed."}
     if not action.description:
         return {"error": "A description is required."}
-    if not  redis.get(chat_id + ".is_active") == "true":
+    if redis.get(chat_id + ".chat_is_active") == "true":
         return {"error": "Chat is already active."}
-    redis.set(chat_id + ".is_active", "true")
+    redis.set(chat_id + ".chat_is_active", "true")
     long_term_summary = redis.get(chat_id + ".long_text_summary") or ""
     medium_term_summary = redis.get(chat_id + ".medium_text_summary") or ""
     short_term_summary = redis.get(chat_id + ".short_text_summary") or ""
@@ -429,11 +429,11 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks):
         background_tasks.add_task(update_summary, 40, 80, chat_id + ".medium_text_summary")
         background_tasks.add_task(update_summary, 80, 160, chat_id + ".long_text_summary")
         background_tasks.add_task(update_summary, 80, 160, chat_id + ".long_text_summary")
-        background_tasks.add_task(redis.set, chat_id + ".is_active", "false")
+        background_tasks.add_task(redis.set, chat_id + ".is-active", "false")
         return {"message": response_content, "request": messages}
     except mariadb.Error as e:
-        background_tasks.add_task(redis.set, chat_id + ".is_active", "false")
+        background_tasks.add_task(redis.set, chat_id + ".chat_is-active", "false")
         return {"error": f"{e}"}
     except Exception as e:
-        background_tasks.add_task(redis.set, chat_id + ".is_active", "false")
+        background_tasks.add_task(redis.set, chat_id + ".chat_is_active", "false")
         return {"exception": f"{e}", "data": e}
