@@ -30,7 +30,7 @@
         }
         document.getElementById('send').disabled = true;
         document.getElementById('loader').setAttribute('style', 'display: block;width: 100%; height: 100%; position: absolute; top: 0; bottom: 0; background: rgba(0,0,0,0.1);');
-    }, 500);
+    }, 1000);
 
     const updateCharacters = async () => {
         const response = await fetch(`${apiHost}/chat/${chatId}/characters`, {
