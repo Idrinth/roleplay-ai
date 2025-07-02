@@ -109,8 +109,8 @@ textarea {
 input, textarea {
   border-radius: 3px;
   padding: 3px;
-  color: var(--main-color);
-  background: var(--main-bg);
+  color: var(--main-bg);
+  background: var(--main-color);
 }
 #loader {
   display: block;
