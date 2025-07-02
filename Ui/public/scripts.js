@@ -160,6 +160,7 @@
         });
         if (response.ok) {
             const keywords = (await response.json()).world;
+        document.getElementById('world').previousElementSibling.setAttribute('title', keywords.join("\n"))
             document.getElementById('world').setAttribute('data-original', JSON.stringify(keywords))
             document.getElementById('world').value = keywords.join(", ")
         }
@@ -176,6 +177,7 @@
             return;
         }
         document.getElementById('world').setAttribute('data-original', JSON.stringify(keywords))
+        document.getElementById('world').previousElementSibling.setAttribute('title', keywords.join("\n"))
         fetch(`${apiHost}/chat/${chatId}/world`, {
             method: "PUT",
             headers: {
