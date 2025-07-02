@@ -347,7 +347,7 @@ async def chat_delete(chat_id: str):
     return False
 
 @app.get("/whoami")
-async def chat_delete(user_id: Cookie[str] = None):
+async def whoami(user_id: Cookie[str] = None):
     if not is_uuid_like(user_id):
         user_id = None
     if user_id is None:
@@ -358,9 +358,10 @@ async def chat_delete(user_id: Cookie[str] = None):
         "chats": [],
     }
     cursor = mdbconn.cursor()
-    cursor.execute(f"SELECT creator, content, aid FROM `{chat_id}`.messages;")
+    cursor.execute(f"SELECT chat_id FROM chat_users.mapping WHERE user_id='{user_id}';")
     chats = cursor.fetchall()
-    return False
+    user.chats = list(chats)
+    return user
 
 @app.get("/chat/{chat_id}")
 async def chat_history(chat_id: str):
