@@ -10,14 +10,23 @@
     location.hash = `#${chatId}`;
 
     window.setInterval(async() => {
-        const response = await fetch(`${apiHost}/chat/${chatId}/active`);
-        if (response.ok) {
-            const active = (await response.json()).active;
-            if (! active) {
-                document.getElementById('send').disabled = false;
-                document.getElementById('loader').setAttribute('style', 'display: none');
-                return;
+        try {
+            const response = await fetch(
+                `${apiHost}/chat/${chatId}/active`,
+                {
+                    signal: AbortSignal.timeout(100)
+                }
+            );
+            if (response.ok) {
+                const active = (await response.json()).active;
+                if (!active) {
+                    document.getElementById('send').disabled = false;
+                    document.getElementById('loader').setAttribute('style', 'display: none');
+                    return;
+                }
             }
+        } catch(e) {
+            console.error(e);
         }
         document.getElementById('send').disabled = true;
         document.getElementById('loader').setAttribute('style', 'display: block;width: 100%; height: 100%; position: absolute; top: 0; bottom: 0; background: rgba(0,0,0,0.1);');
