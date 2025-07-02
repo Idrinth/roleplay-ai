@@ -48,8 +48,6 @@ li.agent {
 }
 textarea {
   resize: none;
-  color: #ddd;
-  background: #111;
 }
 #charactersheet {
   display: block;
@@ -98,6 +96,8 @@ textarea {
 input, textarea {
   border-radius: 3px;
   padding: 3px;
+  color: #ddd;
+  background: #111;
 }
 #loader {
   display: block;
@@ -123,7 +123,7 @@ input, textarea {
     background: #eeeeee;
     border: 1px solid #222;
   }
-  textarea {
+  input, textarea {
     color: #333;
     background: #eee;
   }
