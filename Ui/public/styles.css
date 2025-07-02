@@ -95,6 +95,10 @@ textarea {
 .button:hover, button:hover {
   box-shadow: inset 2px 2px 5px #111;
 }
+input, textarea {
+  border-radius: 3px;
+  padding: 3px;
+}
 #loader {
   display: block;
   width: 100%;
