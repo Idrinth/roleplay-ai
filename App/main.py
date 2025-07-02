@@ -338,7 +338,7 @@ async def chat_characters(chat_id: str):
 async def chat_active(chat_id: str):
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid UUID"}
-    return {"active": (redis.get(chat_id + ".active") or "true") == "true"}
+    return {"active": redis.get(chat_id + ".active") == "true"}
 
 @app.delete("/chat/{chat_id}")
 async def chat_delete(chat_id: str):
