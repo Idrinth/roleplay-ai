@@ -397,7 +397,7 @@ def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks):
         background_tasks.add_task(update_summary, 40, 80, chat_id + ".medium_text_summary")
         background_tasks.add_task(update_summary, 80, 160, chat_id + ".long_text_summary")
         background_tasks.add_task(update_summary, 80, 160, chat_id + ".long_text_summary")
-        return {"message": response_content}
+        return {"message": response_content, "request": messages}
     except mariadb.Error as e:
         return {"error": f"{e}"}
     except Exception as e:
