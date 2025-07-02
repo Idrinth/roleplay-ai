@@ -275,7 +275,7 @@ async def root():
 
 @app.get('/new')
 async def new_chat():
-    local_uuid = uuid.uuid4()
+    local_uuid = str(uuid.uuid4())
     mdbconn.ping()
     mdbconn.cursor().execute("CREATE DATABASE IF NOT EXISTS `"+local_uuid+"`;")
     mdbconn.cursor().execute(
