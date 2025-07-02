@@ -29,7 +29,7 @@ def is_uuid_like(string: str):
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['http://localhost', 'http://127.0.0.1', 'http://92.205.177.104:8080'],
+    allow_origins=['https://roleplay-ai.bjoern-buettner.me'],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
