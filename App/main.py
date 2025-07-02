@@ -305,7 +305,7 @@ def chat_history(uuid: str):
         messages = []
         mdbconn.ping()
         cursor = mdbconn.cursor()
-        cursor.execute("SELECT creator, content, aid FROM messages;")
+        cursor.execute(f"SELECT creator, content, aid FROM `{uuid}`.messages;")
         old_messages = cursor.fetchall()
         for message in old_messages:
             messages.append({
@@ -343,7 +343,7 @@ def chat(uuid: str, action: Action, background_tasks: BackgroundTasks):
     try:
         mdbconn.ping()
         cursor = mdbconn.cursor()
-        cursor.execute("SELECT * FROM (SELECT creator, content, aid FROM messages ORDER BY aid DESC LIMIT 20) as a ORDER BY aid;")
+        cursor.execute(f"SELECT * FROM (SELECT creator, content, aid FROM `{uuid}`.messages ORDER BY aid DESC LIMIT 20) as a ORDER BY aid;")
         old_messages = cursor.fetchall()
         previous_response = ""
         for message in old_messages:
