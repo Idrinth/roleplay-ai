@@ -56,6 +56,9 @@ with open('./app/rules.md', 'r') as mdfile:
 class Action(BaseModel):
     description: str | None = None
 
+class World(BaseModel):
+    keywords: List[str]
+
 class OathType(StrEnum):
     THALUI = "Thalui"
 
@@ -247,7 +250,24 @@ def update_history_dbs(chat_id:str, action: str, result: str, previous_response:
     mdbconn.cursor().execute("INSERT INTO `"+chat_id+"`.messages (`creator`, `content`) VALUES ('user', ?);", [action])
     mdbconn.cursor().execute("INSERT INTO `"+chat_id+"`.messages (`creator`, `content`) VALUES ('agent', ?);", [result])
 
-
+def get_system_prompt(characters, world: str, short_term_summary: str, medium_term_summary: str, long_term_summary: str, vectordb_results):
+    out = ""
+    if len(characters) >= 1:
+        out += "# Player Characters:\nThe following character sheets are for reference ONLY."\
+            " Do not use these to infer motivations or write actions for player characters."\
+            "\n```json\n" + json.dumps(characters, default=json_util.default) + "\n```\n"\
+            "## Character Sheet Schema:\n```json\n" + schema + "\n```\n"
+    if len(world) > 0:
+        out += "# World:\n" + ", ".join(world) + "\n"
+    if short_term_summary != "":
+        out += "# Short Term Summary:\n" + short_term_summary +"\n"
+    if medium_term_summary != "":
+        out += "# Medium Term Summary:\n" + medium_term_summary +"\n"
+    if long_term_summary != "":
+        out += "# Long Term Summary:\n" + long_term_summary +"\n"
+    if len(vectordb_results) > 0:
+        out += "# Potentially Related Information:\n```json\n" + json.dumps(vectordb_results) + "\n```"
+    return out.strip()
 
 @app.get('/')
 async def root():
@@ -261,10 +281,25 @@ async def new_chat():
     mdbconn.cursor().execute(
         f"CREATE TABLE IF NOT EXISTS `{local_uuid}`.messages (aid BIGINT NOT NULL AUTO_INCREMENT, creator varchar(6),"
         "content text, PRIMARY KEY(aid)) charset=utf8;")
-    return {'chat': local_uuid}
+    redis.set(local_uuid+".world", json.dumps(["fantasy", "high magic"]))
+    return {"chat": local_uuid}
+
+@app.get("/chat/{chat_id}/world")
+async def get_world(chat_id: str):
+    return {"world": json.loads(redis.get(chat_id+".world") or "[]")}
+
+@app.put("/chat/{chat_id}/world")
+async def update_world(chat_id: str, world: World):
+    keywords = []
+    for keyword in world.keywords:
+        keyword = keyword.strip()
+        if keyword not in keywords and keyword != "":
+            keywords.append(keyword)
+    redis.set(chat_id+".world", json.dumps(keywords))
+    return True
 
 @app.post("/chat/{chat_id}/characters")
-def chat_character(chat_id: str, character: Character):
+async def chat_character_add(chat_id: str, character: Character):
     if not is_uuid_like(chat_id):
         return False
     mydb = mongo[chat_id]
@@ -272,7 +307,7 @@ def chat_character(chat_id: str, character: Character):
     return True
 
 @app.put("/chat/{chat_id}/characters/{id}")
-def chat_character(chat_id: str, id: str, character: Character):
+async def chat_character_update(chat_id: str, id: str, character: Character):
     if not is_uuid_like(chat_id):
         return False
     mydb = mongo[chat_id]
@@ -281,7 +316,7 @@ def chat_character(chat_id: str, id: str, character: Character):
     return True
 
 @app.delete("/chat/{chat_id}/characters/{id}")
-def chat_character(chat_id: str, id: str):
+async def chat_character_delete(chat_id: str, id: str):
     if not is_uuid_like(chat_id):
         return False
     mydb = mongo[chat_id]
@@ -289,7 +324,7 @@ def chat_character(chat_id: str, id: str):
     return True
 
 @app.get("/chat/{chat_id}/characters")
-def chat_character(chat_id: str):
+async def chat_characters(chat_id: str):
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid UUID"}
     try:
@@ -297,8 +332,14 @@ def chat_character(chat_id: str):
     except Exception as e:
         return {"exception": f"{e}"}
 
+@app.get("/chat/{chat_id}/active")
+async def chat_active(chat_id: str):
+    if not is_uuid_like(chat_id):
+        return {"error": "Not a valid UUID"}
+    return {"active": redis.get(chat_id + ".active") == "true"}
+
 @app.get("/chat/{chat_id}")
-def chat_history(chat_id: str):
+async def chat_history(chat_id: str):
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid UUID"}
     try:
@@ -319,7 +360,7 @@ def chat_history(chat_id: str):
         return {"exception": e}
 
 @app.post("/chat/{chat_id}")
-def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks):
+async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks):
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid UUID"}
     if not os.getenv("LLM_MODEL_SUMMARY"):
@@ -328,17 +369,18 @@ def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks):
         return {"error": "A model for playing is needed."}
     if not action.description:
         return {"error": "A description is required."}
-    long_term_summary = redis.get(chat_id + ".long_text_summary") or "Nothing happened yet."
-    medium_term_summary = redis.get(chat_id + ".medium_text_summary") or "Nothing happened yet."
-    short_term_summary = redis.get(chat_id + ".short_text_summary") or "Nothing happened yet."
+    if not  redis.set(chat_id + ".active") == "true":
+        return {"error": "Chat is already active."}
+    redis.set(chat_id + ".active", "true")
+    long_term_summary = redis.get(chat_id + ".long_text_summary") or ""
+    medium_term_summary = redis.get(chat_id + ".medium_text_summary") or ""
+    short_term_summary = redis.get(chat_id + ".short_text_summary") or ""
+    world = "".join(json.loads(redis.get(chat_id + ".world") or ""))
     characters = []
     try:
-        mydb = mongo[chat_id]
-        mycol = mydb["characters"]
-        characters = list(mycol.find())
+        characters = list(mongo[chat_id]["characters"].find())
     except Exception as e:
         print(f"{e}")
-    world = "dark fantasy, Warhammer Fantasy"
     messages = []
     try:
         mdbconn.ping()
@@ -346,18 +388,20 @@ def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks):
         cursor.execute(f"SELECT * FROM (SELECT creator, content, aid FROM `{chat_id}`.messages ORDER BY aid DESC LIMIT 20) as a ORDER BY aid;")
         old_messages = cursor.fetchall()
         previous_response = ""
+        old_message_count = 0
         for message in old_messages:
             messages.append({
                 "role": message[0],
                 "content": message[1],
             })
+            old_message_count += 1
             previous_response = message[1]
         messages.append({
             "role": "system",
             "content": rules
         })
         vectordb_results = []
-        if qdrant.collection_exists(chat_id):
+        if old_message_count == 20 and qdrant.collection_exists(chat_id):
             search_result = qdrant.query(
                 collection_name=chat_id,
                 query_text=previous_response + "\n" + action.description,
@@ -365,24 +409,12 @@ def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks):
             )
             for res in search_result:
                 vectordb_results.append(simplify_result(res))
-        messages.append({
-            "role": "system",
-            "content": "# Player Characters:\nThe following character sheets are for reference ONLY."
-                " Do not use these to infer motivations or write actions for player characters."
-                "\n```json\n" + json.dumps(characters, default=json_util.default) +
-                "\n```\n"
-                "## Character Sheet Schema:\n```json\n" + schema +
-                "\n```\n"
-                "# World:\n" + world +
-                "\n"
-                "# Short Term Summary:\n" + short_term_summary +
-                "\n"
-                "# Medium Term Summary:\n" + medium_term_summary +
-                "\n"
-                "# Long Term Summary:\n" + long_term_summary +
-                "\n"
-                "# Potentially Related Information:\n```json\n" + json.dumps(vectordb_results) + "\n```"
-        })
+        system_prompt = get_system_prompt(characters, world, short_term_summary, medium_term_summary, long_term_summary, vectordb_results)
+        if system_prompt:
+            messages.append({
+                "role": "system",
+                "content": system_prompt
+            })
         messages.append({
             "role": "user",
             "content": action.description,
@@ -397,6 +429,7 @@ def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks):
         background_tasks.add_task(update_summary, 40, 80, chat_id + ".medium_text_summary")
         background_tasks.add_task(update_summary, 80, 160, chat_id + ".long_text_summary")
         background_tasks.add_task(update_summary, 80, 160, chat_id + ".long_text_summary")
+        background_tasks.add_task(redis.set, chat_id + ".active", "false")
         return {"message": response_content, "request": messages}
     except mariadb.Error as e:
         return {"error": f"{e}"}

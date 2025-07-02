@@ -23,7 +23,7 @@
             } else if (json.exception) {
                 console.error(json.exception);
             } else {
-                while (document.getElementById('characters').children.length > 1) {
+                while (document.getElementById('characters').children.length > 2) {
                     document.getElementById('characters').removeChild(document.getElementById('characters').lastChild);
                 }
                 for (const character of json.characters) {
@@ -149,5 +149,21 @@
         const el = document.createElement('textarea');
         el.setAttribute('id', 'charactersheet');
         document.body.appendChild(el);
+    }
+    document.getElementById("world").onchange = () => {
+        fetch(`${apiHost}/chat/${chatId}/world`, {
+            method: "PUT",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                keywords: document.getElementById('world').value.split(",").map((keyword) => {
+                    return keyword.replace(/^\s+|\s+$/g, '').replace(/\s{2,}/g, ' ')
+                }).filter((keyword) => {
+                    return !!keyword;
+                })
+            })
+        })
     }
 })();
