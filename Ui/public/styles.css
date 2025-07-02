@@ -86,6 +86,7 @@ textarea {
 #logo {
   width: 1.5em;
   height: 1.5em;
+  cursor: pointer;
 }
 .duration {
   text-align: right;
