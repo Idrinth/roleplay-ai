@@ -82,10 +82,19 @@ textarea {
   font-style: italic;
   color: #ddd;
 }
+.button, button {
+  cursor: pointer;
+  background: #111111;
+  color: #eeeeee;
+}
 @media (prefers-color-scheme: light) {
   body, html {
     color: #333;
     background: #eee;
+  }
+  .button, button {
+    color: #111111;
+    background: #eeeeee;
   }
   textarea {
     color: #333;

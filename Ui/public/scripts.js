@@ -36,6 +36,7 @@
                 document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode(character.name.taken));
                 document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
                 document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode('[E]'));
+                document.getElementById('characters').lastChild.lastChild.classList.add('button');
                 document.getElementById('characters').lastChild.lastChild.onclick = (event) => {
                     event.stopPropagation();
                     const el = document.createElement('textarea');
@@ -49,15 +50,14 @@
                 }
                 document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
                 document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode('[D]'));
-                document.getElementById('characters').lastChild.lastChild.onclick = (event) => {
-                    document.getElementById('characters').lastChild.lastChild.onclick = async (event) => {
-                        event.stopPropagation();
-                        if (confirm("Do you want to delete this character sheet?")) {
-                            await fetch(`${apiHost}/chat/${chatId}/characters/${character._id['$oid']}`, {
-                                method: 'DELETE'
-                            });
-                            await updateCharacters();
-                        }
+                document.getElementById('characters').lastChild.lastChild.classList.add('button');
+                document.getElementById('characters').lastChild.lastChild.onclick = async (event) => {
+                    event.stopPropagation();
+                    if (confirm("Do you want to delete this character sheet?")) {
+                        await fetch(`${apiHost}/chat/${chatId}/characters/${character._id['$oid']}`, {
+                            method: 'DELETE'
+                        });
+                        await updateCharacters();
                     }
                 }
             }
