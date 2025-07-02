@@ -8,6 +8,21 @@
         return;
     }
     location.hash = `#${chatId}`;
+
+    window.setInterval(async() => {
+        const response = await fetch(`${apiHost}/chat/${chatId}/active`);
+        if (response.ok) {
+            const active = (await response.json()).active;
+            if (! active) {
+                document.getElementById('send').disabled = false;
+                document.getElementById('loader').setAttribute('style', 'display: none');
+                return;
+            }
+        }
+        document.getElementById('send').disabled = true;
+        document.getElementById('loader').setAttribute('style', 'display: block;width: 100%; height: 100%; position: absolute; top: 0; bottom: 0; background: rgba(0,0,0,0.1);');
+    }, 500);
+
     const updateCharacters = async () => {
         const response = await fetch(`${apiHost}/chat/${chatId}/characters`, {
             method: 'GET',
@@ -75,10 +90,6 @@
         document.getElementById('chat').appendChild(document.createElement('li'));
         document.getElementById('chat').lastChild.innerHTML = converter.makeHtml(value);
         document.getElementById('chat').lastChild.classList.add('user');
-        document.getElementById('chat').appendChild(document.createElement('li'));
-        document.getElementById('chat').lastChild.appendChild(document.createElement('img'));
-        document.getElementById('chat').lastChild.lastChild.setAttribute('src', '/loader.gif');
-        document.getElementById('chat').lastChild.lastChild.setAttribute('id', 'loader');
         try {
             const response = await fetch(`${apiHost}/chat/${chatId}`, {
                 method: 'POST',
@@ -104,10 +115,6 @@
         } catch (e) {
             console.error(e);
         }
-        document.getElementById('send').disabled = false;
-        document.getElementById('loader').parentNode.parentNode.removeChild(
-            document.getElementById('loader').parentNode
-        );
     });
     await (async() => {
         const response = await fetch(`${apiHost}/chat/${chatId}`, {
