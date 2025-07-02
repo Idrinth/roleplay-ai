@@ -9,7 +9,7 @@
     }
     location.hash = `#${chatId}`;
 
-    window.setInterval(async() => {
+    window.setInterval(async () => {
         try {
             const response = await fetch(
                 `${apiHost}/chat/${chatId}/active`,
@@ -25,7 +25,7 @@
                     return;
                 }
             }
-        } catch(e) {
+        } catch (e) {
             console.error(e);
         }
         document.getElementById('send').disabled = true;
@@ -125,7 +125,7 @@
             console.error(e);
         }
     });
-    await (async() => {
+    await (async () => {
         const response = await fetch(`${apiHost}/chat/${chatId}`, {
             method: 'GET',
             headers: {
@@ -154,9 +154,9 @@
         const el = document.getElementById('charactersheet');
         if (el) {
             if (event.target !== el) {
-                if (confirm("Do you want to save this character sheet?")) {
-                    if (el.hasAttribute('data-id')) {
-                        if (el.value && el.getAttribute('data-raw') !== el.value) {
+                if (el.hasAttribute('data-id')) {
+                    if (el.value && el.getAttribute('data-raw') !== el.value) {
+                        if (confirm("Do you want to save this modified character sheet?")) {
                             const id = el.getAttribute('data-id');
                             await fetch(`${apiHost}/chat/${chatId}/characters/${id}`, {
                                 method: 'PUT',
@@ -168,7 +168,9 @@
                                 credentials: "include"
                             });
                         }
-                    } else if(el.value) {
+                    }
+                } else if (el.value) {
+                    if (confirm("Do you want to save this new character sheet?")) {
                         await fetch(`${apiHost}/chat/${chatId}/characters`, {
                             method: 'POST',
                             headers: {
@@ -186,14 +188,14 @@
         }
     }
     await updateCharacters();
-    document.getElementById('add-character').onclick = async(event) => {
+    document.getElementById('add-character').onclick = async (event) => {
         event.stopPropagation();
         const el = document.createElement('textarea');
         el.setAttribute('id', 'charactersheet');
         el.value = characterFiller;
         document.body.appendChild(el);
     }
-    await (async() => {
+    await (async () => {
         const response = await fetch(`${apiHost}/chat/${chatId}/world`, {
             method: "GET",
             headers: {
