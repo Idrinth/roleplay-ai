@@ -187,7 +187,7 @@ class Age(BaseModel):
         allow_population_by_field_name = True
 
 class YearsAgo(BaseModel):
-    born: int = Field(ge=0)
+    born: int = Field(ge=18)
     turned: int = Field(ge=0)
 
 class Roles(BaseModel):
@@ -211,7 +211,7 @@ class Character(BaseModel):
         allow_population_by_field_name = True
         use_enum_values = True
 
-def to_mongo_compatible(obj:BaseModel, id: str|None = None):
+def to_mongo_compatible(obj: BaseModel, id: str|None = None):
     dc = obj.dict()
     for k, v in dc.items():
         if isinstance(v, BaseModel):
