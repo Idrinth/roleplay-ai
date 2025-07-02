@@ -150,6 +150,18 @@
         el.setAttribute('id', 'charactersheet');
         document.body.appendChild(el);
     }
+    await (async() => {
+        const response = await fetch(`${apiHost}/chat/${chatId}/world`, {
+            method: "GET",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        if (response.ok) {
+            document.getElementById('world').value = (await response.json()).world.join(", ")
+        }
+    })();
     document.getElementById("world").onchange = () => {
         fetch(`${apiHost}/chat/${chatId}/world`, {
             method: "PUT",
