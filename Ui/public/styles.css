@@ -67,6 +67,11 @@ textarea {
   height: 1.5em;
   display: inline-block;
 }
+.duration {
+  text-align: right;
+  font-style: italic;
+  color: #333;
+}
 @media (prefers-color-scheme: light) {
   body, html {
     color: #333;
@@ -82,5 +87,8 @@ textarea {
   }
   #logo {
     background-image: url('/logo.dark.svg');
+  }
+  .duration {
+    color: #ddd;
   }
 }
