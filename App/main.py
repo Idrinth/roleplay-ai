@@ -346,22 +346,22 @@ async def chat_delete(chat_id: str):
         return {"error": "Not a valid UUID"}
     return False
 
-@app.get("/whoami")
-async def whoami(user_id: Cookie[str] = None):
-    if not is_uuid_like(user_id):
-        user_id = None
-    if user_id is None:
-        user_id = str(uuid.uuid4())
-    user = {
-        "id": user_id,
-        "name": "User " + user_id,
-        "chats": [],
-    }
-    cursor = mdbconn.cursor()
-    cursor.execute(f"SELECT chat_id FROM chat_users.mapping WHERE user_id='{user_id}';")
-    chats = cursor.fetchall()
-    user.chats = list(chats)
-    return user
+#@app.get("/whoami")
+#async def whoami(user_id: Cookie[str] = None):
+#    if not is_uuid_like(user_id):
+#        user_id = None
+#    if user_id is None:
+#        user_id = str(uuid.uuid4())
+#    user = {
+#        "id": user_id,
+#        "name": "User " + user_id,
+#        "chats": [],
+#    }
+#    cursor = mdbconn.cursor()
+#    cursor.execute(f"SELECT chat_id FROM chat_users.mapping WHERE user_id='{user_id}';")
+#    chats = cursor.fetchall()
+#    user.chats = list(chats)
+#    return user
 
 @app.get("/chat/{chat_id}")
 async def chat_history(chat_id: str):
