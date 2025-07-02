@@ -66,12 +66,16 @@ textarea {
   background: #111;
   box-shadow: #333 0 0 0.125em;
 }
-#logo {
+.gamemaster {
   background-image: url('/logo.light.svg');
   background-size: 100% 100%;
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+}
+#logo {
   width: 1.5em;
   height: 1.5em;
-  display: inline-block;
 }
 .duration {
   text-align: right;
@@ -91,7 +95,7 @@ textarea {
     background: #eee;
     box-shadow: #ddd 0 0 0.125em;
   }
-  #logo {
+  .gamemaster {
     background-image: url('/logo.dark.svg');
   }
   .duration {

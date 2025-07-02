@@ -77,7 +77,7 @@
                     console.error(json.exception);
                 } else {
                     document.getElementById('chat').appendChild(document.createElement('li'));
-                    document.getElementById('chat').lastChild.innerHTML = converter.makeHtml(json.message) + `<span class="duration">${Math.ceil(Date.now() / 1000 - now / 1000)}s</span>`;
+                    document.getElementById('chat').lastChild.innerHTML = '<span class="gamemaster"></span>' + converter.makeHtml(json.message) + `<span class="duration">${Math.ceil(Date.now() / 1000 - now / 1000)}s</span>`;
                     document.getElementById('chat').lastChild.classList.add('agent');
                 }
             }
@@ -106,7 +106,7 @@
         } else {
             for (const message of json.messages) {
                 document.getElementById('chat').appendChild(document.createElement('li'));
-                document.getElementById('chat').lastChild.innerHTML = converter.makeHtml(message.content);
+                document.getElementById('chat').lastChild.innerHTML = (message.role==='agent' ? '<span class="gamemaster"></span>' : '') + converter.makeHtml(message.content);
                 document.getElementById('chat').lastChild.classList.add(message.role);
             }
         }
