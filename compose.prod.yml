@@ -29,9 +29,8 @@ services:
       - command: "ollama run $LLM_MODEL_SUMMARY"
     restart: always
     deploy:
+      replicas: 1
       resources:
-        reservations:
-          cpus: 1
         limits:
           cpus: 7
     healthcheck:
