@@ -102,3 +102,10 @@ textarea {
     color: #333;
   }
 }
+@media screen and (max-width: 1000px) {
+  body {
+    grid-template-columns: 3fr 1fr;
+    grid-template-rows: auto;
+    padding: 0;
+  }
+}
