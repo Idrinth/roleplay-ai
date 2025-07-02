@@ -77,7 +77,7 @@
                     console.error(json.exception);
                 } else {
                     document.getElementById('chat').appendChild(document.createElement('li'));
-                    document.getElementById('chat').lastChild.innerHTML = converter.makeHtml(json.message);
+                    document.getElementById('chat').lastChild.innerHTML = converter.makeHtml(json.message) + `<span class="duration">${Math.ceil(Date.now() / 1000 - now / 1000)}s</span>`;
                     document.getElementById('chat').lastChild.classList.add('agent');
                 }
             }
@@ -88,7 +88,6 @@
         document.getElementById('loader').parentNode.parentNode.removeChild(
             document.getElementById('loader').parentNode
         );
-        console.log(`Reply took ${Date.now() / 1000 - now / 1000}s`);
     });
     const response = await fetch(`${apiHost}/chat/${chatId}`, {
         method: 'GET',
