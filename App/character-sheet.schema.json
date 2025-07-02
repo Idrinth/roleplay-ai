@@ -10,7 +10,7 @@
     "magic",
     "statblock",
     "age",
-    "years ago",
+    "years_ago",
     "roles",
     "Sex"
   ],
@@ -68,22 +68,22 @@
     "background": {
       "type": "object",
       "required": [
-        "former occupation",
-        "while alive",
+        "former_occupation",
+        "while_alive",
         "description",
         "personality",
-        "place of birth",
-        "favorite weapon",
-        "combat style",
+        "place_of_birth",
+        "favorite_weapon",
+        "combat_style",
         "siblings"
       ],
       "additionalProperties": false,
       "properties": {
-        "former occupation": {
+        "former_occupation": {
           "type": "string",
           "description": "Profession before vampirism"
         },
-        "while alive": {
+        "while_alive": {
           "type": "object",
           "required": ["haircolor", "eyecolor"],
           "additionalProperties": false,
@@ -110,11 +110,11 @@
           "minItems": 1,
           "description": "Key personality traits"
         },
-        "place of birth": {
+        "place_of_birth": {
           "type": "string",
           "description": "Birth location"
         },
-        "favorite weapon": {
+        "favorite_weapon": {
           "type": "array",
           "items": {
             "type": "string"
@@ -122,7 +122,7 @@
           "minItems": 1,
           "description": "Preferred weapons"
         },
-        "combat style": {
+        "combat_style": {
           "type": "string",
           "description": "Combat approach and style"
         },
@@ -198,7 +198,7 @@
             }
           }
         },
-        "High Magic ritual tongues": {
+        "High_Magic_ritual_tongues": {
           "type": "string",
           "enum": ["none", "basic", "advanced", "native"]
         }
@@ -206,7 +206,7 @@
     },
     "magic": {
       "type": "object",
-      "required": ["capacity", "wind strength increase", "lores"],
+      "required": ["capacity", "wind_strength_increase", "lores"],
       "additionalProperties": false,
       "properties": {
         "capacity": {
@@ -214,16 +214,16 @@
           "minimum": 0,
           "description": "Magical capacity percentage compared to a fully trained human battlemage"
         },
-        "wind strength increase": {
+        "wind_strength_increase": {
           "type": "integer",
           "minimum": 0,
-          "description": "Vampiric boost to wind strength"
+          "description": "boost to winds of magic strength"
         },
         "lores": {
           "type": "object",
           "required": [
             "Death", "Shadow", "Vampire", "Depth", "Life",
-            "Athel Loren", "High Magic", "Dark Magic"
+            "Athel_Loren", "High_Magic", "Dark_Magic"
           ],
           "additionalProperties": false,
           "properties": {
@@ -247,15 +247,15 @@
               "type": "string",
               "enum": ["none", "novice", "apprentice", "journeyman", "expert", "master"]
             },
-            "Athel Loren": {
+            "Athel_Loren": {
               "type": "string",
               "enum": ["none", "novice", "apprentice", "journeyman", "expert", "master"]
             },
-            "High Magic": {
+            "High_Magic": {
               "type": "string",
               "enum": ["none", "novice", "apprentice", "journeyman", "expert", "master"]
             },
-            "Dark Magic": {
+            "Dark_Magic": {
               "type": "string",
               "enum": ["none", "novice", "apprentice", "journeyman", "expert", "master"]
             }
@@ -267,10 +267,10 @@
       "type": "object",
       "required": [
         "strength",
-        "movement speed",
-        "reaction speed",
-        "weapon skill",
-        "ballistic skill",
+        "movement_speed",
+        "reaction_speed",
+        "weapon_skill",
+        "ballistic_skill",
         "toughness",
         "fatigue"
       ],
@@ -281,22 +281,22 @@
           "description": "percentage compared to an average elven warrior",
           "minimum": 1
         },
-        "movement speed": {
+        "movement_speed": {
           "type": "integer",
           "description": "percentage compared to an average elven warrior",
           "minimum": 1
         },
-        "reaction speed": {
+        "reaction_speed": {
           "type": "integer",
           "description": "percentage compared to an average elven warrior",
           "minimum": 1
         },
-        "weapon skill": {
+        "weapon_skill": {
           "type": "integer",
           "description": "percentage compared to an average elven warrior",
           "minimum": 1
         },
-        "ballistic skill": {
+        "ballistic_skill": {
           "type": "integer",
           "description": "percentage compared to an average elven warrior",
           "minimum": 1
@@ -315,7 +315,7 @@
     },
     "age": {
       "type": "object",
-      "required": ["physical", "human-equivalent"],
+      "required": ["physical", "human_equivalent"],
       "additionalProperties": false,
       "properties": {
         "physical": {
@@ -323,14 +323,14 @@
           "minimum": 0,
           "description": "Actual age in years"
         },
-        "human-equivalent": {
+        "human_equivalent": {
           "type": "integer",
           "minimum": 0,
           "description": "Equivalent human age for development"
         }
       }
     },
-    "years ago": {
+    "years_ago": {
       "type": "object",
       "required": ["born", "turned"],
       "additionalProperties": false,

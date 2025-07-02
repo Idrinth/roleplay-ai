@@ -1,0 +1,140 @@
+name:
+  taken: Idrinth
+  given: Faelar
+  oath: Thalui
+  family: Shadowglen
+  titles:
+    - Sir Idrinth of House Thalui
+    - Noble-born Idrinth of House Thalui
+    - Highborn Idrinth of House Thalui
+    - Priest of Asuryan
+    - War-Sworn of Khaine
+    - Hunter-Blessed of Kurnous
+    - Oath-Sworn of the Three
+heritage:
+  race: Asur
+  bloodline: Blood Dragon
+background:
+  former_occupation: Loremaster of Hoeth
+  while_alive:
+    haircolor: gold
+    eyecolor: green
+  description: >-
+    The scholarly bearing of a Loremaster shows in his tall, somewhat slender
+    frame and the way he carries himself with quiet dignity, though now tinged
+    with the unnatural stillness of new vampirism. His platinum-blonde hair
+    remains neat but his ice-blue eyes now hold a hungry gleam he's still
+    learning to control. His hands shake slightly when he's not concentrating.
+  personality:
+    - Scholarly
+    - Uncertain
+    - Struggling
+  place_of_birth: Tower of Hoeth, Ulthuan
+  favorite_weapon:
+    - Greatsword
+  combat_style: >-
+    Hesitant greatsword techniques hampered by unfamiliar vampiric strength,
+    relies heavily on his retained High Magic knowledge.
+  siblings:
+    Erosion Shadowglen: >-
+      Elder brother, 267-year-old Archmage of the White Tower. Publicly
+      considers Idrinth dead but privately researches the vampiric curse to find
+      a cure and would aid him if approached.
+    Glorian Shadowglen: >-
+      Younger brother, 98-year-old loremaster in Lothern's diplomatic corps.
+      Well-connected politically yet in angry denial of Idrinth's fall.
+    Elrohim Shadowglen: >-
+      Youngest brother, 34-year-old Swordmaster candidate. Never knew Idrinth
+      well but fascinated by his legend.
+  parents:
+    Eldanor Shadowglen: >-
+      Father, 723-year-old Senior Loremaster of the White Tower. Devastated by
+      his son's transformation but intellectually fascinated by the theological
+      implications of the successful Thalui. Privately studies the oath's
+      mechanics while publicly maintaining distance.
+    Galadwen Shadowglen: >-
+      Mother, 689-year-old Court Mage specializing in protective wards. Torn
+      between maternal love and cultural horror at undeath. Secretly weaves
+      protective enchantments around areas Idrinth might travel, unable to fully
+      abandon her child.
+  connections:
+    Thelon Starweaver: >-
+      445-year-old Senior Loremaster and former research partner in theoretical
+      magic. Now leads the faction demanding Idrinth be declared officially dead
+      and his research sealed, fearing contamination of the Tower's reputation
+      by association with undeath.
+    Elthanor Moonscribe: >-
+      298-year-old fellow Loremaster who collaborated on inter-realm magical
+      studies. Publicly denounces Idrinth as "lost to darkness" while privately
+      burning all their shared research, terrified their joint work might
+      implicate him in whatever "corruption" befell his former friend.
+    Caelynn Dawnreader: >-
+      234-year-old former student, now a promising young Loremaster. Feels
+      personally betrayed that her mentor "abandoned" his teachings about purity
+      and order, actively campaigns against any attempt to rehabilitate his
+      memory.
+    Captain Silvion Brightblade: >-
+      356-year-old Phoenix Guard who provided security for Idrinth's field
+      research. Now considers him a priority target, believing vampirism
+      invalidates any past service and viewing the hunt for his former ally as a
+      sacred duty.
+    Master Alderic Goldquill: >-
+      412-year-old diplomatic scribe who facilitated Idrinth's academic
+      exchanges with other kingdoms. Refuses all contact with the Shadowglen
+      family and spreads rumors that Idrinth's "corruption" might have been
+      present long before his disappearance.
+    Elder Miriel Gentlebrook: >-
+      178-year-old village elder whose granddaughter Idrinth identified as
+      magically gifted. Blames him for bringing "dark attention" to their
+      community and has forbidden anyone from speaking his name, believing his
+      presence cursed the village.
+    Ranger Theron Swiftarrow: >-
+      203-year-old scout who guided Idrinth to remote villages for magical
+      testing. Now actively hunts vampires in the region, driven by guilt over
+      "failing to protect" his scholarly companion and viewing every vampire as
+      a personal affront to Idrinth's memory.
+languages:
+  Eltharin:
+    Old: native
+    Asur: native
+    Asrai: basic
+    Druchii: basic
+  Human:
+    Classical: advanced
+    Nehekharan: advanced
+    Reikspiel: basic
+    Bretonnian: basic
+  high_magic_ritual_tongues: advanced
+magic:
+  capacity: 93
+  wind_strength_increase: 4
+  lores:
+    Death: novice
+    Shadow: apprentice
+    Vampire: none
+    Depth: none
+    Life: novice
+    Athel_Loren: none
+    High_Magic: journeyman
+    Dark_Magic: none
+statblock:
+  strength: 138
+  movement_speed: 127
+  reaction_speed: 142
+  weapon_skill: 118
+  ballistic_skill: 106
+  toughness: 133
+  fatigue: 72
+age:
+  physical: 152
+  human_equivalent: 28
+years_ago:
+  born: 153
+  turned: 1
+roles:
+  combat: Struggling to adapt scholarly knowledge to vampiric combat
+  diplomacy: >-
+    Scholarly approach to negotiations, still learning social implications of
+    vampirism
+  civil: Primary lorekeeper and researcher, trying to establish group knowledge base
+Sex: male

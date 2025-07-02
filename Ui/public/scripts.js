@@ -143,10 +143,11 @@
         }
     }
     await updateCharacters();
-    document.getElementById('add-character').onclick = (event) => {
+    document.getElementById('add-character').onclick = async(event) => {
         event.stopPropagation();
         const el = document.createElement('textarea');
         el.setAttribute('id', 'charactersheet');
+        el.value = await (await fetch('/char-template.yaml')).text();
         document.body.appendChild(el);
     }
     await (async() => {
