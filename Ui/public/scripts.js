@@ -116,7 +116,7 @@
         if (el) {
             if (event.target !== el) {
                 if (el.hasAttribute('data-id')) {
-                    if (el.getAttribute('data-raw') !== el.value) {
+                    if (el.value && el.getAttribute('data-raw') !== el.value) {
                         const id = el.getAttribute('data-id');
                         await fetch(`${apiHost}/chat/${chatId}/characters/${id}`, {
                             method: 'PUT',
@@ -127,7 +127,7 @@
                             body: JSON.stringify(jsyaml.load(el.value))
                         });
                     }
-                } else {
+                } else if(el.value) {
                     await fetch(`${apiHost}/chat/${chatId}/characters`, {
                         method: 'POST',
                         headers: {
