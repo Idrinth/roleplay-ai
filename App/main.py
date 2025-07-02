@@ -48,6 +48,10 @@ mdbconn = mariadb.connect(
 )
 mdbconn.autocommit = True
 mdbconn.auto_reconnect = True
+mdbconn.cursor().execute("CREATE DATABASE IF NOT EXISTS `chat_users`;")
+mdbconn.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.mapping"
+                         " (user_id char(36),chat_id char(36), PRIMARY KEY(user_id,chat_id))"
+                         " charset=utf8;")
 with open('./app/character-sheet.schema.json', 'r') as schemafile:
     schema = json.dumps(json.load(schemafile))
 with open('./app/rules.md', 'r') as mdfile:
@@ -220,10 +224,10 @@ def to_mongo_compatible(obj: BaseModel, id: str|None = None):
         dc["_id"] = ObjectId(id)
     return dc
 
-def update_summary(start: int, end: int, redis_key: str):
+def update_summary(chat_id:str, start: int, end: int, redis_key: str):
     cursor = mdbconn.cursor()
     cursor.execute(
-        f"SELECT * FROM (SELECT content, aid FROM messages ORDER BY aid DESC LIMIT {start},{end}) as a ORDER BY aid;")
+        f"SELECT * FROM (SELECT content, aid FROM `{chat_id}`.messages ORDER BY aid DESC LIMIT {start},{end}) as a ORDER BY aid;")
     summary = ""
     for message in cursor.fetchall():
         summary += message[1] + "\n"
@@ -334,7 +338,29 @@ async def chat_characters(chat_id: str):
 async def chat_active(chat_id: str):
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid UUID"}
-    return {"active": redis.get(chat_id + ".active") == "true"}
+    return {"active": (redis.get(chat_id + ".active") or "true") == "true"}
+
+@app.delete("/chat/{chat_id}")
+async def chat_delete(chat_id: str):
+    if not is_uuid_like(chat_id):
+        return {"error": "Not a valid UUID"}
+    return False
+
+@app.get("/whoami")
+async def chat_delete(user_id: Cookie[str] = None):
+    if not is_uuid_like(user_id):
+        user_id = None
+    if user_id is None:
+        user_id = str(uuid.uuid4())
+    user = {
+        "id": user_id,
+        "name": "User " + user_id,
+        "chats": [],
+    }
+    cursor = mdbconn.cursor()
+    cursor.execute(f"SELECT creator, content, aid FROM `{chat_id}`.messages;")
+    chats = cursor.fetchall()
+    return False
 
 @app.get("/chat/{chat_id}")
 async def chat_history(chat_id: str):
@@ -423,10 +449,9 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks):
         )
         response_content = re.sub("^(\n|.)*</think>\\s*", "", response["message"]["content"]).strip()
         background_tasks.add_task(update_history_dbs, chat_id, action.description, response_content, previous_response)
-        background_tasks.add_task(update_summary, 20, 40, chat_id + ".short_text_summary")
-        background_tasks.add_task(update_summary, 40, 80, chat_id + ".medium_text_summary")
-        background_tasks.add_task(update_summary, 80, 160, chat_id + ".long_text_summary")
-        background_tasks.add_task(update_summary, 80, 160, chat_id + ".long_text_summary")
+        background_tasks.add_task(update_summary, chat_id, 20, 40, chat_id + ".short_text_summary")
+        background_tasks.add_task(update_summary, chat_id, 40, 80, chat_id + ".medium_text_summary")
+        background_tasks.add_task(update_summary, chat_id, 80, 160, chat_id + ".long_text_summary")
         background_tasks.add_task(redis.set, chat_id + ".is-active", "false")
         return {"message": response_content, "request": messages}
     except mariadb.Error as e:
