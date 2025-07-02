@@ -70,7 +70,7 @@ textarea {
 .duration {
   text-align: right;
   font-style: italic;
-  color: #333;
+  color: #ddd;
 }
 @media (prefers-color-scheme: light) {
   body, html {
@@ -89,6 +89,6 @@ textarea {
     background-image: url('/logo.dark.svg');
   }
   .duration {
-    color: #ddd;
+    color: #333;
   }
 }
