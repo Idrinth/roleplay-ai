@@ -239,13 +239,13 @@ def update_summary(start: int, end: int, redis_key: str):
         response_content = re.sub("^(\n|.)*</think>\\s*", "", response["message"]["content"]).strip()
         redis.set(redis_key, response_content)
 
-def update_history_dbs(uuid:str, action: str, result: str, previous_response: str):
+def update_history_dbs(chat_id:str, action: str, result: str, previous_response: str):
     qdrant.add(
-        collection_name=uuid,
+        collection_name=chat_id,
         documents=[previous_response + "\n\n" + action + "\n\n" + result],
     )
-    mdbconn.cursor().execute("INSERT INTO `"+uuid+"`.messages (`creator`, `content`) VALUES ('user', ?);", [action])
-    mdbconn.cursor().execute("INSERT INTO `"+uuid+"`.messages (`creator`, `content`) VALUES ('agent', ?);", [result])
+    mdbconn.cursor().execute("INSERT INTO `"+chat_id+"`.messages (`creator`, `content`) VALUES ('user', ?);", [action])
+    mdbconn.cursor().execute("INSERT INTO `"+chat_id+"`.messages (`creator`, `content`) VALUES ('agent', ?);", [result])
 
 
 
@@ -263,49 +263,49 @@ async def new_chat():
         "content text, PRIMARY KEY(aid)) charset=utf8;")
     return {'chat': local_uuid}
 
-@app.post("/chat/{uuid}/characters")
-def chat_character(uuid: str, character: Character):
-    if not is_uuid_like(uuid):
+@app.post("/chat/{chat_id}/characters")
+def chat_character(chat_id: str, character: Character):
+    if not is_uuid_like(chat_id):
         return False
-    mydb = mongo[uuid]
+    mydb = mongo[chat_id]
     mydb['characters'].insert_one(to_mongo_compatible(character))
     return True
 
-@app.put("/chat/{uuid}/characters/{id}")
-def chat_character(uuid: str, id: str, character: Character):
-    if not is_uuid_like(uuid):
+@app.put("/chat/{chat_id}/characters/{id}")
+def chat_character(chat_id: str, id: str, character: Character):
+    if not is_uuid_like(chat_id):
         return False
-    mydb = mongo[uuid]
+    mydb = mongo[chat_id]
     mydb['characters'].delete_one({"_id": id})
     mydb['characters'].insert_one(to_mongo_compatible(character, id))
     return True
 
-@app.delete("/chat/{uuid}/characters/{id}")
-def chat_character(uuid: str, id: str):
-    if not is_uuid_like(uuid):
+@app.delete("/chat/{chat_id}/characters/{id}")
+def chat_character(chat_id: str, id: str):
+    if not is_uuid_like(chat_id):
         return False
-    mydb = mongo[uuid]
+    mydb = mongo[chat_id]
     mydb['characters'].delete_one({"_id": id})
     return True
 
-@app.get("/chat/{uuid}/characters")
-def chat_character(uuid: str):
-    if not is_uuid_like(uuid):
+@app.get("/chat/{chat_id}/characters")
+def chat_character(chat_id: str):
+    if not is_uuid_like(chat_id):
         return {"error": "Not a valid UUID"}
     try:
-        return json.loads(json.dumps({"characters": list(mongo[uuid]['characters'].find())}, default=json_util.default))
+        return json.loads(json.dumps({"characters": list(mongo[chat_id]['characters'].find())}, default=json_util.default))
     except Exception as e:
         return {"exception": f"{e}"}
 
-@app.get("/chat/{uuid}")
-def chat_history(uuid: str):
-    if not is_uuid_like(uuid):
+@app.get("/chat/{chat_id}")
+def chat_history(chat_id: str):
+    if not is_uuid_like(chat_id):
         return {"error": "Not a valid UUID"}
     try:
         messages = []
         mdbconn.ping()
         cursor = mdbconn.cursor()
-        cursor.execute(f"SELECT creator, content, aid FROM `{uuid}`.messages;")
+        cursor.execute(f"SELECT creator, content, aid FROM `{chat_id}`.messages;")
         old_messages = cursor.fetchall()
         for message in old_messages:
             messages.append({
@@ -318,9 +318,9 @@ def chat_history(uuid: str):
     except Exception as e:
         return {"exception": e}
 
-@app.post("/chat/{uuid}")
-def chat(uuid: str, action: Action, background_tasks: BackgroundTasks):
-    if not is_uuid_like(uuid):
+@app.post("/chat/{chat_id}")
+def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks):
+    if not is_uuid_like(chat_id):
         return {"error": "Not a valid UUID"}
     if not os.getenv("LLM_MODEL_SUMMARY"):
         return {"error": "A model for the summary is needed."}
@@ -328,12 +328,12 @@ def chat(uuid: str, action: Action, background_tasks: BackgroundTasks):
         return {"error": "A model for playing is needed."}
     if not action.description:
         return {"error": "A description is required."}
-    long_term_summary = redis.get(uuid + ".long_text_summary") or "Nothing happened yet."
-    medium_term_summary = redis.get(uuid + ".medium_text_summary") or "Nothing happened yet."
-    short_term_summary = redis.get(uuid + ".short_text_summary") or "Nothing happened yet."
+    long_term_summary = redis.get(chat_id + ".long_text_summary") or "Nothing happened yet."
+    medium_term_summary = redis.get(chat_id + ".medium_text_summary") or "Nothing happened yet."
+    short_term_summary = redis.get(chat_id + ".short_text_summary") or "Nothing happened yet."
     characters = []
     try:
-        mydb = mongo[uuid]
+        mydb = mongo[chat_id]
         mycol = mydb["characters"]
         characters = list(mycol.find())
     except Exception as e:
@@ -343,7 +343,7 @@ def chat(uuid: str, action: Action, background_tasks: BackgroundTasks):
     try:
         mdbconn.ping()
         cursor = mdbconn.cursor()
-        cursor.execute(f"SELECT * FROM (SELECT creator, content, aid FROM `{uuid}`.messages ORDER BY aid DESC LIMIT 20) as a ORDER BY aid;")
+        cursor.execute(f"SELECT * FROM (SELECT creator, content, aid FROM `{chat_id}`.messages ORDER BY aid DESC LIMIT 20) as a ORDER BY aid;")
         old_messages = cursor.fetchall()
         previous_response = ""
         for message in old_messages:
@@ -357,9 +357,9 @@ def chat(uuid: str, action: Action, background_tasks: BackgroundTasks):
             "content": rules
         })
         vectordb_results = []
-        if qdrant.collection_exists(uuid):
+        if qdrant.collection_exists(chat_id):
             search_result = qdrant.query(
-                collection_name=uuid,
+                collection_name=chat_id,
                 query_text=previous_response + "\n" + action.description,
                 limit=10
             )
@@ -392,10 +392,11 @@ def chat(uuid: str, action: Action, background_tasks: BackgroundTasks):
             messages=messages
         )
         response_content = re.sub("^(\n|.)*</think>\\s*", "", response["message"]["content"]).strip()
-        background_tasks.add_task(update_history_dbs, uuid, action.description, response_content, previous_response)
-        background_tasks.add_task(update_summary, 20, 40, uuid + ".short_text_summary")
-        background_tasks.add_task(update_summary, 40, 80, uuid + ".medium_text_summary")
-        background_tasks.add_task(update_summary, 80, 160, uuid + ".long_text_summary")
+        background_tasks.add_task(update_history_dbs, chat_id, action.description, response_content, previous_response)
+        background_tasks.add_task(update_summary, 20, 40, chat_id + ".short_text_summary")
+        background_tasks.add_task(update_summary, 40, 80, chat_id + ".medium_text_summary")
+        background_tasks.add_task(update_summary, 80, 160, chat_id + ".long_text_summary")
+        background_tasks.add_task(update_summary, 80, 160, chat_id + ".long_text_summary")
         return {"message": response_content}
     except mariadb.Error as e:
         return {"error": f"{e}"}
