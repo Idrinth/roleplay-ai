@@ -1,0 +1,46 @@
+server {
+    listen 80;
+    listen [::]:80 default_server ipv6only=on;
+    return 301 https://$host$request_uri;
+}
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name roleplay-ai.bjoern-buettner.me;
+
+    ssl_certificate /etc/letsencrypt/live/roleplay-ai.bjoern-buettner.me/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/roleplay-ai.bjoern-buettner.me/privkey.pem;
+
+    include snippets/ssl-params.conf;
+
+    location / {
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-NginX-Proxy true;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_pass http://localhost:8080/;
+        proxy_ssl_session_reuse off;
+        proxy_set_header Host $http_host;
+        proxy_pass_header Server;
+        proxy_cache_bypass $http_upgrade;
+        proxy_redirect off;
+        auth_basic           "Roleplay-AI Demo-Area";
+        auth_basic_user_file /etc/nginx/htpasswd;
+    }
+    location /api {
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-NginX-Proxy true;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_pass http://localhost:8001/;
+        proxy_ssl_session_reuse off;
+        proxy_set_header Host $http_host;
+        proxy_pass_header Server;
+        proxy_cache_bypass $http_upgrade;
+        proxy_redirect off;
+        auth_basic           "Roleplay-AI Demo-Area";
+        auth_basic_user_file /etc/nginx/htpasswd;
+    }
+}

@@ -26,7 +26,7 @@ def is_uuid_like(string: str):
         return True
     except ValueError:
         return False
-app = FastAPI()
+app = FastAPI(root_path="/api/v1")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=['https://roleplay-ai.bjoern-buettner.me'],
