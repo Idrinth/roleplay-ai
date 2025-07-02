@@ -1,2 +1,2 @@
-docker-compose build training
-docker-compose up training -d
+docker-compose -f compose.dev.yml build training
+docker-compose -f compose.dev.yml up training -d
