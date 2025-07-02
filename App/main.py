@@ -4,7 +4,7 @@ import re
 from ollama import ChatResponse, Client
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import QueryResponse
-from fastapi import FastAPI, Cookie
+from fastapi import FastAPI, Cookie, BackgroundTasks
 import mariadb
 from redis import Redis
 from pymongo import MongoClient
@@ -239,13 +239,29 @@ def update_summary(start: int, end: int, redis_key: str):
         response_content = re.sub("^(\n|.)*</think>\\s*", "", response["message"]["content"]).strip()
         redis.set(redis_key, response_content)
 
+def update_history_dbs(uuid:str, action: str, result: str, previous_response: str):
+    qdrant.add(
+        collection_name=uuid,
+        documents=[previous_response + "\n\n" + action + "\n\n" + result],
+    )
+    mdbconn.cursor().execute("INSERT INTO `"+uuid+"`.messages (`creator`, `content`) VALUES ('user', ?);", [action])
+    mdbconn.cursor().execute("INSERT INTO `"+uuid+"`.messages (`creator`, `content`) VALUES ('agent', ?);", [result])
+
+
+
 @app.get('/')
 async def root():
     return 'OK'
 
 @app.get('/new')
 async def new_chat():
-    return {'chat': uuid.uuid4()}
+    local_uuid = uuid.uuid4()
+    mdbconn.ping()
+    mdbconn.cursor().execute("CREATE DATABASE IF NOT EXISTS `"+local_uuid+"`;")
+    mdbconn.cursor().execute(
+        f"CREATE TABLE IF NOT EXISTS `{local_uuid}`.messages (aid BIGINT NOT NULL AUTO_INCREMENT, creator varchar(6),"
+        "content text, PRIMARY KEY(aid)) charset=utf8;")
+    return {'chat': local_uuid}
 
 @app.post("/chat/{uuid}/characters")
 def chat_character(uuid: str, character: Character):
@@ -288,10 +304,6 @@ def chat_history(uuid: str):
     try:
         messages = []
         mdbconn.ping()
-        mdbconn.cursor().execute("CREATE DATABASE IF NOT EXISTS `"+uuid+"`;")
-        mdbconn.cursor().execute("USE `"+uuid+"`;")
-        mdbconn.cursor().execute(
-            "CREATE TABLE IF NOT EXISTS messages (aid BIGINT NOT NULL AUTO_INCREMENT, creator varchar(6),content text, PRIMARY KEY(aid)) charset=utf8;")
         cursor = mdbconn.cursor()
         cursor.execute("SELECT creator, content, aid FROM messages;")
         old_messages = cursor.fetchall()
@@ -307,7 +319,7 @@ def chat_history(uuid: str):
         return {"exception": e}
 
 @app.post("/chat/{uuid}")
-def chat(uuid: str, action: Action):
+def chat(uuid: str, action: Action, background_tasks: BackgroundTasks):
     if not is_uuid_like(uuid):
         return {"error": "Not a valid UUID"}
     if not os.getenv("LLM_MODEL_SUMMARY"):
@@ -330,11 +342,6 @@ def chat(uuid: str, action: Action):
     messages = []
     try:
         mdbconn.ping()
-        mdbconn.cursor().execute("CREATE DATABASE IF NOT EXISTS `"+uuid+"`;")
-        mdbconn.cursor().execute("USE `"+uuid+"`;")
-        mdbconn.cursor().execute(
-            "CREATE TABLE IF NOT EXISTS messages (aid BIGINT NOT NULL AUTO_INCREMENT, creator varchar(6),"
-            "content text, PRIMARY KEY(aid)) charset=utf8;")
         cursor = mdbconn.cursor()
         cursor.execute("SELECT * FROM (SELECT creator, content, aid FROM messages ORDER BY aid DESC LIMIT 20) as a ORDER BY aid;")
         old_messages = cursor.fetchall()
@@ -376,7 +383,6 @@ def chat(uuid: str, action: Action):
                 "\n"
                 "# Potentially Related Information:\n```json\n" + json.dumps(vectordb_results) + "\n```"
         })
-        mdbconn.cursor().execute("INSERT INTO messages (`creator`, `content`) VALUES ('user', ?);", [action.description])
         messages.append({
             "role": "user",
             "content": action.description,
@@ -386,14 +392,10 @@ def chat(uuid: str, action: Action):
             messages=messages
         )
         response_content = re.sub("^(\n|.)*</think>\\s*", "", response["message"]["content"]).strip()
-        qdrant.add(
-            collection_name=uuid,
-            documents=[previous_response + "\n\n" + action.description + "\n\n" + response_content],
-        )
-        mdbconn.cursor().execute("INSERT INTO messages (`creator`, `content`) VALUES ('agent', ?);", [response_content])
-        update_summary(20, 40, uuid + ".short_text_summary")
-        update_summary(40, 80, uuid + ".medium_text_summary")
-        update_summary(80, 160, uuid + ".long_text_summary")
+        background_tasks.add_task(update_history_dbs, uuid, action.description, response_content, previous_response)
+        background_tasks.add_task(update_summary, 20, 40, uuid + ".short_text_summary")
+        background_tasks.add_task(update_summary, 40, 80, uuid + ".medium_text_summary")
+        background_tasks.add_task(update_summary, 80, 160, uuid + ".long_text_summary")
         return {"message": response_content}
     except mariadb.Error as e:
         return {"error": f"{e}"}
