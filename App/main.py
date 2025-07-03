@@ -309,7 +309,7 @@ async def chat_history(chat_id: str, user_id: Annotated[str | None, Cookie()] = 
     except Exception as e:
         return {"exception": e}
 
-@app.post("/chat/{chat_id}")
+@app.patch("/chat/{chat_id}")
 async def chat(chat_id: str, chat_data: Chat, user_id: Annotated[str | None, Cookie()] = None):
     if not is_uuid_like(user_id):
         return {"error": "Not a valid User"}
@@ -317,7 +317,7 @@ async def chat(chat_id: str, chat_data: Chat, user_id: Annotated[str | None, Coo
         return {"error": "Not a valid Chat"}
     if not chat_data.name:
         return {"error": "Chat name must be filled."}
-    # @todo implement chat naming
+    mdbconn.cursor().execute("UPDATE chat_users.mapping SET name=? WHERE user_id=? AND chat_id=?;", [chat_data.name, user_id, chat_id])
     return True
 
 @app.post("/chat/{chat_id}")
