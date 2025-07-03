@@ -264,6 +264,7 @@ async def chat_delete(chat_id: str, user_id: Annotated[str | None, Cookie()] = N
     await redis.delete(f"{user_id}-{chat_id}.short_summary")
     await redis.delete(f"{user_id}-{chat_id}.medium_summary")
     await redis.delete(f"{user_id}-{chat_id}.long_summary")
+    await redis.delete(f"{user_id}-{chat_id}.world")
     mongo.drop_database(f"{user_id}-{chat_id}")
     qdrant.delete_collection(f"{user_id}-{chat_id}")
     return False
