@@ -20,6 +20,9 @@ from .models import World, Action, Chat, Character, Document
 def mariadb_name(user_id: str, chat_id: str):
     return f"{user_id}{chat_id}".replace("-", "")
 
+def mongodb_name(user_id: str, chat_id: str):
+    return f"{user_id}{chat_id}".replace("-", "")[:-1]
+
 def simplify_result(query_result: QueryResponse):
     return query_result.model_dump(mode="json")
 
@@ -226,7 +229,7 @@ async def chat_character_add(chat_id: str, character: Character, user_id: Annota
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
-    mongo[f"{user_id}-{chat_id}"]['characters'].insert_one(to_mongo_compatible(character))
+    mongo[mongodb_name(user_id, chat_id)]['characters'].insert_one(to_mongo_compatible(character))
     return True
 
 @app.put("/chat/{chat_id}/characters/{character_id}")
@@ -235,7 +238,7 @@ async def chat_character_update(chat_id: str, character_id: str, character: Char
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
-    my_col = mongo[f"{user_id}-{chat_id}"]['characters']
+    my_col = mongo[mongodb_name(user_id, chat_id)]['characters']
     my_col.delete_one({"_id": ObjectId(character_id)})
     my_col.insert_one(to_mongo_compatible(character, character_id))
     return True
@@ -246,7 +249,7 @@ async def chat_character_delete(chat_id: str, character_id: str, user_id: Annota
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
-    mongo[f"{user_id}-{chat_id}"]['characters'].delete_one({"_id": ObjectId(character_id)})
+    mongo[mongodb_name(user_id, chat_id)]['characters'].delete_one({"_id": ObjectId(character_id)})
     return True
 
 @app.get("/chat/{chat_id}/characters")
@@ -256,7 +259,7 @@ async def chat_characters(chat_id: str, user_id: Annotated[str | None, Cookie()]
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
     try:
-        return json.loads(json.dumps({"characters": list(mongo[f"{user_id}-{chat_id}"]['characters'].find())}, default=json_util.default))
+        return json.loads(json.dumps({"characters": list(mongo[mongodb_name(user_id, chat_id)]['characters'].find())}, default=json_util.default))
     except Exception as e:
         return {"exception": f"{e}"}
 
@@ -280,7 +283,7 @@ async def chat_delete(chat_id: str, user_id: Annotated[str | None, Cookie()] = N
     await redis.delete(f"{user_id}-{chat_id}.medium_summary")
     await redis.delete(f"{user_id}-{chat_id}.long_summary")
     await redis.delete(f"{user_id}-{chat_id}.world")
-    mongo.drop_database(f"{user_id}-{chat_id}")
+    mongo.drop_database(mongodb_name(user_id, chat_id))
     qdrant.delete_collection(f"{user_id}-{chat_id}")
     return False
 
@@ -365,7 +368,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
     world = ", ".join(json.loads(redis.get(f"{user_id}-{chat_id}.world") or "[]"))
     characters = []
     try:
-        characters = list(mongo[f"{user_id}-{chat_id}"]["characters"].find())
+        characters = list(mongo[mongodb_name(user_id, chat_id)]["characters"].find())
     except Exception as e:
         print(f"{e}")
     messages = []
