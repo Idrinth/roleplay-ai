@@ -1,22 +1,21 @@
 import json
 import re
-
 from ollama import ChatResponse, Client
 from qdrant_client import QdrantClient
 from qdrant_client.http.models import QueryResponse
-from fastapi import FastAPI, Cookie, BackgroundTasks
+from fastapi import FastAPI, Cookie, BackgroundTasks, Response
 import mariadb
 from redis import Redis
 from pymongo import MongoClient
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import os
-import enum
 from fastapi.middleware.cors import CORSMiddleware
 from bson import json_util
 from bson.objectid import ObjectId
 from enum import Enum, StrEnum
-from typing import Dict, List, Optional
+from typing import Annotated
 import uuid
+from models import World, Action, Chat, Character, Document
 
 def simplify_result(query_result: QueryResponse):
     return query_result.model_dump(mode="json")
@@ -30,7 +29,7 @@ def is_uuid_like(string: str):
 app = FastAPI(root_path="/api/v1")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['https://roleplay-ai.bjoern-buettner.me'],
+    allow_origins=[os.getenv("UI_HOST", "http://localhost")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -50,184 +49,28 @@ mdbconn.autocommit = True
 mdbconn.auto_reconnect = True
 mdbconn.cursor().execute("CREATE DATABASE IF NOT EXISTS `chat_users`;")
 mdbconn.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.mapping"
-                         " (user_id char(36),chat_id char(36), PRIMARY KEY(user_id,chat_id))"
+                         " (user_id char(36),chat_id char(36), chat_name varchar(255), PRIMARY KEY(user_id,chat_id))"
                          " charset=utf8;")
 with open('./app/character-sheet.schema.json', 'r') as schemafile:
     schema = json.dumps(json.load(schemafile))
 with open('./app/rules.md', 'r') as mdfile:
     rules = mdfile.read()
 
-
-class Action(BaseModel):
-    description: str | None = None
-
-class World(BaseModel):
-    keywords: List[str]
-
-class OathType(StrEnum):
-    THALUI = "Thalui"
-
-class ElvenRace(StrEnum):
-    ASUR = "Asur"
-    ASRAI = "Asrai"
-    DRUCHII = "Druchii"
-
-class VampireBloodline(StrEnum):
-    BLOOD_DRAGON = "Blood Dragon"
-    LAHMIAN = "Lahmian"
-    VON_CARSTEIN = "von Carstein"
-    NECRARCH = "Necrarch"
-    STRIGOI = "Strigoi"
-    VAMPIRE_COAST = "Vampire Coast"
-
-class LanguageLevel(StrEnum):
-    NONE = "none"
-    BASIC = "basic"
-    ADVANCED = "advanced"
-    NATIVE = "native"
-
-class MagicLevel(StrEnum):
-    NONE = "none"
-    NOVICE = "novice"
-    APPRENTICE = "apprentice"
-    JOURNEYMAN = "journeyman"
-    EXPERT = "expert"
-    MASTER = "master"
-
-class Sex(StrEnum):
-    MALE = "male"
-    FEMALE = "female"
-
-class Name(BaseModel):
-    taken: str
-    given: str
-    oath: OathType
-    family: str
-    titles: List[str] = Field(min_length=0)
-
-class Heritage(BaseModel):
-    race: ElvenRace
-    bloodline: VampireBloodline
-
-class WhileAlive(BaseModel):
-    haircolor: str
-    eyecolor: str
-
-class Eltharin(BaseModel):
-    Old: Optional[LanguageLevel] = None
-    Asur: Optional[LanguageLevel] = None
-    Asrai: Optional[LanguageLevel] = None
-    Druchii: Optional[LanguageLevel] = None
-
-class Human(BaseModel):
-    Classical: Optional[LanguageLevel] = None
-    Nehekharan: Optional[LanguageLevel] = None
-    Reikspiel: Optional[LanguageLevel] = None
-    Bretonnian: Optional[LanguageLevel] = None
-
-class Languages(BaseModel):
-    Eltharin: Eltharin
-    Human: Human
-    high_magic_ritual_tongues: Optional[LanguageLevel] = Field(default=LanguageLevel.NONE)
-
-    class Config:
-        allow_population_by_field_name = True
-
-class Background(BaseModel):
-    former_occupation: str
-    while_alive: WhileAlive
-    description: str
-    personality: List[str] = Field(min_length=1)
-    place_of_birth: str
-    favorite_weapon: List[str] = Field(min_length=1, max_length=2)
-    combat_style: str
-    siblings: Dict[str, str]
-    parents: Optional[Dict[str, str]] = None
-    connections: Optional[Dict[str, str]] = None
-
-    class Config:
-        allow_population_by_field_name = True
-
-class MagicLores(BaseModel):
-    Death: MagicLevel
-    Shadow: MagicLevel
-    Vampire: MagicLevel
-    Depth: MagicLevel
-    Life: MagicLevel
-    Athel_Loren: MagicLevel
-    High_Magic: MagicLevel
-    Dark_Magic: MagicLevel
-
-    class Config:
-        allow_population_by_field_name = True
-
-class Magic(BaseModel):
-    capacity: int = Field(ge=0)
-    wind_strength_increase: int = Field(ge=0)
-    lores: MagicLores
-
-    class Config:
-        allow_population_by_field_name = True
-
-class Statblock(BaseModel):
-    strength: int = Field(ge=1)
-    movement_speed: int = Field(ge=1)
-    reaction_speed: int = Field(ge=1)
-    weapon_skill: int = Field(ge=1)
-    ballistic_skill: int = Field(ge=1)
-    toughness: int = Field(ge=1)
-    fatigue: int = Field(ge=0)
-
-    class Config:
-        allow_population_by_field_name = True
-
-class Age(BaseModel):
-    physical: int = Field(ge=0)
-    human_equivalent: int = Field(ge=0)
-
-    class Config:
-        allow_population_by_field_name = True
-
-class YearsAgo(BaseModel):
-    born: int = Field(ge=18)
-    turned: int = Field(ge=0)
-
-class Roles(BaseModel):
-    combat: str
-    diplomacy: str
-    civil: str
-
-class Character(BaseModel):
-    name: Name
-    heritage: Heritage
-    background: Background
-    languages: Languages
-    magic: Magic
-    statblock: Statblock
-    age: Age
-    years_ago: YearsAgo
-    roles: Roles
-    Sex: Sex
-
-    class Config:
-        allow_population_by_field_name = True
-        use_enum_values = True
-
-def to_mongo_compatible(obj: BaseModel, id: str|None = None):
+def to_mongo_compatible(obj: BaseModel, object_id: str | None = None):
     dc = obj.dict()
     for k, v in dc.items():
         if isinstance(v, BaseModel):
             dc[k] = to_mongo_compatible(v)
         elif isinstance(v, StrEnum) or isinstance(v, Enum):
             dc[k] = v.value
-    if id is not None:
-        dc["_id"] = ObjectId(id)
+    if object_id is not None:
+        dc["_id"] = ObjectId(object_id)
     return dc
 
-def update_summary(chat_id:str, start: int, end: int, redis_key: str):
+def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_key: str):
     cursor = mdbconn.cursor()
     cursor.execute(
-        f"SELECT * FROM (SELECT content, aid FROM `{chat_id}`.messages ORDER BY aid DESC LIMIT {start},{end}) as a ORDER BY aid;")
+        f"SELECT * FROM (SELECT content, aid FROM `{user_id}-{chat_id}`.messages ORDER BY aid DESC LIMIT {start},{end}) as a ORDER BY aid;")
     summary = ""
     for message in cursor.fetchall():
         summary += message[1] + "\n"
@@ -244,13 +87,13 @@ def update_summary(chat_id:str, start: int, end: int, redis_key: str):
         response_content = re.sub("^(\n|.)*</think>\\s*", "", response["message"]["content"]).strip()
         redis.set(redis_key, response_content)
 
-def update_history_dbs(chat_id:str, action: str, result: str, previous_response: str):
+def update_history_dbs(chat_id:str, user_id, action: str, result: str, previous_response: str):
     qdrant.add(
-        collection_name=chat_id,
+        collection_name=f"{user_id}-{chat_id}",
         documents=[previous_response + "\n\n" + action + "\n\n" + result],
     )
-    mdbconn.cursor().execute("INSERT INTO `"+chat_id+"`.messages (`creator`, `content`) VALUES ('user', ?);", [action])
-    mdbconn.cursor().execute("INSERT INTO `"+chat_id+"`.messages (`creator`, `content`) VALUES ('agent', ?);", [result])
+    mdbconn.cursor().execute(f"INSERT INTO `{user_id}-{chat_id}`.messages (`creator`, `content`) VALUES ('user', ?);", [action])
+    mdbconn.cursor().execute(f"INSERT INTO `{user_id}-{chat_id}`.messages (`creator`, `content`) VALUES ('agent', ?);", [result])
 
 def get_system_prompt(characters, world: str, short_term_summary: str, medium_term_summary: str, long_term_summary: str, vectordb_results):
     out = ""
@@ -276,102 +119,174 @@ async def root():
     return 'OK'
 
 @app.get('/new')
-async def new_chat():
+async def new_chat(user_id: Annotated[str | None, Cookie()] = None):
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
     local_uuid = str(uuid.uuid4())
     mdbconn.ping()
-    mdbconn.cursor().execute("CREATE DATABASE IF NOT EXISTS `"+local_uuid+"`;")
+    mdbconn.cursor().execute(f"CREATE DATABASE IF NOT EXISTS `{user_id}-{local_uuid}`;")
     mdbconn.cursor().execute(
-        f"CREATE TABLE IF NOT EXISTS `{local_uuid}`.messages (aid BIGINT NOT NULL AUTO_INCREMENT, creator varchar(6),"
+        f"CREATE TABLE IF NOT EXISTS `{user_id}-{local_uuid}`.messages (aid BIGINT NOT NULL AUTO_INCREMENT, creator varchar(6),"
         "content text, PRIMARY KEY(aid)) charset=utf8;")
-    redis.set(local_uuid+".world", json.dumps(["fantasy", "high magic"]))
+    mdbconn.cursor().execute(
+        f"CREATE TABLE IF NOT EXISTS `{user_id}-{local_uuid}`.documents (id char(36) NOT NULL, document_name varchar(255),"
+        "content text, PRIMARY KEY(id)) charset=utf8;")
+    await redis.set(local_uuid+".world", json.dumps(["fantasy", "high magic"]))
     return {"chat": local_uuid}
 
 @app.get("/chat/{chat_id}/world")
-async def get_world(chat_id: str):
-    return {"world": json.loads(redis.get(chat_id+".world") or "[]")}
+async def get_world(chat_id: str, user_id: Annotated[str | None, Cookie()] = None):
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
+    if not is_uuid_like(chat_id):
+        return {"error": "Not a valid Chat"}
+    return {"world": json.loads(redis.get(f"{user_id}-{chat_id}.world") or "[]")}
 
 @app.put("/chat/{chat_id}/world")
-async def update_world(chat_id: str, world: World):
+async def update_world(chat_id: str, world: World, user_id: Annotated[str | None, Cookie()] = None):
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
+    if not is_uuid_like(chat_id):
+        return {"error": "Not a valid Chat"}
     keywords = []
     for keyword in world.keywords:
         keyword = keyword.strip()
         if keyword not in keywords and keyword != "":
             keywords.append(keyword)
-    redis.set(chat_id+".world", json.dumps(keywords))
+    await redis.set(f"{user_id}-{chat_id}.world", json.dumps(keywords))
     return True
 
-@app.post("/chat/{chat_id}/characters")
-async def chat_character_add(chat_id: str, character: Character):
+@app.get("/chat/{chat_id}/documents")
+async def chat_document_list(chat_id: str, user_id: Annotated[str | None, Cookie()] = None):
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
-        return False
-    mydb = mongo[chat_id]
+        return {"error": "Not a valid Chat"}
+    #@todo implement document listing
+    return {
+        "documents": []
+    }
+
+@app.get("/chat/{chat_id}/documents/{document_id}")
+async def chat_document_delete(chat_id: str, document_id: str, user_id: Annotated[str | None, Cookie()] = None):
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
+    if not is_uuid_like(chat_id):
+        return {"error": "Not a valid Chat"}
+    if not is_uuid_like(document_id):
+        return {"error": "Not a valid Document"}
+    mdbconn.cursor().execute(f"DELETE FROM `{user_id}-{chat_id}`.documents WHERE id='{document_id}';")
+    qdrant.delete(
+        collection_name=chat_id,
+        points_selector=[document_id],
+        wait=True,
+    )
+    return True
+
+@app.post("/chat/{chat_id}/documents")
+async def chat_document_add(chat_id: str, document: Document, user_id: Annotated[str | None, Cookie()] = None):
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
+    if not is_uuid_like(chat_id):
+        return {"error": "Not a valid Chat"}
+    document_id = qdrant.add(
+        collection_name=chat_id,
+        documents=[document.content],
+    )[0]
+    id_uuided = str(uuid.UUID(document_id))
+    mdbconn.cursor().execute(f"INSERT INTO `{user_id}-{chat_id}`.documents (id, name, content) VALUES (?, ?, ?);)", [id_uuided, document.name, document.content])
+    return {
+        "id": id_uuided,
+        "name": document.name,
+    }
+
+@app.post("/chat/{chat_id}/characters")
+async def chat_character_add(chat_id: str, character: Character, user_id: Annotated[str | None, Cookie()] = None):
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
+    if not is_uuid_like(chat_id):
+        return {"error": "Not a valid Chat"}
+    mydb = mongo[f"{user_id}-{chat_id}"]
     mydb['characters'].insert_one(to_mongo_compatible(character))
     return True
 
-@app.put("/chat/{chat_id}/characters/{id}")
-async def chat_character_update(chat_id: str, id: str, character: Character):
+@app.put("/chat/{chat_id}/characters/{character_id}")
+async def chat_character_update(chat_id: str, character_id: str, character: Character, user_id: Annotated[str | None, Cookie()] = None):
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
-        return False
-    mydb = mongo[chat_id]
-    mydb['characters'].delete_one({"_id": ObjectId(id)})
-    mydb['characters'].insert_one(to_mongo_compatible(character, id))
+        return {"error": "Not a valid Chat"}
+    mydb = mongo[f"{user_id}-{chat_id}"]
+    mydb['characters'].delete_one({"_id": ObjectId(character_id)})
+    mydb['characters'].insert_one(to_mongo_compatible(character, character_id))
     return True
 
-@app.delete("/chat/{chat_id}/characters/{id}")
-async def chat_character_delete(chat_id: str, id: str):
+@app.delete("/chat/{chat_id}/characters/{character_id}")
+async def chat_character_delete(chat_id: str, character_id: str, user_id: Annotated[str | None, Cookie()] = None):
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
-        return False
-    mydb = mongo[chat_id]
-    mydb['characters'].delete_one({"_id": ObjectId(id)})
+        return {"error": "Not a valid Chat"}
+    mongo[f"{user_id}-{chat_id}"]['characters'].delete_one({"_id": ObjectId(character_id)})
     return True
 
 @app.get("/chat/{chat_id}/characters")
-async def chat_characters(chat_id: str):
+async def chat_characters(chat_id: str, user_id: Annotated[str | None, Cookie()] = None):
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
-        return {"error": "Not a valid UUID"}
+        return {"error": "Not a valid Chat"}
     try:
-        return json.loads(json.dumps({"characters": list(mongo[chat_id]['characters'].find())}, default=json_util.default))
+        return json.loads(json.dumps({"characters": list(mongo[f"{user_id}-{chat_id}"]['characters'].find())}, default=json_util.default))
     except Exception as e:
         return {"exception": f"{e}"}
 
 @app.get("/chat/{chat_id}/active")
-async def chat_active(chat_id: str):
+async def chat_active(chat_id: str, user_id: Annotated[str | None, Cookie()] = None):
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
-        return {"error": "Not a valid UUID"}
-    return {"active": redis.get(chat_id + ".active") == "true"}
+        return {"error": "Not a valid Chat"}
+    return {"active": redis.get(f"{user_id}-{chat_id}.active") == "true"}
 
 @app.delete("/chat/{chat_id}")
-async def chat_delete(chat_id: str):
+async def chat_delete(chat_id: str, user_id: Annotated[str | None, Cookie()] = None):
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
-        return {"error": "Not a valid UUID"}
+        return {"error": "Not a valid Chat"}
+    #@todo implement chat deletion
     return False
 
-#@app.get("/whoami")
-#async def whoami(user_id: Cookie[str] = None):
-#    if not is_uuid_like(user_id):
-#        user_id = None
-#    if user_id is None:
-#        user_id = str(uuid.uuid4())
-#    user = {
-#        "id": user_id,
-#        "name": "User " + user_id,
-#        "chats": [],
-#    }
-#    cursor = mdbconn.cursor()
-#    cursor.execute(f"SELECT chat_id FROM chat_users.mapping WHERE user_id='{user_id}';")
-#    chats = cursor.fetchall()
-#    user.chats = list(chats)
-#    return user
+@app.get("/whoami")
+async def whoami(response: Response, user_id: Annotated[str | None, Cookie()] = None):
+    if not is_uuid_like(user_id):
+        user_id = None
+    if not user_id:
+        user_id = str(uuid.uuid4())
+    response.set_cookie(key="user_id", value=user_id, samesite="strict", path="/", expires=60*60*24*30*12, domain="ai-roleplay.bjoern-buettner.me", httponly=True)
+    user = {
+        "id": user_id,
+        "name": "User " + user_id,
+        "chats": [],
+    }
+    cursor = mdbconn.cursor()
+    cursor.execute(f"SELECT chat_id, chat_name FROM chat_users.mapping WHERE user_id='{user_id}';")
+    chats = cursor.fetchall()
+    user.chats = list(chats)
+    return user
 
 @app.get("/chat/{chat_id}")
-async def chat_history(chat_id: str):
+async def chat_history(chat_id: str, user_id: Annotated[str | None, Cookie()] = None):
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
-        return {"error": "Not a valid UUID"}
+        return {"error": "Not a valid Chat"}
     try:
         messages = []
         mdbconn.ping()
         cursor = mdbconn.cursor()
-        cursor.execute(f"SELECT creator, content, aid FROM `{chat_id}`.messages;")
+        cursor.execute(f"SELECT creator, content, aid FROM `{user_id}-{chat_id}`.messages;")
         old_messages = cursor.fetchall()
         for message in old_messages:
             messages.append({
@@ -385,9 +300,22 @@ async def chat_history(chat_id: str):
         return {"exception": e}
 
 @app.post("/chat/{chat_id}")
-async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks):
+async def chat(chat_id: str, chat_data: Chat, user_id: Annotated[str | None, Cookie()] = None):
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
-        return {"error": "Not a valid UUID"}
+        return {"error": "Not a valid Chat"}
+    if not chat_data.name:
+        return {"error": "Chat name must be filled."}
+    # @todo implement chat naming
+    return True
+
+@app.post("/chat/{chat_id}")
+async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, user_id: Annotated[str | None, Cookie()] = None):
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
+    if not is_uuid_like(chat_id):
+        return {"error": "Not a valid Chat"}
     if not os.getenv("LLM_MODEL_SUMMARY"):
         return {"error": "A model for the summary is needed."}
     if not os.getenv("LLM_MODEL_PLAY"):
@@ -396,21 +324,21 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks):
         return {"error": "A description is required."}
     if redis.get(chat_id + ".chat_is_active") == "true":
         return {"error": "Chat is already active."}
-    redis.set(chat_id + ".chat_is_active", "true")
-    long_term_summary = redis.get(chat_id + ".long_text_summary") or ""
-    medium_term_summary = redis.get(chat_id + ".medium_text_summary") or ""
-    short_term_summary = redis.get(chat_id + ".short_text_summary") or ""
-    world = ", ".join(json.loads(redis.get(chat_id + ".world") or "[]"))
+    await redis.set(f"{user_id}-{chat_id}.chat_is_active", "true")
+    long_term_summary = redis.get(f"{user_id}-{chat_id}.long_text_summary") or ""
+    medium_term_summary = redis.get(f"{user_id}-{chat_id}.medium_text_summary") or ""
+    short_term_summary = redis.get(f"{user_id}-{chat_id}.short_text_summary") or ""
+    world = ", ".join(json.loads(redis.get(f"{user_id}-{chat_id}.world") or "[]"))
     characters = []
     try:
-        characters = list(mongo[chat_id]["characters"].find())
+        characters = list(mongo[f"{user_id}-{chat_id}"]["characters"].find())
     except Exception as e:
         print(f"{e}")
     messages = []
     try:
         mdbconn.ping()
         cursor = mdbconn.cursor()
-        cursor.execute(f"SELECT * FROM (SELECT creator, content, aid FROM `{chat_id}`.messages ORDER BY aid DESC LIMIT 20) as a ORDER BY aid;")
+        cursor.execute(f"SELECT * FROM (SELECT creator, content, aid FROM `{user_id}-{chat_id}`.messages ORDER BY aid DESC LIMIT 20) as a ORDER BY aid;")
         old_messages = cursor.fetchall()
         previous_response = ""
         old_message_count = 0
@@ -426,9 +354,9 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks):
             "content": rules
         })
         vectordb_results = []
-        if old_message_count == 20 and qdrant.collection_exists(chat_id):
+        if qdrant.collection_exists(chat_id):
             search_result = qdrant.query(
-                collection_name=chat_id,
+                collection_name=f"{user_id}-{chat_id}",
                 query_text=previous_response + "\n" + action.description,
                 limit=10
             )
@@ -449,15 +377,15 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks):
             messages=messages
         )
         response_content = re.sub("^(\n|.)*</think>\\s*", "", response["message"]["content"]).strip()
-        background_tasks.add_task(update_history_dbs, chat_id, action.description, response_content, previous_response)
-        background_tasks.add_task(update_summary, chat_id, 20, 40, chat_id + ".short_text_summary")
-        background_tasks.add_task(update_summary, chat_id, 40, 80, chat_id + ".medium_text_summary")
-        background_tasks.add_task(update_summary, chat_id, 80, 160, chat_id + ".long_text_summary")
-        background_tasks.add_task(redis.set, chat_id + ".is-active", "false")
+        background_tasks.add_task(update_history_dbs, chat_id, user_id, action.description, response_content, previous_response)
+        background_tasks.add_task(update_summary, chat_id, user_id, 20, 40, f"{user_id}-{chat_id}.short_text_summary")
+        background_tasks.add_task(update_summary, chat_id, user_id, 40, 80, f"{user_id}-{chat_id}.medium_text_summary")
+        background_tasks.add_task(update_summary, chat_id, user_id, 80, 160, f"{user_id}-{chat_id}.long_text_summary")
+        background_tasks.add_task(redis.set, f"{user_id}-{chat_id}.is-active", "false")
         return {"message": response_content, "request": messages}
     except mariadb.Error as e:
-        background_tasks.add_task(redis.set, chat_id + ".chat_is-active", "false")
+        background_tasks.add_task(redis.set, f"{user_id}-{chat_id}.chat_is-active", "false")
         return {"error": f"{e}"}
     except Exception as e:
-        background_tasks.add_task(redis.set, chat_id + ".chat_is_active", "false")
+        background_tasks.add_task(redis.set, f"{user_id}-{chat_id}.chat_is_active", "false")
         return {"exception": f"{e}", "data": e}
