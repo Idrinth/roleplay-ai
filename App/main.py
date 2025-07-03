@@ -53,7 +53,7 @@ mdbconn.autocommit = True
 mdbconn.auto_reconnect = True
 mdbconn.cursor().execute("CREATE DATABASE IF NOT EXISTS `chat_users`;")
 mdbconn.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.mapping"
-                         " (user_id char(36),chat_id char(36), chat_name varchar(255), PRIMARY KEY(user_id,chat_id))"
+                         " (user_id char(36),chat_id char(36), chat_name varchar(255), PRIMARY KEY(user_id, chat_id))"
                          " charset=utf8;")
 
 with open('./app/character-sheet.schema.json', 'r') as schemafile:
