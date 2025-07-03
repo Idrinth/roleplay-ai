@@ -288,7 +288,15 @@ async def whoami(response: Response, user_id: Annotated[str | None, Cookie()] = 
         user_id = str(uuid.uuid4())
     if not is_uuid_like(user_id):
         user_id = str(uuid.uuid4())
-    response.set_cookie(key="user_id", value=user_id, samesite="strict", path="/", expires=60*60*24*30*12, domain="ai-roleplay.bjoern-buettner.me", httponly=True)
+    response.set_cookie(
+        key="user_id",
+        value=user_id,
+        samesite="strict",
+        path="/",
+        expires=60*60*24*30*12,
+        domain=os.getenv("UI_HOST", "http://localhost").replace("http://", "").replace("https://", ""),
+        httponly=True
+    )
     user = {
         "id": user_id,
         "name": "User " + user_id,
