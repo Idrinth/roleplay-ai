@@ -318,7 +318,7 @@ async def chat(chat_id: str, chat_data: Chat, user_id: Annotated[str | None, Coo
         return {"error": "Not a valid Chat"}
     if not chat_data.name:
         return {"error": "Chat name must be filled."}
-    mdbconn.cursor().execute("UPDATE chat_users.mapping SET name=? WHERE user_id=? AND chat_id=?;", [chat_data.name, user_id, chat_id])
+    mdbconn.cursor().execute("UPDATE chat_users.mapping SET chat_name=? WHERE user_id=? AND chat_id=?;", [chat_data.name, user_id, chat_id])
     return True
 
 @app.post("/chat/{chat_id}")
