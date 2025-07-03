@@ -284,9 +284,9 @@ async def chat_delete(chat_id: str, user_id: Annotated[str | None, Cookie()] = N
 
 @app.get("/whoami")
 async def whoami(response: Response, user_id: Annotated[str | None, Cookie()] = None):
-    if not is_uuid_like(user_id):
-        user_id = None
     if not user_id:
+        user_id = str(uuid.uuid4())
+    if not is_uuid_like(user_id):
         user_id = str(uuid.uuid4())
     response.set_cookie(key="user_id", value=user_id, samesite="strict", path="/", expires=60*60*24*30*12, domain="ai-roleplay.bjoern-buettner.me", httponly=True)
     user = {
