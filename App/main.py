@@ -259,7 +259,13 @@ async def chat_delete(chat_id: str, user_id: Annotated[str | None, Cookie()] = N
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
-    #@todo implement chat deletion
+    mdbconn.cursor().execute(f"DROP DATABASE `{user_id}-{chat_id}`;")
+    await redis.delete(f"{user_id}-{chat_id}.active")
+    await redis.delete(f"{user_id}-{chat_id}.short_summary")
+    await redis.delete(f"{user_id}-{chat_id}.medium_summary")
+    await redis.delete(f"{user_id}-{chat_id}.long_summary")
+    mongo.drop_database(f"{user_id}-{chat_id}")
+    qdrant.delete_collection(f"{user_id}-{chat_id}")
     return False
 
 @app.get("/whoami")
