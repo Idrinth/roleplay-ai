@@ -26,7 +26,7 @@ def is_uuid_like(string: str):
         return True
     except ValueError:
         return False
-app = FastAPI(root_path="/api/v1")
+app = FastAPI(root_path="/api/v1", title="Gamemaster AI")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[os.getenv("UI_HOST", "http://localhost")],
@@ -51,6 +51,7 @@ mdbconn.cursor().execute("CREATE DATABASE IF NOT EXISTS `chat_users`;")
 mdbconn.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.mapping"
                          " (user_id char(36),chat_id char(36), chat_name varchar(255), PRIMARY KEY(user_id,chat_id))"
                          " charset=utf8;")
+
 with open('./app/character-sheet.schema.json', 'r') as schemafile:
     schema = json.dumps(json.load(schemafile))
 with open('./app/rules.md', 'r') as mdfile:
