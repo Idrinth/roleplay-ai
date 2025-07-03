@@ -310,7 +310,11 @@ async def whoami(response: Response, user_id: Annotated[str | None, Cookie()] = 
     mdbconn.ping()
     cursor = mdbconn.cursor()
     cursor.execute(f"SELECT chat_id, chat_name FROM chat_users.mapping WHERE user_id='{user_id}';")
-    user["chats"] = list(cursor.fetchall())
+    for chat in cursor.fetchall():
+        user["chats"].append({
+            "id": chat[0],
+            "name": chat[1],
+        })
     return user
 
 @app.get("/chat/{chat_id}")
