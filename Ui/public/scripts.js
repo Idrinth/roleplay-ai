@@ -6,7 +6,7 @@
         method: "GET",
     })).json();
     console.log(user);
-
+return;
     const chatId = (location.hash.replace(/[^0-9a-f-]+/g, '') || (await (await fetch(`${apiHost}/new`,{
         credentials: "include",
         method: "GET",
