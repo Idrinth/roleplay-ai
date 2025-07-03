@@ -147,7 +147,7 @@ async def new_chat(user_id: Annotated[str | None, Cookie()] = None):
         f"INSERT INTO chat_users.mapping (chat_id, user_id, chat_name) VALUES (?, ?, ?)",
         [chat_id, user_id, chat_id]
     )
-    await redis.set(f"{user_id}-{chat_id}.world", json.dumps(["fantasy", "high magic"]))
+    redis.set(f"{user_id}-{chat_id}.world", json.dumps(["fantasy", "high magic"]))
     return {"chat": chat_id}
 
 @app.get("/chat/{chat_id}/world")
@@ -169,7 +169,7 @@ async def update_world(chat_id: str, world: World, user_id: Annotated[str | None
         keyword = keyword.strip()
         if keyword not in keywords and keyword != "":
             keywords.append(keyword)
-    await redis.set(f"{user_id}-{chat_id}.world", json.dumps(keywords))
+    redis.set(f"{user_id}-{chat_id}.world", json.dumps(keywords))
     return True
 
 @app.get("/chat/{chat_id}/documents")
@@ -358,7 +358,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
         return {"error": "A description is required."}
     if redis.get(chat_id + ".chat_is_active") == "true":
         return {"error": "Chat is already active."}
-    await redis.set(f"{user_id}-{chat_id}.chat_is_active", "true")
+    redis.set(f"{user_id}-{chat_id}.chat_is_active", "true")
     long_term_summary = redis.get(f"{user_id}-{chat_id}.long_text_summary") or ""
     medium_term_summary = redis.get(f"{user_id}-{chat_id}.medium_text_summary") or ""
     short_term_summary = redis.get(f"{user_id}-{chat_id}.short_text_summary") or ""
