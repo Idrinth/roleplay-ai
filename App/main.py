@@ -162,9 +162,13 @@ async def chat_document_list(chat_id: str, user_id: Annotated[str | None, Cookie
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
-    #@todo implement document listing
+    cursor = mdbconn.cursor()
+    cursor.execute(f"SELECT id, name FROM `{user_id}-{chat_id}`.documents;")
+    documents = []
+    for row in cursor.fetchall():
+        documents.append({"id": row[0], "name": row[1]})
     return {
-        "documents": []
+        "documents": documents,
     }
 
 @app.get("/chat/{chat_id}/documents/{document_id}")
