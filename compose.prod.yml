@@ -1,6 +1,6 @@
 name: roleplay-ai
 volumes:
-  postgres_data: {}
+  mariadb_data: {}
   ollama: {}
   qdrant_storage: {}
   mongodata_db: {}
@@ -62,7 +62,7 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - mariadbdata:/var/lib/mysql
+      - mariadb_data:/var/lib/mysql
   mongo:
     image: mongo
     restart: always
