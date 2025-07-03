@@ -21,6 +21,10 @@ def simplify_result(query_result: QueryResponse):
     return query_result.model_dump(mode="json")
 
 def is_uuid_like(string: str):
+    if string is None:
+        return False
+    if string == "":
+        return False
     try:
         uuid.UUID(string)
         return True
@@ -290,6 +294,7 @@ async def whoami(response: Response, user_id: Annotated[str | None, Cookie()] = 
         "name": "User " + user_id,
         "chats": [],
     }
+    mdbconn.ping()
     cursor = mdbconn.cursor()
     cursor.execute(f"SELECT chat_id, chat_name FROM chat_users.mapping WHERE user_id='{user_id}';")
     chats = cursor.fetchall()
