@@ -15,7 +15,7 @@ from bson.objectid import ObjectId
 from enum import Enum, StrEnum
 from typing import Annotated
 import uuid
-from models import World, Action, Chat, Character, Document
+from .models import World, Action, Chat, Character, Document
 
 def simplify_result(query_result: QueryResponse):
     return query_result.model_dump(mode="json")
