@@ -17,6 +17,9 @@ from typing import Annotated
 import uuid
 from .models import World, Action, Chat, Character, Document
 
+def mariadb_name(user_id: str, chat_id: str):
+    return f"{user_id}{chat_id}".replace("-", "")
+
 def simplify_result(query_result: QueryResponse):
     return query_result.model_dump(mode="json")
 
@@ -75,7 +78,7 @@ def to_mongo_compatible(obj: BaseModel, object_id: str | None = None):
 def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_key: str):
     cursor = mdbconn.cursor()
     cursor.execute(
-        f"SELECT * FROM (SELECT content, aid FROM `{user_id}-{chat_id}`.messages ORDER BY aid DESC LIMIT {start},{end}) as a ORDER BY aid;")
+        f"SELECT * FROM (SELECT content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid DESC LIMIT {start},{end}) as a ORDER BY aid;")
     summary = ""
     for message in cursor.fetchall():
         summary += message[1] + "\n"
@@ -97,8 +100,8 @@ def update_history_dbs(chat_id:str, user_id, action: str, result: str, previous_
         collection_name=f"{user_id}-{chat_id}",
         documents=[previous_response + "\n\n" + action + "\n\n" + result],
     )
-    mdbconn.cursor().execute(f"INSERT INTO `{user_id}-{chat_id}`.messages (`creator`, `content`) VALUES ('user', ?);", [action])
-    mdbconn.cursor().execute(f"INSERT INTO `{user_id}-{chat_id}`.messages (`creator`, `content`) VALUES ('agent', ?);", [result])
+    mdbconn.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.messages (`creator`, `content`) VALUES ('user', ?);", [action])
+    mdbconn.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.messages (`creator`, `content`) VALUES ('agent', ?);", [result])
 
 def get_system_prompt(characters, world: str, short_term_summary: str, medium_term_summary: str, long_term_summary: str, vectordb_results):
     out = ""
@@ -127,25 +130,25 @@ async def root():
 async def new_chat(user_id: Annotated[str | None, Cookie()] = None):
     if not is_uuid_like(user_id):
         return {"error": "Not a valid User"}
-    local_uuid = str(uuid.uuid4())
+    chat_id = str(uuid.uuid4())
     mdbconn.ping()
     mdbconn.cursor().execute(
-        f"CREATE DATABASE IF NOT EXISTS `{user_id}-{local_uuid}`;"
+        f"CREATE DATABASE IF NOT EXISTS `{mariadb_name(user_id, chat_id)}`;"
     )
     mdbconn.cursor().execute(
-        f"CREATE TABLE IF NOT EXISTS `{user_id}-{local_uuid}`.messages (aid BIGINT NOT NULL AUTO_INCREMENT, creator varchar(6),"
+        f"CREATE TABLE IF NOT EXISTS `{mariadb_name(user_id, chat_id)}`.messages (aid BIGINT NOT NULL AUTO_INCREMENT, creator varchar(6),"
         "content text, PRIMARY KEY(aid)) charset=utf8;"
     )
     mdbconn.cursor().execute(
-        f"CREATE TABLE IF NOT EXISTS `{user_id}-{local_uuid}`.documents (id char(36) NOT NULL, document_name varchar(255),"
+        f"CREATE TABLE IF NOT EXISTS {mariadb_name(user_id, chat_id)}.documents (id char(36) NOT NULL, document_name varchar(255),"
         "content text, PRIMARY KEY(id)) charset=utf8;"
     )
     mdbconn.cursor().execute(
         f"INSERT INTO chat_users.mapping (chat_id, user_id, chat_name) VALUES (?, ?, ?)",
-        [local_uuid, user_id, local_uuid]
+        [chat_id, user_id, chat_id]
     )
-    await redis.set(local_uuid+".world", json.dumps(["fantasy", "high magic"]))
-    return {"chat": local_uuid}
+    await redis.set(f"{user_id}-{chat_id}.world", json.dumps(["fantasy", "high magic"]))
+    return {"chat": chat_id}
 
 @app.get("/chat/{chat_id}/world")
 async def get_world(chat_id: str, user_id: Annotated[str | None, Cookie()] = None):
@@ -176,7 +179,7 @@ async def chat_document_list(chat_id: str, user_id: Annotated[str | None, Cookie
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
     cursor = mdbconn.cursor()
-    cursor.execute(f"SELECT id, name FROM `{user_id}-{chat_id}`.documents;")
+    cursor.execute(f"SELECT id, name FROM `{mariadb_name(user_id, chat_id)}`.documents;")
     documents = []
     for row in cursor.fetchall():
         documents.append({"id": row[0], "name": row[1]})
@@ -192,7 +195,7 @@ async def chat_document_delete(chat_id: str, document_id: str, user_id: Annotate
         return {"error": "Not a valid Chat"}
     if not is_uuid_like(document_id):
         return {"error": "Not a valid Document"}
-    mdbconn.cursor().execute(f"DELETE FROM `{user_id}-{chat_id}`.documents WHERE id='{document_id}';")
+    mdbconn.cursor().execute(f"DELETE FROM `{mariadb_name(user_id, chat_id)}`.documents WHERE id='{document_id}';")
     qdrant.delete(
         collection_name=chat_id,
         points_selector=[document_id],
@@ -211,7 +214,7 @@ async def chat_document_add(chat_id: str, document: Document, user_id: Annotated
         documents=[document.content],
     )[0]
     id_uuided = str(uuid.UUID(document_id))
-    mdbconn.cursor().execute(f"INSERT INTO `{user_id}-{chat_id}`.documents (id, name, content) VALUES (?, ?, ?);)", [id_uuided, document.name, document.content])
+    mdbconn.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.documents (id, name, content) VALUES (?, ?, ?);)", [id_uuided, document.name, document.content])
     return {
         "id": id_uuided,
         "name": document.name,
@@ -223,8 +226,7 @@ async def chat_character_add(chat_id: str, character: Character, user_id: Annota
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
-    mydb = mongo[f"{user_id}-{chat_id}"]
-    mydb['characters'].insert_one(to_mongo_compatible(character))
+    mongo[f"{user_id}-{chat_id}"]['characters'].insert_one(to_mongo_compatible(character))
     return True
 
 @app.put("/chat/{chat_id}/characters/{character_id}")
@@ -233,9 +235,9 @@ async def chat_character_update(chat_id: str, character_id: str, character: Char
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
-    mydb = mongo[f"{user_id}-{chat_id}"]
-    mydb['characters'].delete_one({"_id": ObjectId(character_id)})
-    mydb['characters'].insert_one(to_mongo_compatible(character, character_id))
+    my_col = mongo[f"{user_id}-{chat_id}"]['characters']
+    my_col.delete_one({"_id": ObjectId(character_id)})
+    my_col.insert_one(to_mongo_compatible(character, character_id))
     return True
 
 @app.delete("/chat/{chat_id}/characters/{character_id}")
@@ -272,7 +274,7 @@ async def chat_delete(chat_id: str, user_id: Annotated[str | None, Cookie()] = N
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
-    mdbconn.cursor().execute(f"DROP DATABASE `{user_id}-{chat_id}`;")
+    mdbconn.cursor().execute(f"DROP DATABASE `{mariadb_name(user_id, chat_id)}`;")
     await redis.delete(f"{user_id}-{chat_id}.active")
     await redis.delete(f"{user_id}-{chat_id}.short_summary")
     await redis.delete(f"{user_id}-{chat_id}.medium_summary")
@@ -318,7 +320,7 @@ async def chat_history(chat_id: str, user_id: Annotated[str | None, Cookie()] = 
         messages = []
         mdbconn.ping()
         cursor = mdbconn.cursor()
-        cursor.execute(f"SELECT creator, content, aid FROM `{user_id}-{chat_id}`.messages;")
+        cursor.execute(f"SELECT creator, content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages;")
         old_messages = cursor.fetchall()
         for message in old_messages:
             messages.append({
@@ -370,7 +372,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
     try:
         mdbconn.ping()
         cursor = mdbconn.cursor()
-        cursor.execute(f"SELECT * FROM (SELECT creator, content, aid FROM `{user_id}-{chat_id}`.messages ORDER BY aid DESC LIMIT 20) as a ORDER BY aid;")
+        cursor.execute(f"SELECT * FROM (SELECT creator, content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid DESC LIMIT 20) as a ORDER BY aid;")
         old_messages = cursor.fetchall()
         previous_response = ""
         old_message_count = 0

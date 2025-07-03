@@ -1,14 +1,11 @@
 name: roleplay-ai
 volumes:
-  mariadbdata: {}
+  postgres_data: {}
   ollama: {}
   qdrant_storage: {}
   mongodata_db: {}
   mongodata_config: {}
   redis: {}
-  open_webui: {}
-  trained: {}
-  hugging_face: {}
 services:
   redis:
     image: redis
@@ -44,7 +41,6 @@ services:
       - .env
     volumes:
       - ollama:/root/.ollama
-      - trained:/trained
   qdrant:
     image: qdrant/qdrant
     restart: always
