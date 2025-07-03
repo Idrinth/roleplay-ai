@@ -124,13 +124,21 @@ async def new_chat(user_id: Annotated[str | None, Cookie()] = None):
         return {"error": "Not a valid User"}
     local_uuid = str(uuid.uuid4())
     mdbconn.ping()
-    mdbconn.cursor().execute(f"CREATE DATABASE IF NOT EXISTS `{user_id}-{local_uuid}`;")
+    mdbconn.cursor().execute(
+        f"CREATE DATABASE IF NOT EXISTS `{user_id}-{local_uuid}`;"
+    )
     mdbconn.cursor().execute(
         f"CREATE TABLE IF NOT EXISTS `{user_id}-{local_uuid}`.messages (aid BIGINT NOT NULL AUTO_INCREMENT, creator varchar(6),"
-        "content text, PRIMARY KEY(aid)) charset=utf8;")
+        "content text, PRIMARY KEY(aid)) charset=utf8;"
+    )
     mdbconn.cursor().execute(
         f"CREATE TABLE IF NOT EXISTS `{user_id}-{local_uuid}`.documents (id char(36) NOT NULL, document_name varchar(255),"
-        "content text, PRIMARY KEY(id)) charset=utf8;")
+        "content text, PRIMARY KEY(id)) charset=utf8;"
+    )
+    mdbconn.cursor().execute(
+        f"INSERT INTO chat_users.mapping (chat_id, user_id, chat_name) VALUES (?, ?, ?)",
+        [local_uuid, user_id, local_uuid]
+    )
     await redis.set(local_uuid+".world", json.dumps(["fantasy", "high magic"]))
     return {"chat": local_uuid}
 
