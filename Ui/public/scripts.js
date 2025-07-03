@@ -1,10 +1,16 @@
 (async () => {
     const apiHost = location.protocol + '//' + location.hostname + '/api/v1'
     const characterFiller = await (await fetch('/char-template.yaml')).text();
-    const user = await(await fetch(`${apiHost}/whoami`)).json();
+    const user = await(await fetch(`${apiHost}/whoami`,{
+        credentials: "include",
+        method: "GET",
+    })).json();
     console.log(user);
-    return;
-    const chatId = (location.hash.replace(/[^0-9a-f-]+/g, '') || (await (await fetch(`${apiHost}/new`)).json()).chat);
+
+    const chatId = (location.hash.replace(/[^0-9a-f-]+/g, '') || (await (await fetch(`${apiHost}/new`,{
+        credentials: "include",
+        method: "GET",
+    })).json()).chat);
 
     if (!chatId || !chatId.match(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i)) {
         window.location = location.protocol + '//' + location.host;
@@ -17,7 +23,9 @@
             const response = await fetch(
                 `${apiHost}/chat/${chatId}/active`,
                 {
-                    signal: AbortSignal.timeout(100)
+                    credentials: "include",
+                    method: "GET",
+                    signal: AbortSignal.timeout(100),
                 }
             );
             if (response.ok) {
@@ -40,7 +48,7 @@
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
             credentials: "include"
         });
@@ -82,7 +90,8 @@
                     event.stopPropagation();
                     if (confirm("Do you want to delete this character sheet?")) {
                         await fetch(`${apiHost}/chat/${chatId}/characters/${character._id['$oid']}`, {
-                            method: 'DELETE'
+                            method: 'DELETE',
+                            credentials: "include",
                         });
                         await updateCharacters();
                     }
@@ -107,10 +116,10 @@
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({description: value}),
-                credentials: "include"
+                credentials: "include",
             });
             if (response.ok) {
                 const json = await response.json();
@@ -133,9 +142,9 @@
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
-            credentials: "include"
+            credentials: "include",
         });
         if (response.ok) {
             const converter = new showdown.Converter();
@@ -165,10 +174,10 @@
                                 method: 'PUT',
                                 headers: {
                                     'Accept': 'application/json',
-                                    'Content-Type': 'application/json'
+                                    'Content-Type': 'application/json',
                                 },
                                 body: JSON.stringify(jsyaml.load(el.value)),
-                                credentials: "include"
+                                credentials: "include",
                             });
                         }
                     }
@@ -178,10 +187,10 @@
                             method: 'POST',
                             headers: {
                                 'Accept': 'application/json',
-                                'Content-Type': 'application/json'
+                                'Content-Type': 'application/json',
                             },
                             body: JSON.stringify(jsyaml.load(el.value)),
-                            credentials: "include"
+                            credentials: "include",
                         })
                     }
                 }
@@ -205,7 +214,7 @@
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            credentials: "include"
+            credentials: "include",
         });
         if (response.ok) {
             const keywords = (await response.json()).world;
@@ -231,11 +240,12 @@
             method: "PUT",
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                keywords
-            })
+                keywords,
+            }),
+            credentials: "include",
         })
     }
     if (window.matchMedia && !window.matchMedia('(prefers-color-scheme: dark)').matches) {
