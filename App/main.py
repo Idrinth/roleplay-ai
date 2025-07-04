@@ -163,10 +163,10 @@ async def chat_document_add(chat_id: str, document: Document, user_id: Annotated
         collection_name=chat_id,
         documents=[document.content],
     )[0]
-    id_uuided = str(uuid.UUID(document_id))
-    sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.documents (id, name, content) VALUES (?, ?, ?);)", [id_uuided, document.name, document.content])
+    document_uuid = str(uuid.UUID(document_id))
+    sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.documents (id, name, content) VALUES (?, ?, ?);)", [document_uuid, document.name, document.content])
     return {
-        "id": id_uuided,
+        "id": document_uuid,
         "name": document.name,
     }
 
