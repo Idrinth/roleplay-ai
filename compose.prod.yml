@@ -24,6 +24,18 @@ services:
       retries: 5
     volumes:
       - grafana_storage:/var/lib/grafana
+    depends_on:
+      prometheus:
+        condition: service_healthy
+      mariadb:
+        condition: service_healthy
+  prometheus:
+    image: prom/prometheus:v2.53.5
+    healthcheck:
+      test: ["CMD", "curl", "http://0.0.0.0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   redis:
     image: redis
     restart: always
@@ -119,6 +131,8 @@ services:
       mongo:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      prometheus:
         condition: service_healthy
   ui:
     build:

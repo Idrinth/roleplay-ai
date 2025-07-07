@@ -1,5 +1,6 @@
 import json
 import re
+import time
 from ollama import ChatResponse, Client
 from qdrant_client import QdrantClient
 from fastapi import FastAPI, Cookie, BackgroundTasks, Response
@@ -12,6 +13,9 @@ from bson import json_util
 from bson.objectid import ObjectId
 from typing import Annotated
 import uuid
+from prometheus_client import Counter, Histogram, Gauge, push_to_gateway, CollectorRegistry
+from starlette.requests import Request
+
 from .models import World, Action, Chat, Character, Document, Login, Register
 from .functions import is_uuid_like, simplify_result, mariadb_name, mongodb_name, to_mongo_compatible, \
     get_system_prompt, get_rules, user_id_from_jwt, user_id_to_jwt
@@ -44,6 +48,33 @@ sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.mapping"
 sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.users"
                          " (aid BIGINT AUTO_INCREMENT NOT NULL, user_id char(36),password varchar(255), active tinyint(1), PRIMARY KEY(aid), UNIQUE (user_id))"
                          " charset=utf8;")
+
+REQUEST_COUNT = Counter('http_request_total', 'Total HTTP Requests', ['method', 'status', 'path'])
+REQUEST_LATENCY = Histogram('http_request_duration_seconds', 'HTTP Request Duration', ['method', 'status', 'path'])
+REQUEST_IN_PROGRESS = Gauge('http_requests_in_progress', 'HTTP Requests in progress', ['method', 'path'])
+
+@app.middleware("http")
+async def monitor_requests(request: Request, call_next):
+    registry1 = CollectorRegistry()
+    registry2 = CollectorRegistry()
+
+    method = request.method
+    path = request.url.path
+    REQUEST_IN_PROGRESS.labels(method=method, path=path, registry=registry1).inc()
+    push_to_gateway('prometheus:9091', registry=registry1, job=path)
+    start_time = time.time()
+
+    response = await call_next(request)
+
+    duration = time.time() - start_time
+    status = response.status_code
+    REQUEST_COUNT.labels(method=method, status=status, path=path, registry=registry2).inc()
+    REQUEST_LATENCY.labels(method=method, status=status, path=path, registry=registry2).observe(duration)
+    REQUEST_IN_PROGRESS.labels(method=method, path=path, registry=registry2).dec()
+
+    push_to_gateway('localhost:9091', job=path, registry=registry2)
+
+    return response
 
 def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_key: str):
     cursor = sql_connection.cursor()
