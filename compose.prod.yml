@@ -7,6 +7,7 @@ volumes:
   mongodata_config: {}
   redis: {}
   grafana_storage: {}
+  prometheus_storage: {}
 services:
   grafana:
     build:
@@ -36,6 +37,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - prometheus_storage:/prometheus
   redis:
     image: redis
     restart: always
