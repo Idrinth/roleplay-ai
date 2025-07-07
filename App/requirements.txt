@@ -6,3 +6,4 @@ mariadb~=1.1.12
 redis~=6.1.1
 pymongo~=4.13.2
 pyyaml~=6.0.2
+PyJWT~=2.10.1

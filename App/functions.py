@@ -6,8 +6,8 @@ from bson.objectid import ObjectId
 from enum import StrEnum
 from pydantic import BaseModel
 from bson import json_util
-from datetime import datetime, UTC
-from jwt import generate_jwt, verify_jwt
+from datetime import datetime, UTC, timedelta
+from jwt import encode, decode
 
 with open('./app/character-sheet.schema.json', 'r') as schema_file:
     schema = json.dumps(json.load(schema_file))
@@ -75,7 +75,7 @@ def get_system_prompt(characters, world: str, short_term_summary: str, medium_te
 
 def user_id_from_jwt(encoded_jwt: str):
     try:
-        headers, claims = verify_jwt(encoded_jwt, verifying_key, allowed_algs=["RS256"])
+        headers, claims = decode(encoded_jwt, verifying_key, allowed_algs=["RS256"])
         if claims.get('iss') != os.getenv("UI_HOST", "http://localhost"):
             return None
         return claims.get("sub")
@@ -84,13 +84,13 @@ def user_id_from_jwt(encoded_jwt: str):
         return None
 
 def user_id_to_jwt(user_id: str):
-    return generate_jwt(
+    return encode(
         {
             'iss': os.getenv("UI_HOST", "http://localhost"),
             'sub': user_id,
+            'exp': datetime.now(UTC) + timedelta(days=360),
+            'nbf': datetime.now(UTC),
         },
         signing_key,
-        algorithm='RS256',
-        not_before=datetime.now(UTC),
-        expires=60*60*24*30*12,
+        algorithm='RS256'
     )
