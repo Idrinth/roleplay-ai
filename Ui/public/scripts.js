@@ -15,7 +15,7 @@
                 credentials: "include",
                 method: "POST",
                 body: JSON.stringify({
-                    userId,
+                    user_id: userId,
                     password: "example"
                 }),
                 headers: {
