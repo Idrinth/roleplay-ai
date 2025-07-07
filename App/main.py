@@ -1,7 +1,5 @@
 import json
 import re
-from urllib.request import Request
-
 from ollama import ChatResponse, Client
 from qdrant_client import QdrantClient
 from fastapi import FastAPI, Cookie, BackgroundTasks, Response
@@ -14,12 +12,10 @@ from bson import json_util
 from bson.objectid import ObjectId
 from typing import Annotated
 import uuid
-
-from functions import user_id_from_jwt, user_id_to_jwt
 from models import Register
 from .models import World, Action, Chat, Character, Document, Login
 from .functions import is_uuid_like, simplify_result, mariadb_name, mongodb_name, to_mongo_compatible, \
-    get_system_prompt, get_rules
+    get_system_prompt, get_rules, user_id_from_jwt, user_id_to_jwt
 
 app = FastAPI(root_path="/api/v1", title="Gamemaster AI")
 app.add_middleware(
