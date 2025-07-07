@@ -63,7 +63,7 @@ async def monitor_requests(request: Request, call_next):
     method = request.method
     path = request.url.path
     REQUEST_IN_PROGRESS.labels(method=method, path=path).inc()
-    push_to_gateway('http://prometheus:9091', registry=registry, job=path)
+    push_to_gateway('http://prometheus:9090', registry=registry, job=path)
     start_time = time.time()
 
     response = await call_next(request)
@@ -74,7 +74,7 @@ async def monitor_requests(request: Request, call_next):
     REQUEST_LATENCY.labels(method=method, status=status, path=path).observe(duration)
     REQUEST_IN_PROGRESS.labels(method=method, path=path).dec()
 
-    push_to_gateway('http://prometheus:9091', job=path, registry=registry)
+    push_to_gateway('http://prometheus:9090', job=path, registry=registry)
 
     return response
 
