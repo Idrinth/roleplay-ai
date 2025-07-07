@@ -49,33 +49,59 @@
     })();
     console.log(user);
 
-    const chatId = await (async() => {
+    const chat = await (async() => {
         if (location.hash.replace(/[^0-9a-f-]+/g, '').match(uuidRegexp)) {
-            return location.hash.replace(/[^0-9a-f-]+/g, '');
+            const likely = location.hash.replace(/[^0-9a-f-]+/g, '');
+            if(user.chats.length > 0) {
+                for (const chat of user.chats) {
+                    if (chat.id === likely) {
+                        return chat;
+                    }
+                }
+            }
         }
         if(user.chats.length > 0) {
             for (const chat of user.chats) {
                 if (confirm(`Do you want to continue chat '${chat.name}'?`)) {
-                    return chat.id;
+                    return chat;
                 }
             }
         }
-        return (await (await fetch(`${apiHost}/new`,{
+        const chatId = (await (await fetch(`${apiHost}/new`,{
                 credentials: "include",
                 method: "GET",
             })).json()).chat ?? "";
+        return {
+            id: chatId,
+            name: chatId,
+        }
     })();
 
-    if (!chatId || !chatId.match(uuidRegexp)) {
+    if (!chat.id || !chat.id.match(uuidRegexp)) {
         window.location = location.protocol + '//' + location.host;
         return;
     }
-    location.hash = `#${chatId}`;
+    location.hash = `#${chat.id}`;
+    while (chat.id === chat.name) {
+        chat.name = prompt("Enter a new name for your chat.", chat.name) || chat.id;
+        await fetch(`${apiHost}/chat/${chat.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+                name: chat.name,
+            }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            credentials: "include",
+        })
+    }
+    document.title = chat.name + ' | ' + document.title;
 
     window.setInterval(async () => {
         try {
             const response = await fetch(
-                `${apiHost}/chat/${chatId}/active`,
+                `${apiHost}/chat/${chat.id}/active`,
                 {
                     credentials: "include",
                     method: "GET",
@@ -98,7 +124,7 @@
     }, 1000);
 
     const updateCharacters = async () => {
-        const response = await fetch(`${apiHost}/chat/${chatId}/characters`, {
+        const response = await fetch(`${apiHost}/chat/${chat.id}/characters`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -143,7 +169,7 @@
                 document.getElementById('characters').lastChild.lastChild.onclick = async (event) => {
                     event.stopPropagation();
                     if (confirm("Do you want to delete this character sheet?")) {
-                        await fetch(`${apiHost}/chat/${chatId}/characters/${character._id['$oid']}`, {
+                        await fetch(`${apiHost}/chat/${chat.id}/characters/${character._id['$oid']}`, {
                             method: 'DELETE',
                             credentials: "include",
                         });
@@ -166,7 +192,7 @@
         document.getElementById('chat').lastChild.innerHTML = converter.makeHtml(value);
         document.getElementById('chat').lastChild.classList.add('user');
         try {
-            const response = await fetch(`${apiHost}/chat/${chatId}`, {
+            const response = await fetch(`${apiHost}/chat/${chat.id}`, {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -192,7 +218,7 @@
         }
     });
     await (async () => {
-        const response = await fetch(`${apiHost}/chat/${chatId}`, {
+        const response = await fetch(`${apiHost}/chat/${chat.id}`, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
@@ -224,7 +250,7 @@
                     if (el.value && el.getAttribute('data-raw') !== el.value) {
                         if (confirm("Do you want to save this modified character sheet?")) {
                             const id = el.getAttribute('data-id');
-                            await fetch(`${apiHost}/chat/${chatId}/characters/${id}`, {
+                            await fetch(`${apiHost}/chat/${chat.id}/characters/${id}`, {
                                 method: 'PUT',
                                 headers: {
                                     'Accept': 'application/json',
@@ -237,7 +263,7 @@
                     }
                 } else if (el.value) {
                     if (confirm("Do you want to save this new character sheet?")) {
-                        await fetch(`${apiHost}/chat/${chatId}/characters`, {
+                        await fetch(`${apiHost}/chat/${chat.id}/characters`, {
                             method: 'POST',
                             headers: {
                                 'Accept': 'application/json',
@@ -262,7 +288,7 @@
         document.body.appendChild(el);
     }
     await (async () => {
-        const response = await fetch(`${apiHost}/chat/${chatId}/world`, {
+        const response = await fetch(`${apiHost}/chat/${chat.id}/world`, {
             method: "GET",
             headers: {
                 'Accept': 'application/json',
@@ -290,7 +316,7 @@
         }
         document.getElementById('world').setAttribute('data-original', JSON.stringify(keywords))
         document.getElementById('world').previousElementSibling.setAttribute('title', keywords.join("\n"))
-        fetch(`${apiHost}/chat/${chatId}/world`, {
+        fetch(`${apiHost}/chat/${chat.id}/world`, {
             method: "PUT",
             headers: {
                 'Accept': 'application/json',
