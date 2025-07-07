@@ -5,6 +5,13 @@ from typing import Dict, List, Optional
 class Action(BaseModel):
     description: str | None = None
 
+class Login(BaseModel):
+    user_id: str | None = None
+    password: str | None = None
+
+class Register(BaseModel):
+    password: str | None = None
+
 class Chat(BaseModel):
     name: str | None = None
 

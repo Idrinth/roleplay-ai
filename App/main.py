@@ -1,5 +1,7 @@
 import json
 import re
+from urllib.request import Request
+
 from ollama import ChatResponse, Client
 from qdrant_client import QdrantClient
 from fastapi import FastAPI, Cookie, BackgroundTasks, Response
@@ -12,8 +14,12 @@ from bson import json_util
 from bson.objectid import ObjectId
 from typing import Annotated
 import uuid
-from .models import World, Action, Chat, Character, Document
-from .functions import is_uuid_like, simplify_result, mariadb_name, mongodb_name, to_mongo_compatible,get_system_prompt
+
+from functions import user_id_from_jwt, user_id_to_jwt
+from models import Register
+from .models import World, Action, Chat, Character, Document, Login
+from .functions import is_uuid_like, simplify_result, mariadb_name, mongodb_name, to_mongo_compatible, \
+    get_system_prompt, get_rules
 
 app = FastAPI(root_path="/api/v1", title="Gamemaster AI")
 app.add_middleware(
@@ -40,9 +46,9 @@ sql_connection.cursor().execute("CREATE DATABASE IF NOT EXISTS `chat_users`;")
 sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.mapping"
                          " (user_id char(36),chat_id char(36), chat_name varchar(255), PRIMARY KEY(user_id, chat_id))"
                          " charset=utf8;")
-
-with open('./app/rules.md', 'r') as md_file:
-    rules = md_file.read()
+sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.users"
+                         " (aid BIGINT AUTO_INCREMENT NOT NULL, user_id char(36),password varchar(255), active tinyint(1), PRIMARY KEY(aid), UNIQUE (user_id))"
+                         " charset=utf8;")
 
 def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_key: str):
     cursor = sql_connection.cursor()
@@ -76,8 +82,50 @@ def update_history_dbs(chat_id:str, user_id, action: str, result: str, previous_
 async def root():
     return 'OK'
 
+@app.post('/login')
+async def login(response: Response, login_data: Login):
+    if login_data.password != "example":
+        return {"error": "Login failed"}
+    if not is_uuid_like(login_data.user_id):
+        return {"error": "Login failed"}
+    cursor = sql_connection.cursor()
+    cursor.execute("SELECT * FROM `chat_users`.`users` WHERE `user_id` = ?", [login_data.user_id])
+    chatuser = cursor.fetchone()
+    if not chatuser:
+        return {"error": "Login failed"}
+    response.set_cookie(
+        key="user_jwt",
+        value=user_id_to_jwt(login_data.user_id),
+        samesite="strict",
+        secure=True,
+        path="/",
+        expires=60*60*24*30*12,
+        domain=os.getenv("UI_HOST", "http://localhost").replace("http://", "").replace("https://", ""),
+        httponly=True
+    )
+    return True
+
+@app.post('/register')
+async def register(response: Response, register_data: Register):
+    if register_data.password != "example":
+        return {"error": "Registration failed"}
+    user_id = str(uuid.uuid4())
+    sql_connection.cursor().execute("INSERT INTO `chat_users`.`users` (user_id, password, active) VALUES (?, ?, ?)", [user_id, register_data.password, 1])
+    response.set_cookie(
+        key="user_jwt",
+        value=user_id_to_jwt(user_id),
+        samesite="strict",
+        secure=True,
+        path="/",
+        expires=60*60*24*30*12,
+        domain=os.getenv("UI_HOST", "http://localhost").replace("http://", "").replace("https://", ""),
+        httponly=True
+    )
+    return True
+
 @app.get('/new')
-async def new_chat(user_id: Annotated[str | None, Cookie()] = None):
+async def new_chat(user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Not a valid User"}
     chat_id = str(uuid.uuid4())
@@ -101,7 +149,8 @@ async def new_chat(user_id: Annotated[str | None, Cookie()] = None):
     return {"chat": chat_id}
 
 @app.get("/chat/{chat_id}/world")
-async def get_world(chat_id: str, user_id: Annotated[str | None, Cookie()] = None):
+async def get_world(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
@@ -109,7 +158,8 @@ async def get_world(chat_id: str, user_id: Annotated[str | None, Cookie()] = Non
     return {"world": json.loads(redis.get(f"{user_id}-{chat_id}.world") or "[]")}
 
 @app.put("/chat/{chat_id}/world")
-async def update_world(chat_id: str, world: World, user_id: Annotated[str | None, Cookie()] = None):
+async def update_world(chat_id: str, world: World, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
@@ -123,7 +173,8 @@ async def update_world(chat_id: str, world: World, user_id: Annotated[str | None
     return True
 
 @app.get("/chat/{chat_id}/documents")
-async def chat_document_list(chat_id: str, user_id: Annotated[str | None, Cookie()] = None):
+async def chat_document_list(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
@@ -138,7 +189,8 @@ async def chat_document_list(chat_id: str, user_id: Annotated[str | None, Cookie
     }
 
 @app.get("/chat/{chat_id}/documents/{document_id}")
-async def chat_document_delete(chat_id: str, document_id: str, user_id: Annotated[str | None, Cookie()] = None):
+async def chat_document_delete(chat_id: str, document_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
@@ -154,7 +206,8 @@ async def chat_document_delete(chat_id: str, document_id: str, user_id: Annotate
     return True
 
 @app.post("/chat/{chat_id}/documents")
-async def chat_document_add(chat_id: str, document: Document, user_id: Annotated[str | None, Cookie()] = None):
+async def chat_document_add(chat_id: str, document: Document, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
@@ -171,7 +224,8 @@ async def chat_document_add(chat_id: str, document: Document, user_id: Annotated
     }
 
 @app.post("/chat/{chat_id}/characters")
-async def chat_character_add(chat_id: str, character: Character, user_id: Annotated[str | None, Cookie()] = None):
+async def chat_character_add(chat_id: str, character: Character, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
@@ -180,7 +234,8 @@ async def chat_character_add(chat_id: str, character: Character, user_id: Annota
     return True
 
 @app.put("/chat/{chat_id}/characters/{character_id}")
-async def chat_character_update(chat_id: str, character_id: str, character: Character, user_id: Annotated[str | None, Cookie()] = None):
+async def chat_character_update(chat_id: str, character_id: str, character: Character, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
@@ -191,7 +246,8 @@ async def chat_character_update(chat_id: str, character_id: str, character: Char
     return True
 
 @app.delete("/chat/{chat_id}/characters/{character_id}")
-async def chat_character_delete(chat_id: str, character_id: str, user_id: Annotated[str | None, Cookie()] = None):
+async def chat_character_delete(chat_id: str, character_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
@@ -200,7 +256,8 @@ async def chat_character_delete(chat_id: str, character_id: str, user_id: Annota
     return True
 
 @app.get("/chat/{chat_id}/characters")
-async def chat_characters(chat_id: str, user_id: Annotated[str | None, Cookie()] = None):
+async def chat_characters(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
@@ -211,7 +268,8 @@ async def chat_characters(chat_id: str, user_id: Annotated[str | None, Cookie()]
         return {"exception": f"{e}"}
 
 @app.get("/chat/{chat_id}/active")
-async def chat_active(chat_id: str, user_id: Annotated[str | None, Cookie()] = None):
+async def chat_active(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
@@ -219,7 +277,8 @@ async def chat_active(chat_id: str, user_id: Annotated[str | None, Cookie()] = N
     return {"active": redis.get(f"{user_id}-{chat_id}.active") == "true"}
 
 @app.delete("/chat/{chat_id}")
-async def chat_delete(chat_id: str, user_id: Annotated[str | None, Cookie()] = None):
+async def chat_delete(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
@@ -235,20 +294,10 @@ async def chat_delete(chat_id: str, user_id: Annotated[str | None, Cookie()] = N
     return True
 
 @app.get("/whoami")
-async def whoami(response: Response, user_id: Annotated[str | None, Cookie()] = None):
-    if not user_id:
-        user_id = str(uuid.uuid4())
+async def whoami(user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
-        user_id = str(uuid.uuid4())
-    response.set_cookie(
-        key="user_id",
-        value=user_id,
-        samesite="strict",
-        path="/",
-        expires=60*60*24*30*12,
-        domain=os.getenv("UI_HOST", "http://localhost").replace("http://", "").replace("https://", ""),
-        httponly=True
-    )
+        return {"error": "Login Required"}
     user = {
         "id": user_id,
         "name": "User " + user_id,
@@ -265,7 +314,8 @@ async def whoami(response: Response, user_id: Annotated[str | None, Cookie()] = 
     return user
 
 @app.get("/chat/{chat_id}")
-async def chat_history(chat_id: str, user_id: Annotated[str | None, Cookie()] = None):
+async def chat_history(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
@@ -288,7 +338,8 @@ async def chat_history(chat_id: str, user_id: Annotated[str | None, Cookie()] = 
         return {"exception": e}
 
 @app.patch("/chat/{chat_id}")
-async def chat(chat_id: str, chat_data: Chat, user_id: Annotated[str | None, Cookie()] = None):
+async def chat(chat_id: str, chat_data: Chat, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
@@ -299,7 +350,8 @@ async def chat(chat_id: str, chat_data: Chat, user_id: Annotated[str | None, Coo
     return True
 
 @app.post("/chat/{chat_id}")
-async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, user_id: Annotated[str | None, Cookie()] = None):
+async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
@@ -339,7 +391,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
             previous_response = message[1]
         messages.append({
             "role": "system",
-            "content": rules
+            "content": get_rules()
         })
         vectordb_results = []
         if qdrant.collection_exists(chat_id):

@@ -1,10 +1,43 @@
 (async () => {
     const apiHost = location.protocol + '//' + location.hostname + '/api/v1'
     const characterFiller = await (await fetch('/char-template.yaml')).text();
-    const user = await(await fetch(`${apiHost}/whoami`,{
-        credentials: "include",
-        method: "GET",
-    })).json();
+    const user = await (async() => {
+        const user = await(await fetch(`${apiHost}/whoami`, {
+            credentials: "include",
+            method: "GET",
+        })).json();
+        if (!user.error) {
+            return user;
+        }
+        const userId = prompt("Enter your User-ID if you already have one.", "");
+        if (userId) {
+            if ((await (await fetch(`${apiHost}/login`, {
+                credentials: "include",
+                method: "POST",
+                body: JSON.stringify({
+                    userId,
+                    password: "example"
+                })
+            })).text()) !== "true") {
+                alert("Login failed!");
+                location.reload()
+                return;
+            }
+        } else {
+            const uuid = await (await fetch(`${apiHost}/register`, {
+                credentials: "include",
+                method: "POST",
+                body: JSON.stringify({
+                    password: "example"
+                })
+            })).text();
+            alert(`Your user-id is ${uuid} - please save that for logging in. Right now the password is hardcoded as example.`)
+        }
+        return await (await fetch(`${apiHost}/whoami`, {
+            credentials: "include",
+            method: "GET",
+        })).json();
+    })();
     console.log(user);
 
     const chatId = (location.hash.replace(/[^0-9a-f-]+/g, '') || (await (await fetch(`${apiHost}/new`,{

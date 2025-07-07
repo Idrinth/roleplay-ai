@@ -1,3 +1,4 @@
+import os
 import uuid
 import json
 from qdrant_client.http.models import QueryResponse
@@ -5,9 +6,20 @@ from bson.objectid import ObjectId
 from enum import StrEnum
 from pydantic import BaseModel
 from bson import json_util
+from datetime import datetime, UTC
+from jwt import generate_jwt, verify_jwt
 
 with open('./app/character-sheet.schema.json', 'r') as schema_file:
     schema = json.dumps(json.load(schema_file))
+with open('./app/rsa_private_key.pem', 'rb') as rsa_private_key_file:
+    signing_key = rsa_private_key_file.read()
+with open('./app/rsa_public_key.pem', 'rb') as rsa_public_key_file:
+    verifying_key = rsa_public_key_file.read()
+with open('./app/rules.md', 'r') as md_file:
+    rules = md_file.read()
+
+def get_rules():
+    return rules
 
 def mariadb_name(user_id: str, chat_id: str):
     # max length 64
@@ -60,3 +72,25 @@ def get_system_prompt(characters, world: str, short_term_summary: str, medium_te
     if len(vectordb_results) > 0:
         out += "# Potentially Related Information:\n```json\n" + json.dumps(vectordb_results) + "\n```"
     return out.strip()
+
+def user_id_from_jwt(encoded_jwt: str):
+    try:
+        headers, claims = verify_jwt(encoded_jwt, verifying_key, allowed_algs=["RS256"])
+        if claims.get('iss') != os.getenv("UI_HOST", "http://localhost"):
+            return None
+        return claims.get("sub")
+    except Exception as e:
+        print(f"{e}")
+        return None
+
+def user_id_to_jwt(user_id: str):
+    return generate_jwt(
+        {
+            'iss': os.getenv("UI_HOST", "http://localhost"),
+            'sub': user_id,
+        },
+        signing_key,
+        algorithm='RS256',
+        not_before=datetime.now(UTC),
+        expires=60*60*24*30*12,
+    )
