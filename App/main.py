@@ -12,8 +12,7 @@ from bson import json_util
 from bson.objectid import ObjectId
 from typing import Annotated
 import uuid
-from models import Register
-from .models import World, Action, Chat, Character, Document, Login
+from .models import World, Action, Chat, Character, Document, Login, Register
 from .functions import is_uuid_like, simplify_result, mariadb_name, mongodb_name, to_mongo_compatible, \
     get_system_prompt, get_rules, user_id_from_jwt, user_id_to_jwt
 
