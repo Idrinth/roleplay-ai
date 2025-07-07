@@ -52,27 +52,29 @@ sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.users"
 REQUEST_COUNT = Counter('http_request_total', 'Total HTTP Requests', ['method', 'status', 'path'])
 REQUEST_LATENCY = Histogram('http_request_duration_seconds', 'HTTP Request Duration', ['method', 'status', 'path'])
 REQUEST_IN_PROGRESS = Gauge('http_requests_in_progress', 'HTTP Requests in progress', ['method', 'path'])
+registry = CollectorRegistry()
+registry.register(REQUEST_COUNT)
+registry.register(REQUEST_LATENCY)
+registry.register(REQUEST_IN_PROGRESS)
 
 @app.middleware("http")
 async def monitor_requests(request: Request, call_next):
-    registry1 = CollectorRegistry()
-    registry2 = CollectorRegistry()
 
     method = request.method
     path = request.url.path
-    REQUEST_IN_PROGRESS.labels(method=method, path=path, registry=registry1).inc()
-    push_to_gateway('http://prometheus:9090', registry=registry1, job=path)
+    REQUEST_IN_PROGRESS.labels(method=method, path=path).inc()
+    push_to_gateway('http://prometheus:9091', registry=registry, job=path)
     start_time = time.time()
 
     response = await call_next(request)
 
     duration = time.time() - start_time
     status = response.status_code
-    REQUEST_COUNT.labels(method=method, status=status, path=path, registry=registry2).inc()
-    REQUEST_LATENCY.labels(method=method, status=status, path=path, registry=registry2).observe(duration)
-    REQUEST_IN_PROGRESS.labels(method=method, path=path, registry=registry2).dec()
+    REQUEST_COUNT.labels(method=method, status=status, path=path).inc()
+    REQUEST_LATENCY.labels(method=method, status=status, path=path).observe(duration)
+    REQUEST_IN_PROGRESS.labels(method=method, path=path).dec()
 
-    push_to_gateway('http://prometheus:9090', job=path, registry=registry2)
+    push_to_gateway('http://prometheus:9091', job=path, registry=registry)
 
     return response
 
