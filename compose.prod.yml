@@ -14,7 +14,7 @@ services:
     ports:
       - '127.0.0.1:8012:3000'
     environment:
-      GF_SERVER_ROOT_URL: "/grafana"
+      GF_SERVER_ROOT_URL: "https://roleplay-ai.bjoern-buettner.me/grafana"
     volumes:
       - grafana_storage:/var/lib/grafana
   redis:
