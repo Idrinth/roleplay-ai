@@ -31,7 +31,9 @@ services:
       mariadb:
         condition: service_healthy
   prometheus:
-    image: prom/prometheus:v2.53.5
+    build:
+      dockerfile: Prometheus/Dockerfile
+      no_cache: true
     healthcheck:
       test: [ "CMD", "echo", "0" ]
       interval: 10s

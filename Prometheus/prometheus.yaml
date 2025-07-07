@@ -1,0 +1,9 @@
+global:
+  scrape_interval:     5s
+  external_labels:
+    monitor: 'roleplay-ai-monitor'
+scrape_configs:
+  - job_name: 'api'
+    static_configs:
+      - targets:
+        - 'app:8000'
