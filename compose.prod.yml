@@ -15,6 +15,7 @@ services:
       - '127.0.0.1:8012:3000'
     environment:
       GF_SERVER_ROOT_URL: "https://grafana.bjoern-buettner.me/"
+      CSRF_TRUSTED_ORIGINS:  "https://grafana.bjoern-buettner.me/"
     volumes:
       - grafana_storage:/var/lib/grafana
   redis:
