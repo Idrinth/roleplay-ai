@@ -13,7 +13,7 @@ from bson import json_util
 from bson.objectid import ObjectId
 from typing import Annotated
 import uuid
-from prometheus_client import Counter, Histogram, Gauge, push_to_gateway, CollectorRegistry
+from prometheus_client import Counter, Histogram, Gauge, make_asgi_app, CollectorRegistry
 from starlette.requests import Request
 
 from .models import World, Action, Chat, Character, Document, Login, Register
@@ -28,6 +28,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.mount("/metrics", make_asgi_app())
 ollama = Client(host="http://ollama:11434")
 qdrant = QdrantClient("http://qdrant:6333")
 qdrant.set_model(qdrant.DEFAULT_EMBEDDING_MODEL, providers=["CPUExecutionProvider"])
@@ -63,7 +64,6 @@ async def monitor_requests(request: Request, call_next):
     method = request.method
     path = request.url.path
     REQUEST_IN_PROGRESS.labels(method=method, path=path).inc()
-    push_to_gateway('http://prometheus:9090', registry=registry, job=path)
     start_time = time.time()
 
     response = await call_next(request)
@@ -73,8 +73,6 @@ async def monitor_requests(request: Request, call_next):
     REQUEST_COUNT.labels(method=method, status=status, path=path).inc()
     REQUEST_LATENCY.labels(method=method, status=status, path=path).observe(duration)
     REQUEST_IN_PROGRESS.labels(method=method, path=path).dec()
-
-    push_to_gateway('http://prometheus:9090', job=path, registry=registry)
 
     return response
 
@@ -105,6 +103,9 @@ def update_history_dbs(chat_id:str, user_id, action: str, result: str, previous_
     )
     sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.messages (`creator`, `content`) VALUES ('user', ?);", [action])
     sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.messages (`creator`, `content`) VALUES ('agent', ?);", [result])
+
+
+from prometheus_client import make_asgi_app
 
 @app.get('/')
 async def root():
