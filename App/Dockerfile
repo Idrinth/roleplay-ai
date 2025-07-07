@@ -2,6 +2,7 @@ FROM python:3.13
 
 COPY App/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
+COPY App/*.pem ./app/
 COPY App/*.schema.json ./app/
 COPY App/rules.md ./app/
 COPY App/*.py ./app/
