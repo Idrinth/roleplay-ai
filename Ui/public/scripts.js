@@ -54,7 +54,7 @@
             return location.hash.replace(/[^0-9a-f-]+/g, '');
         }
         if(user.chats.length > 0) {
-            for (const chat in user.chats) {
+            for (const chat of user.chats) {
                 if (confirm(`Do you want to continue chat '${chat.name}'?`)) {
                     return chat.id;
                 }
