@@ -29,7 +29,7 @@ services:
       replicas: 1
       resources:
         limits:
-          cpus: 7.5
+          cpus: 15
     healthcheck:
       test: ["CMD", "ollama", "ps"]
       interval: 10s
