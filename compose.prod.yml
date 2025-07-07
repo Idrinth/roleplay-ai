@@ -15,9 +15,16 @@ services:
       - '127.0.0.1:8012:3000'
     environment:
       GF_SERVER_ROOT_URL: "https://grafana.bjoern-buettner.me/"
-      CSRF_TRUSTED_ORIGINS:  "https://grafana.bjoern-buettner.me/"
     volumes:
       - grafana_storage:/var/lib/grafana
+    post_start:
+      - command: echo "[security]" >> /etc/grafana/grafana.ini
+      - command: echo "disable_gravatar = true" >> /etc/grafana/grafana.ini
+      - command: echo "cookie_secure = true" >> /etc/grafana/grafana.ini
+      - command: echo "cookie_samesite = strict" >> /etc/grafana/grafana.ini
+      - command: echo "csrf_trusted_origins = https://grafana.bjoern-buettner.me/" >> /etc/grafana/grafana.ini
+      - command: echo "[users]" >> /etc/grafana/grafana.ini
+      - command: echo "allow_sign_up = false" >> /etc/grafana/grafana.ini
   redis:
     image: redis
     restart: always
