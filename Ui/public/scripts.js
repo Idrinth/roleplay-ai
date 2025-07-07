@@ -17,7 +17,11 @@
                 body: JSON.stringify({
                     userId,
                     password: "example"
-                })
+                }),
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
             })).text()) !== "true") {
                 alert("Login failed!");
                 location.reload()
@@ -29,7 +33,11 @@
                 method: "POST",
                 body: JSON.stringify({
                     password: "example"
-                })
+                }),
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
             })).text();
             alert(`Your user-id is ${uuid} - please save that for logging in. Right now the password is hardcoded as example.`)
         }
