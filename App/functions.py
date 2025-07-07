@@ -75,7 +75,7 @@ def get_system_prompt(characters, world: str, short_term_summary: str, medium_te
 
 def user_id_from_jwt(encoded_jwt: str):
     try:
-        headers, claims = decode(encoded_jwt, verifying_key, allowed_algs=["RS256"])
+        headers, claims = decode(encoded_jwt, verifying_key, algorithms=["RS256"])
         if claims.get('iss') != os.getenv("UI_HOST", "http://localhost"):
             return None
         return claims.get("sub")
