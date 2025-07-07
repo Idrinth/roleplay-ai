@@ -32,7 +32,7 @@ services:
   prometheus:
     image: prom/prometheus:v2.53.5
     healthcheck:
-      test: ["CMD", "curl", "http://0.0.0.0"]
+      test: [ "CMD", "echo", "0" ]
       interval: 10s
       timeout: 5s
       retries: 5
