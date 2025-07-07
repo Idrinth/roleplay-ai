@@ -1,6 +1,7 @@
 (async () => {
     const apiHost = location.protocol + '//' + location.hostname + '/api/v1'
     const characterFiller = await (await fetch('/char-template.yaml')).text();
+    const uuidRegexp = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
     const user = await (async() => {
         const user = await(await fetch(`${apiHost}/whoami`, {
             credentials: "include",
@@ -48,12 +49,24 @@
     })();
     console.log(user);
 
-    const chatId = (location.hash.replace(/[^0-9a-f-]+/g, '') || (await (await fetch(`${apiHost}/new`,{
-        credentials: "include",
-        method: "GET",
-    })).json()).chat);
+    const chatId = await (async() => {
+        if (location.hash.replace(/[^0-9a-f-]+/g, '').match(uuidRegexp)) {
+            return location.hash.replace(/[^0-9a-f-]+/g, '');
+        }
+        if(user.chats.length > 0) {
+            for (const chat in user.chats) {
+                if (confirm(`Do you want to continue chat '${chat.name}'?`)) {
+                    return chat.id;
+                }
+            }
+        }
+        return (await (await fetch(`${apiHost}/new`,{
+                credentials: "include",
+                method: "GET",
+            })).json()).chat ?? "";
+    })();
 
-    if (!chatId || !chatId.match(/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i)) {
+    if (!chatId || !chatId.match(uuidRegexp)) {
         window.location = location.protocol + '//' + location.host;
         return;
     }
