@@ -26,7 +26,7 @@ services:
         user: root
       - command: echo "cookie_samesite = strict" >> /etc/grafana/grafana.ini
         user: root
-      - command: echo "csrf_trusted_origins = https://grafana.bjoern-buettner.me/" >> /etc/grafana/grafana.ini
+      - command: echo "csrf_trusted_origins = grafana.bjoern-buettner.me" >> /etc/grafana/grafana.ini
         user: root
       - command: echo "[users]" >> /etc/grafana/grafana.ini
         user: root
