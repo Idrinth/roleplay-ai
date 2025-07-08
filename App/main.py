@@ -1,7 +1,7 @@
 import json
 import re
 import time
-from ollama import ChatResponse, Client
+from openai import OpenAI
 from qdrant_client import QdrantClient
 from fastapi import FastAPI, Cookie, BackgroundTasks, Response
 import mariadb
@@ -29,7 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.mount("/metrics", make_asgi_app())
-ollama = Client(host="http://ollama:11434")
+llama = OpenAI(base_url="http://llama:8000", api_key="<KEY>")
 qdrant = QdrantClient("http://qdrant:6333")
 qdrant.set_model(qdrant.DEFAULT_EMBEDDING_MODEL, providers=["CPUExecutionProvider"])
 redis = Redis(host="redis", port=6379, db=0)
@@ -86,7 +86,7 @@ async def monitor_requests(request: Request, call_next):
 
     return response
 
-def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_key: str):
+async def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_key: str):
     cursor = sql_connection.cursor()
     cursor.execute(
         f"SELECT * FROM (SELECT content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid DESC LIMIT {start},{end}) as a ORDER BY aid;")
@@ -94,17 +94,12 @@ def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_key: st
     for message in cursor.fetchall():
         summary += message[1] + "\n"
     if summary:
-        response: ChatResponse = ollama.chat(
-            model=os.getenv("LLM_MODEL_SUMMARY"),
-            messages=[{
-                "role": "user",
-                "content": \
-                    "Please summarize the following story extract in a brief paragraph, so that the major developments are known:\n"
-                    + summary,
-            }]
+        response = llama.responses.create(
+            model="gpt-4.1",
+            input="Please summarize the following story extract in a brief paragraph, so that the major developments are known:\n" + summary,
         )
-        response_content = re.sub("^(\n|.)*</think>\\s*", "", response["message"]["content"]).strip()
-        redis.set(redis_key, response_content)
+        response_content = re.sub("^(\n|.)*</think>\\s*", "", response.output_text).strip()
+        await redis.set(redis_key, response_content)
 
 def update_history_dbs(chat_id:str, user_id, action: str, result: str, previous_response: str):
     qdrant.add(
@@ -429,7 +424,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
             old_message_count += 1
             previous_response = message[1]
         messages.append({
-            "role": "system",
+            "role": "developer",
             "content": get_rules()
         })
         vectordb_results = []
@@ -444,18 +439,18 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
         system_prompt = get_system_prompt(characters, world, short_term_summary, medium_term_summary, long_term_summary, vectordb_results)
         if system_prompt:
             messages.append({
-                "role": "system",
+                "role": "developer",
                 "content": system_prompt
             })
         messages.append({
             "role": "user",
             "content": action.description,
         })
-        response: ChatResponse = ollama.chat(
-            model=os.getenv("LLM_MODEL_PLAY"),
-            messages=messages
+        response = llama.responses.create(
+            model="gpt-4.1",
+            input=messages
         )
-        response_content = re.sub("^(\n|.)*</think>\\s*", "", response["message"]["content"]).strip()
+        response_content = re.sub("^(\n|.)*</think>\\s*", "", response.output_text).strip()
         background_tasks.add_task(update_history_dbs, chat_id, user_id, action.description, response_content, previous_response)
         background_tasks.add_task(update_summary, chat_id, user_id, 20, 40, f"{user_id}-{chat_id}.short_text_summary")
         background_tasks.add_task(update_summary, chat_id, user_id, 40, 80, f"{user_id}-{chat_id}.medium_text_summary")

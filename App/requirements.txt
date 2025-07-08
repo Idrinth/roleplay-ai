@@ -1,4 +1,4 @@
-ollama~=0.4.8
+openai~=1.93.1
 qdrant-client~=1.14.2
 fastembed~=0.7.0
 fastapi[standard]~=0.115.12

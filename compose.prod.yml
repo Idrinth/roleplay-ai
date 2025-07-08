@@ -1,13 +1,13 @@
 name: roleplay-ai
 volumes:
   mariadb_data: {}
-  ollama: {}
   qdrant_storage: {}
   mongodata_db: {}
   mongodata_config: {}
   redis: {}
   grafana_storage: {}
   prometheus_storage: {}
+  llama: {}
 services:
   grafana:
     build:
@@ -54,13 +54,8 @@ services:
       retries: 5
     volumes:
       - redis:/data
-  ollama:
-    image: ollama/ollama
-    post_start:
-      - command: "ollama cp mistral:instruct $LLM_MODEL_PLAY"
-      - command: "ollama cp mistral:instruct $LLM_MODEL_SUMMARY"
-      - command: "ollama run $LLM_MODEL_PLAY"
-      - command: "ollama run $LLM_MODEL_SUMMARY"
+  llama:
+    image: ghcr.io/ggml-org/llama.cpp:server
     restart: always
     deploy:
       replicas: 1
@@ -68,17 +63,15 @@ services:
         limits:
           cpus: 15
     healthcheck:
-      test: ["CMD", "ollama", "ps"]
+      test: [ "CMD", "echo", "0" ]
       interval: 10s
       timeout: 5s
       retries: 5
-    environment:
-      OLLAMA_MAX_LOADED: 2
-      OLLAMA_KEEP_ALIVE: -1
+    command: -hf MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF:Q4_K_S --port 8000 --host 0.0.0.0 -n 16384
     env_file:
       - .env
     volumes:
-      - ollama:/root/.ollama
+      - llama:/models
   qdrant:
     image: qdrant/qdrant
     restart: always
