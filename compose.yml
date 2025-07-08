@@ -8,7 +8,24 @@ volumes:
   grafana_storage: {}
   prometheus_storage: {}
   llama: {}
+  promtail_log: {}
 services:
+  loki:
+    image: grafana/loki:latest
+    healthcheck:
+      test: [ "CMD", "echo", "0" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "3100:3100"
+    depends_on:
+      promtail:
+        condition: service_started
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - promtail_log:/var/log
   grafana:
     build:
       dockerfile: Grafana/Dockerfile
@@ -26,6 +43,8 @@ services:
     volumes:
       - grafana_storage:/var/lib/grafana
     depends_on:
+      loki:
+        condition: service_healthy
       prometheus:
         condition: service_healthy
       mariadb:
@@ -52,6 +71,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    logging:
+      driver: loki
+      options:
+        loki-url: http://loki:3100/loki/api/v1/push
+    depends_on:
+      loki:
+        condition: service_healthy
     volumes:
       - redis:/data
   llama:
@@ -72,6 +98,13 @@ services:
       - .env
     volumes:
       - llama:/models
+    logging:
+      driver: loki
+      options:
+        loki-url: http://loki:3100/loki/api/v1/push
+    depends_on:
+      loki:
+        condition: service_healthy
   qdrant:
     image: qdrant/qdrant
     restart: always
@@ -82,6 +115,13 @@ services:
       retries: 5
     volumes:
       - qdrant_storage:/qdrant/storage
+    logging:
+      driver: loki
+      options:
+        loki-url: http://loki:3100/loki/api/v1/push
+    depends_on:
+      loki:
+        condition: service_healthy
   mariadb:
     image: mariadb
     restart: always
@@ -94,6 +134,13 @@ services:
       retries: 5
     volumes:
       - mariadb_data:/var/lib/mysql
+    logging:
+      driver: loki
+      options:
+        loki-url: http://loki:3100/loki/api/v1/push
+    depends_on:
+      loki:
+        condition: service_healthy
   mongo:
     image: mongo
     restart: always
@@ -108,6 +155,13 @@ services:
     volumes:
       - mongodata_db:/data/db
       - mongodata_config:/data/configdb
+    logging:
+      driver: loki
+      options:
+        loki-url: http://loki:3100/loki/api/v1/push
+    depends_on:
+      loki:
+        condition: service_healthy
   app:
     build:
       dockerfile: App/Dockerfile
@@ -122,7 +176,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    logging:
+      driver: loki
+      options:
+        loki-url: http://loki:3100/loki/api/v1/push
     depends_on:
+      loki:
+        condition: service_healthy
       llama:
         condition: service_healthy
       qdrant:
@@ -138,7 +198,13 @@ services:
       dockerfile: Ui/Dockerfile
       no_cache: true
     restart: always
+    logging:
+      driver: loki
+      options:
+        loki-url: http://loki:3100/loki/api/v1/push
     depends_on:
+      loki:
+        condition: service_healthy
       app:
         condition: service_healthy
     healthcheck:
