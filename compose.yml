@@ -18,7 +18,7 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - "3100:3100"
+      - "127.0.0.1:3100:3100"
     depends_on:
       promtail:
         condition: service_started
