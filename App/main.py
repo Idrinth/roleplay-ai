@@ -21,7 +21,7 @@ from .models import World, Action, Chat, Character, Document, Login, Register
 from .functions import is_uuid_like, simplify_result, mariadb_name, mongodb_name, to_mongo_compatible, \
     get_system_prompt, get_rules, user_id_from_jwt, user_id_to_jwt
 
-llm_model = "TheBloke/OpenHermes-2.5-Mistral-7B-GGUF:Q4_K_M"
+llm_model = os.getenv('LLM_MODEL')
 
 app = FastAPI(root_path="/api/v1", title="Gamemaster AI")
 app.add_middleware(
