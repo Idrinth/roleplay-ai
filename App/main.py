@@ -29,7 +29,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.mount("/metrics", make_asgi_app())
+app.mount("/metrics/", make_asgi_app())
 qdrant = QdrantClient("http://qdrant:6333")
 qdrant.set_model(qdrant.DEFAULT_EMBEDDING_MODEL, providers=["CPUExecutionProvider"])
 redis = Redis(host="redis", port=6379, db=0)
@@ -100,7 +100,7 @@ async def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_k
                 "Content-Type": "application/json"
             },
             json={
-                "model": "MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF:Q4_K_S",  # or whatever model you're using
+                "model": "MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF:Q4_K_S",
                 "messages": [{
                     "role": "user",
                     "content": "Please summarize the following story extract in a brief paragraph, so that the major developments are known:\n" + summary,
@@ -458,10 +458,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
             },
             json={
                 "model": "MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF:Q4_K_S",
-                "messages": [{
-                    "role": "user",
-                    "content": "Please summarize the following story extract in a brief paragraph, so that the major developments are known:\n" + summary,
-                }],
+                "messages": messages,
             }
         )
 
