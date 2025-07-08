@@ -12,3 +12,12 @@ common:
     instance_addr: 127.0.0.1
     kvstore:
       store: inmemory
+  schema_configs:
+    configs:
+      - store: boltdb-shipper
+        from: 2000-01-01
+        object_store: filesystem
+        schema: v12
+        index:
+          prefix: loki_index_
+          period: 24h
