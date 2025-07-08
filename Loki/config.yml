@@ -12,7 +12,7 @@ common:
     instance_addr: 127.0.0.1
     kvstore:
       store: inmemory
-schema_configs:
+schema_config:
   configs:
     - store: boltdb-shipper
       from: 2000-01-01
