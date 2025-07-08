@@ -99,7 +99,7 @@ async def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_k
             input="Please summarize the following story extract in a brief paragraph, so that the major developments are known:\n" + summary,
         )
         response_content = re.sub("^(\n|.)*</think>\\s*", "", response.output_text).strip()
-        await redis.set(redis_key, response_content)
+        redis.set(redis_key, response_content)
 
 def update_history_dbs(chat_id:str, user_id, action: str, result: str, previous_response: str):
     qdrant.add(
@@ -318,11 +318,11 @@ async def chat_delete(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = 
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
     sql_connection.cursor().execute(f"DROP DATABASE `{mariadb_name(user_id, chat_id)}`;")
-    await redis.delete(f"{user_id}-{chat_id}.active")
-    await redis.delete(f"{user_id}-{chat_id}.short_summary")
-    await redis.delete(f"{user_id}-{chat_id}.medium_summary")
-    await redis.delete(f"{user_id}-{chat_id}.long_summary")
-    await redis.delete(f"{user_id}-{chat_id}.world")
+    redis.delete(f"{user_id}-{chat_id}.active")
+    redis.delete(f"{user_id}-{chat_id}.short_summary")
+    redis.delete(f"{user_id}-{chat_id}.medium_summary")
+    redis.delete(f"{user_id}-{chat_id}.long_summary")
+    redis.delete(f"{user_id}-{chat_id}.world")
     mongo.drop_database(mongodb_name(user_id, chat_id))
     qdrant.delete_collection(f"{user_id}-{chat_id}")
     return True
@@ -394,7 +394,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
         return {"error": "A description is required."}
     if redis.get(chat_id + ".chat_is_active") == "true":
         return {"error": "Chat is already active."}
-    await redis.set(f"{user_id}-{chat_id}.chat_is_active", "true")
+    redis.set(f"{user_id}-{chat_id}.chat_is_active", "true")
     long_term_summary = redis.get(f"{user_id}-{chat_id}.long_text_summary") or ""
     medium_term_summary = redis.get(f"{user_id}-{chat_id}.medium_text_summary") or ""
     short_term_summary = redis.get(f"{user_id}-{chat_id}.short_text_summary") or ""
