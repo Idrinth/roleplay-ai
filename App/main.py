@@ -456,5 +456,4 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
         return {"error": f"{e}"}
     except Exception as e:
         background_tasks.add_task(redis.set, f"{user_id}-{chat_id}.chat_is_active", "false")
-        print(e)
-        return {"exception": f"{e}"}
+        raise e
