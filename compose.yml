@@ -123,7 +123,7 @@ services:
       timeout: 5s
       retries: 5
     depends_on:
-      ollama:
+      llama:
         condition: service_healthy
       qdrant:
         condition: service_healthy
