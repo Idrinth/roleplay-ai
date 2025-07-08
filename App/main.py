@@ -50,9 +50,9 @@ sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.users"
                          " (aid BIGINT AUTO_INCREMENT NOT NULL, user_id char(36),password varchar(255), active tinyint(1), PRIMARY KEY(aid), UNIQUE (user_id))"
                          " charset=utf8;")
 
-REQUEST_COUNT = Counter('http_request_total', 'Total HTTP Requests', ['method', 'status', 'path'])
-REQUEST_LATENCY = Histogram('http_request_duration_seconds', 'HTTP Request Duration', ['method', 'status', 'path'])
-REQUEST_IN_PROGRESS = Gauge('http_requests_in_progress', 'HTTP Requests in progress', ['method', 'path'])
+REQUEST_COUNT = Counter('app_http_request_total', 'Total HTTP Requests', ['method', 'status', 'path'])
+REQUEST_LATENCY = Histogram('app_http_request_duration_seconds', 'HTTP Request Duration', ['method', 'status', 'path'])
+REQUEST_IN_PROGRESS = Gauge('app_http_requests_in_progress', 'HTTP Requests in progress', ['method', 'path'])
 registry = CollectorRegistry()
 registry.register(REQUEST_COUNT)
 registry.register(REQUEST_LATENCY)
