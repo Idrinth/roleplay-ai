@@ -205,7 +205,6 @@ services:
         mode: non-blocking
         max-buffer-size: 4m
         loki-retries: "3"
-        loki-
     depends_on:
       loki:
         condition: service_healthy
