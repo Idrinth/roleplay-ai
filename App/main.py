@@ -431,7 +431,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
             old_message_count += 1
             previous_response = message[1]
         messages.append({
-            "role": "developer",
+            "role": "system",
             "content": get_rules()
         })
         vectordb_results = []
@@ -446,7 +446,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
         system_prompt = get_system_prompt(characters, world, short_term_summary, medium_term_summary, long_term_summary, vectordb_results)
         if system_prompt:
             messages.append({
-                "role": "developer",
+                "role": "system",
                 "content": system_prompt
             })
         messages.append({
