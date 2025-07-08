@@ -62,7 +62,17 @@ registry.register(REQUEST_IN_PROGRESS)
 async def monitor_requests(request: Request, call_next):
 
     method = request.method
-    path = request.url.path
+    path = re.sub(
+        "/[a-f0-9]{24}$",
+        "{id}",
+        re.sub(
+            "/[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}(/|$)",
+            "{uuid}",
+            request.url.path,
+            flags=re.IGNORECASE
+        ),
+        flags=re.IGNORECASE
+    )
     REQUEST_IN_PROGRESS.labels(method=method, path=path).inc()
     start_time = time.time()
 
