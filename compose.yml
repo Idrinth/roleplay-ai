@@ -67,7 +67,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    command: -hf MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF:Q4_K_S --port 8000 -n 16384
+    command: -hf NousResearch/Nous-Hermes-2-Mistral-7B-DPO-GGUF --port 8000 -n 16384
     env_file:
       - .env
     volumes:

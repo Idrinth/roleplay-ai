@@ -21,6 +21,8 @@ from .models import World, Action, Chat, Character, Document, Login, Register
 from .functions import is_uuid_like, simplify_result, mariadb_name, mongodb_name, to_mongo_compatible, \
     get_system_prompt, get_rules, user_id_from_jwt, user_id_to_jwt
 
+llm_model = "NousResearch/Nous-Hermes-2-Mistral-7B-DPO-GGUF"
+
 app = FastAPI(root_path="/api/v1", title="Gamemaster AI")
 app.add_middleware(
     CORSMiddleware,
@@ -100,7 +102,7 @@ async def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_k
                 "Content-Type": "application/json"
             },
             json={
-                "model": "MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF:Q4_K_S",
+                "model": llm_model,
                 "messages": [{
                     "role": "user",
                     "content": "Please summarize the following story extract in a brief paragraph, so that the major developments are known:\n" + summary,
@@ -457,12 +459,13 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
                 "Content-Type": "application/json"
             },
             json={
-                "model": "MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF:Q4_K_S",
+                "model": llm_model,
                 "messages": messages,
             }
         )
 
         if response.status_code == 200:
+            print(response.json())
             response_content = response.json()["choices"][0]["message"]["content"]
             response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
             background_tasks.add_task(update_history_dbs, chat_id, user_id, action.description, response_content, previous_response)
