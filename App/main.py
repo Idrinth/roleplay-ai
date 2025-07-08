@@ -109,9 +109,6 @@ def update_history_dbs(chat_id:str, user_id, action: str, result: str, previous_
     sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.messages (`creator`, `content`) VALUES ('user', ?);", [action])
     sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.messages (`creator`, `content`) VALUES ('agent', ?);", [result])
 
-
-from prometheus_client import make_asgi_app
-
 @app.get('/')
 async def root():
     return 'OK'
@@ -455,7 +452,9 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
         return {"message": response_content, "request": messages}
     except mariadb.Error as e:
         background_tasks.add_task(redis.set, f"{user_id}-{chat_id}.chat_is-active", "false")
+        print(e)
         return {"error": f"{e}"}
     except Exception as e:
         background_tasks.add_task(redis.set, f"{user_id}-{chat_id}.chat_is_active", "false")
-        return {"exception": f"{e}", "data": e}
+        print(e)
+        return {"exception": f"{e}"}
