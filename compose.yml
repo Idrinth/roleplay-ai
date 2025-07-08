@@ -67,7 +67,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    command: -hf NousResearch/Nous-Hermes-2-Mistral-7B-DPO-GGUF --port 8000 -n 16384
+    command: -hf TheBloke/OpenHermes-2.5-Mistral-7B-GGUF:Q4_K_M --port 8000 -n 16384
     env_file:
       - .env
     volumes:
