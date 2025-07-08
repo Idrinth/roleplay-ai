@@ -390,15 +390,11 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
-    if not os.getenv("LLM_MODEL_SUMMARY"):
-        return {"error": "A model for the summary is needed."}
-    if not os.getenv("LLM_MODEL_PLAY"):
-        return {"error": "A model for playing is needed."}
     if not action.description:
         return {"error": "A description is required."}
     if redis.get(chat_id + ".chat_is_active") == "true":
         return {"error": "Chat is already active."}
-    redis.set(f"{user_id}-{chat_id}.chat_is_active", "true")
+    await redis.set(f"{user_id}-{chat_id}.chat_is_active", "true")
     long_term_summary = redis.get(f"{user_id}-{chat_id}.long_text_summary") or ""
     medium_term_summary = redis.get(f"{user_id}-{chat_id}.medium_text_summary") or ""
     short_term_summary = redis.get(f"{user_id}-{chat_id}.short_text_summary") or ""
