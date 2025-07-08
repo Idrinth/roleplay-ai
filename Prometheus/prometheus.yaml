@@ -1,9 +1,9 @@
 global:
-  scrape_interval:     5s
+  scrape_interval: 5s
   external_labels:
-    monitor: 'roleplay-ai-monitor'
+    monitor: roleplay-ai-monitor
 scrape_configs:
   - job_name: app
     static_configs:
       - targets:
-        - 'http://app:8000/metrics'
+        - "app:8000"
