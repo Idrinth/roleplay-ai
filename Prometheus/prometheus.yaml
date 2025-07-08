@@ -7,4 +7,4 @@ scrape_configs:
     metrics_path: "/api/v1/metrics"
     static_configs:
       - targets:
-        - "app:8000"
+        - "app:80"
