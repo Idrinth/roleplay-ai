@@ -1,7 +1,8 @@
 import json
 import re
 import time
-from openai import OpenAI
+
+import requests
 from qdrant_client import QdrantClient
 from fastapi import FastAPI, Cookie, BackgroundTasks, Response
 import mariadb
@@ -29,7 +30,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.mount("/metrics", make_asgi_app())
-llama = OpenAI(base_url="http://llama:8000", api_key="<KEY>")
 qdrant = QdrantClient("http://qdrant:6333")
 qdrant.set_model(qdrant.DEFAULT_EMBEDDING_MODEL, providers=["CPUExecutionProvider"])
 redis = Redis(host="redis", port=6379, db=0)
@@ -94,12 +94,24 @@ async def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_k
     for message in cursor.fetchall():
         summary += message[1] + "\n"
     if summary:
-        response = llama.responses.create(
-            model="gpt-4.1",
-            input="Please summarize the following story extract in a brief paragraph, so that the major developments are known:\n" + summary,
+        response = requests.post(
+            "http://llama:8000/v1/chat/completions",
+            headers={
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "gpt-4.1",  # or whatever model you're using
+                "messages": [{
+                    "role": "user",
+                    "content": "Please summarize the following story extract in a brief paragraph, so that the major developments are known:\n" + summary,
+                }],
+            }
         )
-        response_content = re.sub("^(\n|.)*</think>\\s*", "", response.output_text).strip()
-        redis.set(redis_key, response_content)
+
+        if response.status_code == 200:
+            response_content = response.json()["choices"][0]["message"]["content"]
+            response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
+            redis.set(redis_key, response_content)
 
 def update_history_dbs(chat_id:str, user_id, action: str, result: str, previous_response: str):
     qdrant.add(
@@ -439,17 +451,32 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
             "role": "user",
             "content": action.description,
         })
-        response = llama.responses.create(
-            model="gpt-4.1",
-            input=messages
+        response = requests.post(
+            "http://llama:8000/v1/chat/completions",
+            headers={
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "gpt-4.1",  # or whatever model you're using
+                "messages": [{
+                    "role": "user",
+                    "content": "Please summarize the following story extract in a brief paragraph, so that the major developments are known:\n" + summary,
+                }],
+            }
         )
-        response_content = re.sub("^(\n|.)*</think>\\s*", "", response.output_text).strip()
-        background_tasks.add_task(update_history_dbs, chat_id, user_id, action.description, response_content, previous_response)
-        background_tasks.add_task(update_summary, chat_id, user_id, 20, 40, f"{user_id}-{chat_id}.short_text_summary")
-        background_tasks.add_task(update_summary, chat_id, user_id, 40, 80, f"{user_id}-{chat_id}.medium_text_summary")
-        background_tasks.add_task(update_summary, chat_id, user_id, 80, 160, f"{user_id}-{chat_id}.long_text_summary")
+
+        if response.status_code == 200:
+            response_content = response.json()["choices"][0]["message"]["content"]
+            response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
+            background_tasks.add_task(update_history_dbs, chat_id, user_id, action.description, response_content, previous_response)
+            background_tasks.add_task(update_summary, chat_id, user_id, 20, 40, f"{user_id}-{chat_id}.short_text_summary")
+            background_tasks.add_task(update_summary, chat_id, user_id, 40, 80, f"{user_id}-{chat_id}.medium_text_summary")
+            background_tasks.add_task(update_summary, chat_id, user_id, 80, 160, f"{user_id}-{chat_id}.long_text_summary")
+            background_tasks.add_task(redis.set, f"{user_id}-{chat_id}.is-active", "false")
+            return {"message": response_content}
+
         background_tasks.add_task(redis.set, f"{user_id}-{chat_id}.is-active", "false")
-        return {"message": response_content, "request": messages}
+        return {"error": response.status_code}
     except mariadb.Error as e:
         background_tasks.add_task(redis.set, f"{user_id}-{chat_id}.chat_is-active", "false")
         print(e)
