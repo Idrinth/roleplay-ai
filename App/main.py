@@ -67,7 +67,7 @@ async def monitor_requests(request: Request, call_next):
         "{id}",
         re.sub(
             "/[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}(/|$)",
-            "{uuid}",
+            "/{uuid}$1",
             request.url.path,
             flags=re.IGNORECASE
         ),
