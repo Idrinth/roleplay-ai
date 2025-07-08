@@ -21,11 +21,16 @@ services:
       - "127.0.0.1:3100:3100"
     depends_on:
       promtail:
-        condition: service_started
+        condition: service_healthy
   promtail:
     image: grafana/promtail:latest
     volumes:
       - promtail_log:/var/log
+    healthcheck:
+      test: [ "CMD", "echo", "0" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   grafana:
     build:
       dockerfile: Grafana/Dockerfile
@@ -93,7 +98,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    command: -hf TheBloke/OpenHermes-2.5-Mistral-7B-GGUF:Q4_K_M --port 8000 -n 16384
+    command: "-hf $LLM_MODEL --port 8000 -n 16384"
     env_file:
       - .env
     volumes:
