@@ -100,7 +100,7 @@ async def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_k
                 "Content-Type": "application/json"
             },
             json={
-                "model": "gpt-4.1",  # or whatever model you're using
+                "model": "MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF:Q4_K_S",  # or whatever model you're using
                 "messages": [{
                     "role": "user",
                     "content": "Please summarize the following story extract in a brief paragraph, so that the major developments are known:\n" + summary,
@@ -457,7 +457,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
                 "Content-Type": "application/json"
             },
             json={
-                "model": "gpt-4.1",  # or whatever model you're using
+                "model": "MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF:Q4_K_S",
                 "messages": [{
                     "role": "user",
                     "content": "Please summarize the following story extract in a brief paragraph, so that the major developments are known:\n" + summary,
