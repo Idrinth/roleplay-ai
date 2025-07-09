@@ -278,7 +278,7 @@ async def chat_character_add(chat_id: str, character: Character, user_jwt: Annot
     mongo[mongodb_name(user_id, chat_id)]['characters'].insert_one(to_mongo_compatible(character))
     return True
 
-@app.put("/chat/{chat_id}/characters/{character_id}")
+@app.post("/chat/{chat_id}/characters/{character_id}")
 async def chat_character_update(chat_id: str, character_id: str, character: Character, user_jwt: Annotated[str | None, Cookie()] = None):
     user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
@@ -382,7 +382,7 @@ async def chat_history(chat_id: str, user_jwt: Annotated[str | None, Cookie()] =
     except Exception as e:
         return {"exception": e}
 
-@app.put("/chat/{chat_id}")
+@app.post("/chat/{chat_id}/name")
 async def chat(chat_id: str, chat_data: Chat, user_jwt: Annotated[str | None, Cookie()] = None):
     user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):

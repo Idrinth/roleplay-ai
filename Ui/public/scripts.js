@@ -85,7 +85,7 @@
     while (chat.id === chat.name) {
         chat.name = prompt("Enter a new name for your chat.", chat.name) || chat.id;
         await fetch(`${apiHost}/chat/${chat.id}`, {
-            method: 'PUT',
+            method: 'POST',
             body: JSON.stringify({
                 name: chat.name,
             }),
@@ -251,7 +251,7 @@
                         if (confirm("Do you want to save this modified character sheet?")) {
                             const id = el.getAttribute('data-id');
                             await fetch(`${apiHost}/chat/${chat.id}/characters/${id}`, {
-                                method: 'PUT',
+                                method: 'POST',
                                 headers: {
                                     'Accept': 'application/json',
                                     'Content-Type': 'application/json',
