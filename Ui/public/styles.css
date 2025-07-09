@@ -170,7 +170,7 @@ input, textarea {
   background-image: url('/logo.dark.svg');
 }
 a[target="_blank"]:after {
-  content: "\29F400";
+  content: "\0029F4";
 }
 @media screen and (max-width: 1000px) {
   body {
