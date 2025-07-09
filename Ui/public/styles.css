@@ -29,6 +29,8 @@ body {
   display: grid;
   grid-template-columns: 7fr 1fr;
   grid-template-rows: 10% 40% 40% 10%;
+  background-image: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0)),
+    linear-gradient(to right, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0));
 }
 #chat {
  grid-row-start: 2;
