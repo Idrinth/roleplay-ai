@@ -50,6 +50,10 @@ footer {
   grid-column-start: 1;
   grid-column-end: 3;
   text-align: center;
+  color: var(--main-shadow);
+}
+footer > a, footer > a:visited, footer > a:active, footer > a:hover, footer > a:focus {
+  color: var(--main-shadow);
 }
 #footer {
   grid-column-start: 1;
@@ -121,15 +125,17 @@ textarea {
 }
 .button, button {
   cursor: pointer;
-  background: var(--main-color);
+  background-color: var(--main-color);
   color: var(--main-bg);
-  border-radius: 5%;
-  padding: 0.2em;
+  border-radius: 0.25em;
+  padding: 0.35em;
   border: 1px solid var(--main-color);
   box-shadow: inset 2px 2px 5px #fff;
   margin: 1px;
+  background-image: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0)),
+    linear-gradient(to right, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0));
 }
-.button:hover, button:hover {
+.button:hover, button:hover, .button:focus, button:focus {
   box-shadow: inset 2px 2px 5px #000;
 }
 input, textarea {
