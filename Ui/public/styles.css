@@ -159,6 +159,9 @@ input, textarea {
 .inverted-colors .gamemaster {
   background-image: url('/logo.dark.svg');
 }
+a[target="_blank"]:after {
+  content: "[/]";
+}
 @media screen and (max-width: 1000px) {
   body {
     grid-template-columns: 3fr 1fr;
