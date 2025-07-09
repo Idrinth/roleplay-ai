@@ -192,7 +192,7 @@ services:
         condition: service_healthy
   app:
     deploy:
-      replicas: 3
+      replicas: 1
     build:
       dockerfile: App/Dockerfile
       no_cache: true
