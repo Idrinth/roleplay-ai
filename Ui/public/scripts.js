@@ -105,7 +105,7 @@
                 {
                     credentials: "include",
                     method: "GET",
-                    signal: AbortSignal.timeout(900),
+                    signal: AbortSignal.timeout(2400),
                 }
             );
             if (response.ok) {
@@ -121,7 +121,7 @@
         }
         document.getElementById('send').disabled = true;
         document.getElementById('loader').setAttribute('style', '');
-    }, 1000);
+    }, 2500);
 
     const updateCharacters = async () => {
         const response = await fetch(`${apiHost}/chat/${chat.id}/characters`, {

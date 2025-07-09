@@ -121,6 +121,8 @@ services:
   qdrant:
     image: qdrant/qdrant
     restart: always
+    deploy:
+      replicas: 1
     healthcheck:
       test: ["CMD", "echo", "0"]
       interval: 10s
@@ -140,6 +142,8 @@ services:
         condition: service_healthy
   mariadb:
     image: mariadb
+    deploy:
+      replicas: 1
     restart: always
     environment:
       MARIADB_ROOT_PASSWORD: example
@@ -162,6 +166,8 @@ services:
         condition: service_healthy
   mongo:
     image: mongo
+    deploy:
+      replicas: 1
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
@@ -185,6 +191,8 @@ services:
       loki:
         condition: service_healthy
   app:
+    deploy:
+      replicas: 3
     build:
       dockerfile: App/Dockerfile
       no_cache: true
@@ -219,6 +227,8 @@ services:
       redis:
         condition: service_healthy
   ui:
+    deploy:
+      replicas: 1
     build:
       dockerfile: Ui/Dockerfile
       no_cache: true
