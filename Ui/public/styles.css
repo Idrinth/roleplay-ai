@@ -30,7 +30,7 @@ body {
   padding: 1em 5%;
   display: grid;
   grid-template-columns: 7fr 1fr;
-  grid-template-rows: 10% 40% 40% 10%;
+  grid-template-rows: 7% 40% 40% 10% 3%;
   background-image: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0)),
     linear-gradient(to right, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0));
 }
@@ -38,6 +38,11 @@ body {
   grid-row-start: 2;
   grid-row-end: 4;
   padding: 0.2em;
+}
+footer {
+  grid-column-start: 1;
+  grid-column-end: 3;
+  text-align: center;
 }
 #footer {
   grid-column-start: 1;
