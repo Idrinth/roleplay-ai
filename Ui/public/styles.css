@@ -37,6 +37,10 @@ body {
   background-image: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0)),
     linear-gradient(to right, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0));
 }
+a, a:visited, a:active, a:hover, a:focus {
+  color: var(--main-color);
+  text-decoration: underline;
+}
 #chat {
   grid-row-start: 2;
   grid-row-end: 4;
