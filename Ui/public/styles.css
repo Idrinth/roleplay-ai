@@ -6,14 +6,16 @@
   --main-bg: #111;
   --main-shadow: #333;
   --main-striking: #eee;
-  --light-shadow: rgba(0,0,0,0.05)
+  --light-shadow: rgba(255,255,255,0.05)
+  --medium-shadow: rgba(255,255,255,0.1)
 }
 :root.inverted-colors {
   --main-color: #333;
   --main-bg: #ddd;
   --main-shadow: #bbb;
   --main-striking: #111;
-  --light-shadow: rgba(255,255,255,0.05)
+  --light-shadow: rgba(0,0,0,0.05)
+  --medium-shadow: rgba(0,0,0,0.1)
 }
 body, html {
   width: 100%;
@@ -135,7 +137,7 @@ input, textarea {
 }
 #characters, #documents, #chat, #footer {
   box-shadow: 1em 1em 1em var(--light-shadow);
-  border: 1px solid var(--light-shadow);
+  border: 1px solid var(--medium-shadow);
   margin: 1em;
   padding: 0;
   border-radius: 0.25em;
