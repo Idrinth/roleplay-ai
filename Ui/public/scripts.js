@@ -105,7 +105,7 @@
                 {
                     credentials: "include",
                     method: "GET",
-                    signal: AbortSignal.timeout(500),
+                    signal: AbortSignal.timeout(900),
                 }
             );
             if (response.ok) {
