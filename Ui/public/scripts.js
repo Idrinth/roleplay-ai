@@ -85,7 +85,7 @@
     while (chat.id === chat.name) {
         chat.name = prompt("Enter a new name for your chat.", chat.name) || chat.id;
         await fetch(`${apiHost}/chat/${chat.id}`, {
-            method: 'PATCH',
+            method: 'PUT',
             body: JSON.stringify({
                 name: chat.name,
             }),
