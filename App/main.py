@@ -166,7 +166,7 @@ async def register(response: Response, register_data: Register):
         domain=os.getenv("UI_HOST", "http://localhost").replace("http://", "").replace("https://", ""),
         httponly=True
     )
-    return True
+    return user_id
 
 @app.get('/new')
 async def new_chat(user_jwt: Annotated[str | None, Cookie()] = None):
