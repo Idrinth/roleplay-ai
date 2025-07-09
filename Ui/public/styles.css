@@ -28,7 +28,11 @@ body {
   padding: 1em 5%;
   display: grid;
   grid-template-columns: 7fr 1fr;
-  grid-template-rows: 10% 80% 10%;
+  grid-template-rows: 10% 40% 40% 10%;
+}
+#chat {
+ grid-row-start: 2;
+ grid-row-end: 4;
 }
 h1 {
   grid-column-end: 3;
