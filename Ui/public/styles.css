@@ -64,6 +64,8 @@ footer > a, footer > a:visited, footer > a:active, footer > a:hover, footer > a:
 h1 {
   grid-column-end: 3;
   grid-column-start: 1;
+  display: grid;
+  grid-template-columns: 1fr 3fr 1fr;
 }
 ul {
   overflow-x: hidden;
@@ -171,6 +173,10 @@ input, textarea {
 }
 a[target="_blank"]:after {
   content: "&#x29F4;";
+}
+h1 > a {
+  font-size: 0.5em;
+  color: var(--main-bg);
 }
 @media screen and (max-width: 1000px) {
   body {
