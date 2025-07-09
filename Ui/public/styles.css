@@ -33,7 +33,7 @@ body {
   padding: 1em 5%;
   display: grid;
   grid-template-columns: 7fr 1fr;
-  grid-template-rows: 7% 40% 40% 10% 3%;
+  grid-template-rows: 7% 20% 30% 30% 10% 3%;
   background-image: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0)),
     linear-gradient(to right, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0));
 }
@@ -43,7 +43,7 @@ a, a:visited, a:active, a:hover, a:focus {
 }
 #chat {
   grid-row-start: 2;
-  grid-row-end: 4;
+  grid-row-end: 5;
   padding: 0.2em;
 }
 footer {
@@ -64,8 +64,6 @@ footer > a, footer > a:visited, footer > a:active, footer > a:hover, footer > a:
 h1 {
   grid-column-end: 3;
   grid-column-start: 1;
-  display: grid;
-  grid-template-columns: 1fr 3fr 1fr;
 }
 ul {
   overflow-x: hidden;
@@ -125,7 +123,7 @@ textarea {
   font-style: italic;
   color: var(--main-shadow);
 }
-.button, button {
+.button, .button:active, .button:visited, button, button:active, button:visited {
   cursor: pointer;
   background-color: var(--main-color);
   color: var(--main-bg);
@@ -147,7 +145,7 @@ input, textarea {
   background: var(--main-bg);
   width: 100%;
 }
-#characters, #documents, #chat, #footer {
+#characters, #documents, #chat, #footer, #worlds {
   box-shadow: 1em 1em 1em var(--light-shadow);
   border: 1px solid var(--medium-shadow);
   margin: 1em;
@@ -173,10 +171,6 @@ input, textarea {
 }
 a[target="_blank"]:after {
   content: "&#x29F4;";
-}
-h1 > a {
-  font-size: 0.5em;
-  color: var(--main-bg);
 }
 @media screen and (max-width: 1000px) {
   body {

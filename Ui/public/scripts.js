@@ -142,7 +142,7 @@
                 console.error(json.exception);
                 return;
             }
-            while (document.getElementById('characters').children.length > 2) {
+            while (document.getElementById('characters').children.length > 1) {
                 document.getElementById('characters').removeChild(document.getElementById('characters').lastChild);
             }
             for (const character of json.characters) {
