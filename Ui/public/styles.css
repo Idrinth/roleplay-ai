@@ -37,6 +37,7 @@ body {
 #chat {
  grid-row-start: 2;
  grid-row-end: 4;
+  padding: 0.2em;
 }
 h1 {
   grid-column-end: 3;
