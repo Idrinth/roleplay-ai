@@ -166,7 +166,7 @@ async def me(user: User, user_jwt: Annotated[str | None, Cookie()] = None):
     chatuser = cursor.fetchone()
     if not chatuser:
         return {"error": "Not a valid User"}
-    if user.password:
+    if user.password and user.username:
         sql_connection.cursor().execute(
             "UPDATE `chat_users`.`users` SET password = ?, user_name= ? WHERE `user_id` = ?",
             [PasswordHasher().hash(user.password), user.username, user_id]

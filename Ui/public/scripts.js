@@ -74,7 +74,34 @@
     })();
     console.log(user);
 
-    document.getElementsByTagName('h1')[0].lastElementChild.innerText = 'Gamemaster AI for ' + (user.name ?? user.id);
+    document.getElementById('playername').innerText = (user.name ?? user.id);
+    document.getElementById('playername').onclick = async () => {
+        const previous = user.name ?? user.id;
+        const name = prompt("Enter a new name for yourself.", previous);
+        const password = prompt("Enter a new password for yourself.", "");
+        const data = {};
+        let changed = false;
+        if (name && name !== previous) {
+            data.username = name;
+            changed = true;
+        }
+        if (password) {
+            changed = true;
+            data.password = password;
+        }
+        if (changed) {
+            await (await fetch(`${apiHost}/me`, {
+                credentials: "include",
+                method: "POST",
+                body: JSON.stringify(data),
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+            }));
+            document.getElementById('playername').innerText = name;
+        }
+    }
 
     const chat = await (async() => {
         if (location.hash.replace(/[^0-9a-f-]+/g, '').match(uuidRegexp)) {
