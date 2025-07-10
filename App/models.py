@@ -29,6 +29,10 @@ class ChatStartingPoint(BaseModel):
     weather: str
     mood: str
 
+class User(BaseModel):
+    username: str | None = None
+    password: str | None = None
+
 class OathType(StrEnum):
     THALUI = "Thalui"
 

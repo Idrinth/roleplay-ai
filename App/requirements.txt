@@ -8,3 +8,4 @@ pyyaml~=6.0.2
 PyJWT~=2.10.1
 cryptography~=45.0.5
 prometheus-client~=0.22.1
+argon2-cffi~=25.1.0

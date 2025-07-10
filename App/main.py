@@ -16,8 +16,10 @@ from typing import Annotated
 import uuid
 from prometheus_client import Counter, Histogram, Gauge, make_asgi_app, CollectorRegistry
 from starlette.requests import Request
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 
-from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint
+from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint, User
 from .functions import is_uuid_like, simplify_result, mariadb_name, mongodb_name, to_mongo_compatible, \
     get_system_prompt, get_rules, user_id_from_jwt, user_id_to_jwt
 
@@ -49,7 +51,7 @@ sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.mapping"
                          " (user_id char(36),chat_id char(36), chat_name varchar(255), PRIMARY KEY(user_id, chat_id))"
                          " charset=utf8;")
 sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.users"
-                         " (aid BIGINT AUTO_INCREMENT NOT NULL, user_id char(36),password varchar(255), active tinyint(1), PRIMARY KEY(aid), UNIQUE (user_id))"
+                         " (aid BIGINT AUTO_INCREMENT NOT NULL, user_id char(36), user_name varchar(255), password varchar(255), active tinyint(1), PRIMARY KEY(aid), UNIQUE (user_id))"
                          " charset=utf8;")
 
 REQUEST_COUNT = Counter('app_http_request_total', 'Total HTTP Requests', ['method', 'status', 'path'])
@@ -129,14 +131,17 @@ async def root():
 
 @app.post('/login')
 async def login(response: Response, login_data: Login):
-    if login_data.password != "example":
-        return {"error": "Login failed"}
     if not is_uuid_like(login_data.user_id):
         return {"error": "Login failed"}
     cursor = sql_connection.cursor()
     cursor.execute("SELECT * FROM `chat_users`.`users` WHERE `user_id` = ?", [login_data.user_id])
     chatuser = cursor.fetchone()
     if not chatuser:
+        return {"error": "Login failed"}
+    try:
+        if login_data.password != "example":
+            PasswordHasher().verify(chatuser["password"], login_data.password)
+    except VerifyMismatchError as e:
         return {"error": "Login failed"}
     response.set_cookie(
         key="user_jwt",
@@ -150,12 +155,41 @@ async def login(response: Response, login_data: Login):
     )
     return True
 
+@app.post('/me')
+async def me(user: User, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
+    cursor = sql_connection.cursor()
+    cursor.execute("SELECT * FROM `chat_users`.`users` WHERE `user_id` = ?", [user_id])
+    chatuser = cursor.fetchone()
+    if not chatuser:
+        return {"error": "Not a valid User"}
+    if user.password:
+        sql_connection.cursor().execute(
+            "UPDATE `chat_users`.`users` SET password = ?, user_name= ? WHERE `user_id` = ?",
+            [PasswordHasher().hash(user.password), user.username, user_id]
+        )
+    elif user.password:
+        sql_connection.cursor().execute(
+            "UPDATE `chat_users`.`users` SET password = ? WHERE `user_id` = ?",
+            [PasswordHasher().hash(user.password), user_id]
+        )
+    elif user.username:
+        sql_connection.cursor().execute(
+            "UPDATE `chat_users`.`users` SET user_name = ? WHERE `user_id` = ?",
+            [user.username, user_id]
+        )
+    return True
+
+
 @app.post('/register')
 async def register(response: Response, register_data: Register):
     if register_data.password != "example":
         return {"error": "Registration failed"}
     user_id = str(uuid.uuid4())
-    sql_connection.cursor().execute("INSERT INTO `chat_users`.`users` (user_id, password, active) VALUES (?, ?, ?)", [user_id, register_data.password, 1])
+    encrypted_password = PasswordHasher().hash(register_data.password)
+    sql_connection.cursor().execute("INSERT INTO `chat_users`.`users` (user_id, password, active) VALUES (?, ?, ?)", [user_id, encrypted_password, 1])
     response.set_cookie(
         key="user_jwt",
         value=user_id_to_jwt(user_id),
