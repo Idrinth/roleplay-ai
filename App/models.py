@@ -22,6 +22,13 @@ class Document(BaseModel):
     name: str
     content: str
 
+class ChatStartingPoint(BaseModel):
+    character: str
+    location: str
+    purpose: str
+    weather: str
+    mood: str
+
 class OathType(StrEnum):
     THALUI = "Thalui"
 

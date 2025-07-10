@@ -17,7 +17,7 @@ import uuid
 from prometheus_client import Counter, Histogram, Gauge, make_asgi_app, CollectorRegistry
 from starlette.requests import Request
 
-from .models import World, Action, Chat, Character, Document, Login, Register
+from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint
 from .functions import is_uuid_like, simplify_result, mariadb_name, mongodb_name, to_mongo_compatible, \
     get_system_prompt, get_rules, user_id_from_jwt, user_id_to_jwt
 
@@ -465,7 +465,6 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
         )
 
         if response.status_code == 200:
-            print(response.json())
             response_content = response.json()["choices"][0]["message"]["content"]
             response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
             background_tasks.add_task(update_history_dbs, chat_id, user_id, action.description, response_content, previous_response)
@@ -484,3 +483,34 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
     except Exception as e:
         background_tasks.add_task(redis.set, f"{user_id}-{chat_id}.chat_is_active", "false")
         raise
+
+@app.post("/starting-point-proposal")
+async def post_proposals(starting_point: ChatStartingPoint):
+    response = requests.post(
+        "http://llama:8000/v1/chat/completions",
+        headers={
+            "Content-Type": "application/json"
+        },
+        json={
+            "model": llm_model,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a player in a role play game. Give a brief introduction for the character given the user input."
+                },
+                {
+                    "role": "user",
+                    "content": starting_point.character + " is in " + starting_point.location +
+                               ". They want to achieve " + starting_point.purpose +
+                               ". The current weather is " + starting_point.weather + " and their mood is " + starting_point.mood + ".",
+                }
+            ],
+        }
+    )
+
+    if response.status_code == 200:
+        response_content = response.json()["choices"][0]["message"]["content"]
+        response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
+        return {"message": response_content}
+
+    return {"error": response.status_code}
