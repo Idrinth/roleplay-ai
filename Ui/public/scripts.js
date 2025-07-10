@@ -152,6 +152,7 @@
                 document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
                 document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode('[E]'));
                 document.getElementById('characters').lastChild.lastChild.classList.add('button');
+                document.getElementById('characters').lastChild.lastChild.setAttribute('title', 'Edit character');
                 document.getElementById('characters').lastChild.lastChild.onclick = (event) => {
                     event.stopPropagation();
                     const el = document.createElement('textarea');
@@ -166,6 +167,7 @@
                 document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
                 document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode('[D]'));
                 document.getElementById('characters').lastChild.lastChild.classList.add('button');
+                document.getElementById('characters').lastChild.lastChild.setAttribute('title', 'Delete character');
                 document.getElementById('characters').lastChild.lastChild.onclick = async (event) => {
                     event.stopPropagation();
                     if (confirm("Do you want to delete this character sheet?")) {
