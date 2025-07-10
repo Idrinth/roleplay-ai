@@ -20,6 +20,23 @@
                 <label for="world">World keywords</label>
                 <input type="text" title="keyword, other keyword,..." id="world"/>
             </li>
+            <li>
+                <div id="donate-button-container">
+                <div id="donate-button"></div>
+                <script src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js" charset="UTF-8"></script>
+                <script>
+                    PayPal.Donation.Button({
+                        env:'production',
+                        hosted_button_id:'AENZ9E63F85G8',
+                        image: {
+                            src:'https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif',
+                            alt:'Donate with PayPal button',
+                            title:'PayPal - The safer, easier way to pay online!',
+                        }
+                    }).render('#donate-button');
+                </script>
+                </div>
+            </li>
         </ul>
         <ul id="characters">
             <li><button id="add-character" title="Add new character sheet" type="button">+ Character</button></li>
