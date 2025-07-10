@@ -183,4 +183,8 @@ a[target="_blank"]:after {
   body {
     grid-template-columns: 1fr;
   }
+  footer, h1, #footer {
+    grid-column-start: 1;
+    grid-column-end: 2;
+  }
 }
