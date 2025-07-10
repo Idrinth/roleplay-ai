@@ -7,6 +7,7 @@
     <!-- <link rel="stylesheet" href="./styles.css"> -->
     <link rel="stylesheet" href="./css/main.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="./images/logo.light.svg" type="image/x-icon">
 </head>
 
 <body>
@@ -20,13 +21,16 @@
         </div>
     </header>
     <aside id="side-menu-container" class="side-menu-container">
+        <img src="./images/book-marker.png" alt="Pull Side Menu Button" class="book-marker" id="book-marker">
         <button id="new-chat-buton" class="new-chat-button">New Chat +</button>
         <span class="chat-title">Chats</span>
-        <ul class="chat-history-list">
-            <li class="chat-item"><a class="chat-link" href="index.html">The Adventur..</a></li>
-            <li class="chat-item"><a class="chat-link" href="index.html">Callahad and ...</a></li>
-            <li class="chat-item"><a class="chat-link" href="index.html">Aspargus and...</a></li>
-        </ul>
+        <nav>
+            <ul class="chat-history-list">
+                <li class="chat-item"><a class="chat-link" href="index.html">The Adventur..</a></li>
+                <li class="chat-item"><a class="chat-link" href="index.html">Callahad and ...</a></li>
+                <li class="chat-item"><a class="chat-link" href="index.html">Aspargus and...</a></li>
+            </ul>
+        </nav>
     </aside>
 
     <ul id="chat"></ul>
@@ -55,6 +59,8 @@
             target="_blank">llama.cpp</a> and <a href="https://huggingface.co/TheBloke/OpenHermes-2.5-Mistral-7B-GGUF"
             target="_blank">TheBloke/OpenHermes-2.5-Mistral-7B-GGUF:Q4_K_M</a> internally.</footer>
     <div id="loader" style="display:none"><img src="loader.gif" alt="Loading" /></div>
+
+    <script src="./modules/side-menu.js"></script>
     <!-- <script type="text/javascript" src="/showdown.min.js"></script>
         <script type="text/javascript" src="/js-yaml.min.js"></script>
         <script type="text/javascript"  src="/scripts.js"></script> -->

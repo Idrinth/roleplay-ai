@@ -6,8 +6,26 @@
     padding: 0 1rem;
     position: absolute;
     top: 0;
-    left: 0;
+    left: -10rem;
     background-color: #3C3C3C;
+    transition: 1s;
+}
+.visible-side-menu {
+    left: 0;
+}
+.book-marker {
+    position: absolute;
+    right: -32px;
+    top: 11.5%;
+    cursor: pointer;
+    transition: 0.3s;
+    height: 22px;
+}
+
+.book-marker:hover {    
+    height: 32px;
+    right: -45px;
+    top: 11.2%;
 }
 
 .new-chat-button {
@@ -18,6 +36,7 @@
     color: #fff;
     text-align: left;
     font-size: 1.2rem;
+    cursor: pointer;
 }
 
 .chat-title {
