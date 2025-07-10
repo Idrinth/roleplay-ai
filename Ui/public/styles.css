@@ -41,6 +41,9 @@ a, a:visited, a:active, a:hover, a:focus {
   color: var(--main-color);
   text-decoration: underline;
 }
+#playername {
+  cursor: pointer;
+}
 #chat {
   grid-row-start: 2;
   grid-row-end: 5;
