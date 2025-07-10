@@ -17,7 +17,7 @@
                 method: "POST",
                 body: JSON.stringify({
                     user_id: userId,
-                    password: "example"
+                    password: prompt("Enter your password.", "")
                 }),
                 headers: {
                     'Accept': 'application/json',
@@ -33,7 +33,7 @@
                 credentials: "include",
                 method: "POST",
                 body: JSON.stringify({
-                    password: "example"
+                    password: prompt("Enter a password for your account.", "")
                 }),
                 headers: {
                     'Accept': 'application/json',
