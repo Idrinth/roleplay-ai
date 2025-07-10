@@ -64,7 +64,6 @@ registry.register(REQUEST_IN_PROGRESS)
 
 @app.middleware("http")
 async def monitor_requests(request: Request, call_next):
-
     method = request.method
     path = re.sub(
         r"/[a-f0-9]{24}$",
@@ -134,13 +133,15 @@ async def login(response: Response, login_data: Login):
     if not is_uuid_like(login_data.user_id):
         return {"error": "Login failed"}
     cursor = sql_connection.cursor()
-    cursor.execute("SELECT * FROM `chat_users`.`users` WHERE `user_id` = ?", [login_data.user_id])
+    cursor.execute("SELECT user_id, password FROM `chat_users`.`users` WHERE `user_id` = ?", [login_data.user_id])
     chatuser = cursor.fetchone()
     if not chatuser:
         return {"error": "Login failed"}
     try:
         if login_data.password != "example":
-            PasswordHasher().verify(chatuser["password"], login_data.password)
+            PasswordHasher().verify(chatuser[1], login_data.password)
+        elif chatuser[1] == "example":
+            raise VerifyMismatchError
     except VerifyMismatchError as e:
         return {"error": "Login failed"}
     response.set_cookie(
