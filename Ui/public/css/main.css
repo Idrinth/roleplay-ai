@@ -1,4 +1,6 @@
 @import url('./core/settings.css');
 @import url('./core/utilities.css');
+@import url('./core/elements.css');
 @import url('./menus/header.css');
 @import url('./menus/side.css');
+@import url('./chat/chat.css');

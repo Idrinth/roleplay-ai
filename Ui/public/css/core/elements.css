@@ -1,0 +1,13 @@
+body {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+main {
+    display: grid;
+    grid-template-columns: 1fr 17%;    
+    height: 100%;
+    width: 100%;    
+}
