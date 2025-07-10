@@ -179,3 +179,8 @@ a[target="_blank"]:after {
     padding: 0;
   }
 }
+@media screen and (max-width: 800px) {
+  body {
+    grid-template-columns: 1fr;
+  }
+}
