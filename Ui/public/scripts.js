@@ -74,6 +74,8 @@
     })();
     console.log(user);
 
+    document.getElementsByTagName('h1')[0].lastElementChild.innerText = 'Gamemaster AI for ' + (user.name ?? user.id);
+
     const chat = await (async() => {
         if (location.hash.replace(/[^0-9a-f-]+/g, '').match(uuidRegexp)) {
             const likely = location.hash.replace(/[^0-9a-f-]+/g, '');
