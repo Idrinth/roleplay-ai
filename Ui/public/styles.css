@@ -1,97 +1,122 @@
 * {
   box-sizing: border-box;
 }
+
 :root {
   --main-color: #ddd;
   --main-bg: #111;
   --main-shadow: #333;
   --main-striking: #eee;
-  --light-shadow: rgba(255,255,255,0.05);
-  --medium-shadow: rgba(255,255,255,0.1);
+  --light-shadow: rgba(255, 255, 255, 0.05);
+  --medium-shadow: rgba(255, 255, 255, 0.1);
 }
+
 :root.inverted-colors {
   --main-color: #333;
   --main-bg: #ddd;
   --main-shadow: #bbb;
   --main-striking: #111;
-  --light-shadow: rgba(0,0,0,0.05);
-  --medium-shadow: rgba(0,0,0,0.1);
+  --light-shadow: rgba(0, 0, 0, 0.05);
+  --medium-shadow: rgba(0, 0, 0, 0.1);
 }
-body, html {
+
+body,
+html {
   width: 100%;
   height: 100%;
   overflow: hidden;
   padding: 0;
-  margin:0;
+  margin: 0;
   color: var(--main-color);
   background: var(--main-bg);
   font-size: 16px;
   line-height: 1.5;
 }
+
 body {
   overflow-y: auto;
   padding: 1em 5%;
   display: grid;
   grid-template-columns: 7fr 1fr;
   grid-template-rows: 7% 20% 30% 30% 10% 3%;
-  background-image: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0)),
-    linear-gradient(to right, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0));
+  background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0)),
+    linear-gradient(to right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
 }
-a, a:visited, a:active, a:hover, a:focus {
+
+a,
+a:visited,
+a:active,
+a:hover,
+a:focus {
   color: var(--main-color);
   text-decoration: underline;
 }
+
 #chat {
   grid-row-start: 2;
   grid-row-end: 5;
   padding: 0.2em;
 }
+
 footer {
   grid-column-start: 1;
   grid-column-end: 3;
   text-align: center;
   color: var(--main-shadow);
 }
-footer > a, footer > a:visited, footer > a:active, footer > a:hover, footer > a:focus {
+
+footer>a,
+footer>a:visited,
+footer>a:active,
+footer>a:hover,
+footer>a:focus {
   color: var(--main-shadow);
 }
+
 #footer {
   grid-column-start: 1;
   grid-column-end: 3;
   display: grid;
   grid-template-columns: 7fr 1fr;
 }
+
 h1 {
   grid-column-end: 3;
   grid-column-start: 1;
 }
+
 ul {
   overflow-x: hidden;
   overflow-y: auto;
   padding: 0;
   margin: 0;
 }
+
 li {
   list-style: none;
   margin: 0;
   padding: 0.5em 1em;
   display: block;
 }
+
 li.user {
   background-color: rgba(0, 125, 0, 0.0625);
   border-radius: 3px;
-  box-shadow: 2px 2px rgba(0,255,0,0.125);
+  box-shadow: 2px 2px rgba(0, 255, 0, 0.125);
   margin-bottom: 5px;
 }
+
 li.agent {
   background-color: rgba(0, 0, 125, 0.0625);
   border-radius: 3px;
-  box-shadow: 2px 2px rgba(0,0,255,0.125);
+  box-shadow: 2px 2px rgba(0, 0, 255, 0.125);
   margin-bottom: 5px;
 }
+
 textarea {
   resize: none;
 }
+
 #charactersheet {
   display: block;
   position: absolute;
@@ -106,24 +131,33 @@ textarea {
   overflow-x: auto;
   box-shadow: var(--main-shadow) 0 0 0.125em;
 }
+
 .gamemaster {
-  background-image: url('/logo.light.svg');
+  background-image: url('./logo.light.svg');
   background-size: 100% 100%;
   width: 1em;
   height: 1em;
   display: inline-block;
 }
+
 #logo {
   width: 1.5em;
   height: 1.5em;
   cursor: pointer;
 }
+
 .duration {
   text-align: right;
   font-style: italic;
   color: var(--main-shadow);
 }
-.button, .button:active, .button:visited, button, button:active, button:visited {
+
+.button,
+.button:active,
+.button:visited,
+button,
+button:active,
+button:visited {
   cursor: pointer;
   background-color: var(--main-color);
   color: var(--main-bg);
@@ -132,26 +166,38 @@ textarea {
   border: 1px solid var(--main-color);
   box-shadow: inset 2px 2px 5px #fff;
   margin: 1px;
-  background-image: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0)),
-    linear-gradient(to right, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0));
+  background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0)),
+    linear-gradient(to right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
 }
-.button:hover, button:hover, .button:focus, button:focus {
+
+.button:hover,
+button:hover,
+.button:focus,
+button:focus {
   box-shadow: inset 2px 2px 5px #000;
 }
-input, textarea {
+
+input,
+textarea {
   border-radius: 3px;
   padding: 3px;
   color: var(--main-striking);
   background: var(--main-bg);
   width: 100%;
 }
-#characters, #documents, #chat, #footer, #worlds {
+
+#characters,
+#documents,
+#chat,
+#footer,
+#worlds {
   box-shadow: 1em 1em 1em var(--light-shadow);
   border: 1px solid var(--medium-shadow);
   margin: 1em;
   padding: 0;
   border-radius: 0.25em;
 }
+
 #loader {
   display: block;
   width: 100%;
@@ -159,19 +205,23 @@ input, textarea {
   position: absolute;
   left: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.1);
 }
-#loader > img {
+
+#loader>img {
   display: block;
   margin-top: calc(50vH - 32px);
   margin-left: calc(50vW - 32px);
 }
+
 .inverted-colors .gamemaster {
-  background-image: url('/logo.dark.svg');
+  background-image: url('./logo.dark.svg');
 }
+
 a[target="_blank"]:after {
   content: "\0029F4";
 }
+
 @media screen and (max-width: 1000px) {
   body {
     grid-template-columns: 3fr 1fr;

@@ -1,0 +1,17 @@
+.menu-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo {
+    width: 3rem;
+    height: 3rem;
+}
+
+.title {
+    font-family: "Uncial Antiqua", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 2.5rem;
+}

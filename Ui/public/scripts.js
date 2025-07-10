@@ -2,8 +2,8 @@
     const apiHost = location.protocol + '//' + location.hostname + '/api/v1'
     const characterFiller = await (await fetch('/char-template.yaml')).text();
     const uuidRegexp = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
-    const user = await (async() => {
-        const user = await(await fetch(`${apiHost}/whoami`, {
+    const user = await (async () => {
+        const user = await (await fetch(`${apiHost}/whoami`, {
             credentials: "include",
             method: "GET",
         })).json();
@@ -49,10 +49,10 @@
     })();
     console.log(user);
 
-    const chat = await (async() => {
+    const chat = await (async () => {
         if (location.hash.replace(/[^0-9a-f-]+/g, '').match(uuidRegexp)) {
             const likely = location.hash.replace(/[^0-9a-f-]+/g, '');
-            if(user.chats.length > 0) {
+            if (user.chats.length > 0) {
                 for (const chat of user.chats) {
                     if (chat.id === likely) {
                         return chat;
@@ -60,17 +60,17 @@
                 }
             }
         }
-        if(user.chats.length > 0) {
+        if (user.chats.length > 0) {
             for (const chat of user.chats) {
                 if (confirm(`Do you want to continue chat '${chat.name}'?`)) {
                     return chat;
                 }
             }
         }
-        const chatId = (await (await fetch(`${apiHost}/new`,{
-                credentials: "include",
-                method: "GET",
-            })).json()).chat ?? "";
+        const chatId = (await (await fetch(`${apiHost}/new`, {
+            credentials: "include",
+            method: "GET",
+        })).json()).chat ?? "";
         return {
             id: chatId,
             name: chatId,
@@ -156,7 +156,7 @@
                     event.stopPropagation();
                     const el = document.createElement('textarea');
                     el.setAttribute('id', 'charactersheet')
-                    const char = {...character};
+                    const char = { ...character };
                     char._id = undefined;
                     el.setAttribute('data-id', character._id['$oid']);
                     el.value = jsyaml.dump(char);
@@ -198,7 +198,7 @@
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({description: value}),
+                body: JSON.stringify({ description: value }),
                 credentials: "include",
             });
             if (response.ok) {
