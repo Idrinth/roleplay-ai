@@ -210,8 +210,8 @@ textarea {
 
 #loader>img {
   display: block;
-  margin-top: calc(50vH - 32px);
-  margin-left: calc(50vW - 32px);
+  margin-top: calc(50vH - 64px);
+  margin-left: calc(50vW - 64px);
 }
 
 .inverted-colors .gamemaster {
@@ -227,5 +227,14 @@ a[target="_blank"]:after {
     grid-template-columns: 3fr 1fr;
     grid-template-rows: auto;
     padding: 0;
+  }
+}
+@media screen and (max-width: 800px) {
+  body {
+    grid-template-columns: 1fr;
+  }
+  footer, h1, #footer {
+    grid-column-start: 1;
+    grid-column-end: 2;
   }
 }

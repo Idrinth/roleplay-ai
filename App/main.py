@@ -16,8 +16,10 @@ from typing import Annotated
 import uuid
 from prometheus_client import Counter, Histogram, Gauge, make_asgi_app, CollectorRegistry
 from starlette.requests import Request
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 
-from .models import World, Action, Chat, Character, Document, Login, Register
+from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint, User
 from .functions import is_uuid_like, simplify_result, mariadb_name, mongodb_name, to_mongo_compatible, \
     get_system_prompt, get_rules, user_id_from_jwt, user_id_to_jwt
 
@@ -49,7 +51,7 @@ sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.mapping"
                          " (user_id char(36),chat_id char(36), chat_name varchar(255), PRIMARY KEY(user_id, chat_id))"
                          " charset=utf8;")
 sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.users"
-                         " (aid BIGINT AUTO_INCREMENT NOT NULL, user_id char(36),password varchar(255), active tinyint(1), PRIMARY KEY(aid), UNIQUE (user_id))"
+                         " (aid BIGINT AUTO_INCREMENT NOT NULL, user_id char(36), user_name varchar(255), password varchar(255), active tinyint(1), PRIMARY KEY(aid), UNIQUE (user_id))"
                          " charset=utf8;")
 
 REQUEST_COUNT = Counter('app_http_request_total', 'Total HTTP Requests', ['method', 'status', 'path'])
@@ -62,7 +64,6 @@ registry.register(REQUEST_IN_PROGRESS)
 
 @app.middleware("http")
 async def monitor_requests(request: Request, call_next):
-
     method = request.method
     path = re.sub(
         r"/[a-f0-9]{24}$",
@@ -129,14 +130,19 @@ async def root():
 
 @app.post('/login')
 async def login(response: Response, login_data: Login):
-    if login_data.password != "example":
-        return {"error": "Login failed"}
     if not is_uuid_like(login_data.user_id):
         return {"error": "Login failed"}
     cursor = sql_connection.cursor()
-    cursor.execute("SELECT * FROM `chat_users`.`users` WHERE `user_id` = ?", [login_data.user_id])
+    cursor.execute("SELECT user_id, password FROM `chat_users`.`users` WHERE `user_id` = ?", [login_data.user_id])
     chatuser = cursor.fetchone()
     if not chatuser:
+        return {"error": "Login failed"}
+    try:
+        if login_data.password != "example":
+            PasswordHasher().verify(chatuser[1], login_data.password)
+        elif chatuser[1] == "example":
+            raise VerifyMismatchError
+    except VerifyMismatchError as e:
         return {"error": "Login failed"}
     response.set_cookie(
         key="user_jwt",
@@ -150,12 +156,41 @@ async def login(response: Response, login_data: Login):
     )
     return True
 
+@app.post('/me')
+async def me(user: User, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
+    cursor = sql_connection.cursor()
+    cursor.execute("SELECT * FROM `chat_users`.`users` WHERE `user_id` = ?", [user_id])
+    chatuser = cursor.fetchone()
+    if not chatuser:
+        return {"error": "Not a valid User"}
+    if user.password and user.username:
+        sql_connection.cursor().execute(
+            "UPDATE `chat_users`.`users` SET password = ?, user_name= ? WHERE `user_id` = ?",
+            [PasswordHasher().hash(user.password), user.username, user_id]
+        )
+    elif user.password:
+        sql_connection.cursor().execute(
+            "UPDATE `chat_users`.`users` SET password = ? WHERE `user_id` = ?",
+            [PasswordHasher().hash(user.password), user_id]
+        )
+    elif user.username:
+        sql_connection.cursor().execute(
+            "UPDATE `chat_users`.`users` SET user_name = ? WHERE `user_id` = ?",
+            [user.username, user_id]
+        )
+    return True
+
+
 @app.post('/register')
 async def register(response: Response, register_data: Register):
     if register_data.password != "example":
         return {"error": "Registration failed"}
     user_id = str(uuid.uuid4())
-    sql_connection.cursor().execute("INSERT INTO `chat_users`.`users` (user_id, password, active) VALUES (?, ?, ?)", [user_id, register_data.password, 1])
+    encrypted_password = PasswordHasher().hash(register_data.password)
+    sql_connection.cursor().execute("INSERT INTO `chat_users`.`users` (user_id, password, active) VALUES (?, ?, ?)", [user_id, encrypted_password, 1])
     response.set_cookie(
         key="user_jwt",
         value=user_id_to_jwt(user_id),
@@ -278,7 +313,7 @@ async def chat_character_add(chat_id: str, character: Character, user_jwt: Annot
     mongo[mongodb_name(user_id, chat_id)]['characters'].insert_one(to_mongo_compatible(character))
     return True
 
-@app.put("/chat/{chat_id}/characters/{character_id}")
+@app.post("/chat/{chat_id}/characters/{character_id}")
 async def chat_character_update(chat_id: str, character_id: str, character: Character, user_jwt: Annotated[str | None, Cookie()] = None):
     user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
@@ -343,9 +378,14 @@ async def whoami(user_jwt: Annotated[str | None, Cookie()] = None):
     user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Login Required"}
+    cursor = sql_connection.cursor()
+    cursor.execute("SELECT user_id, user_name FROM `chat_users`.`users` WHERE `user_id` = ?", [user_id])
+    chatuser = cursor.fetchone()
+    if not chatuser:
+        return {"error": "Login Required"}
     user = {
         "id": user_id,
-        "name": "User " + user_id,
+        "name": chatuser[1],
         "chats": [],
     }
     sql_connection.ping()
@@ -382,7 +422,7 @@ async def chat_history(chat_id: str, user_jwt: Annotated[str | None, Cookie()] =
     except Exception as e:
         return {"exception": e}
 
-@app.put("/chat/{chat_id}")
+@app.post("/chat/{chat_id}/name")
 async def chat(chat_id: str, chat_data: Chat, user_jwt: Annotated[str | None, Cookie()] = None):
     user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
@@ -465,7 +505,6 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
         )
 
         if response.status_code == 200:
-            print(response.json())
             response_content = response.json()["choices"][0]["message"]["content"]
             response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
             background_tasks.add_task(update_history_dbs, chat_id, user_id, action.description, response_content, previous_response)
@@ -484,3 +523,34 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
     except Exception as e:
         background_tasks.add_task(redis.set, f"{user_id}-{chat_id}.chat_is_active", "false")
         raise
+
+@app.post("/starting-point-proposal")
+async def post_proposals(starting_point: ChatStartingPoint):
+    response = requests.post(
+        "http://llama:8000/v1/chat/completions",
+        headers={
+            "Content-Type": "application/json"
+        },
+        json={
+            "model": llm_model,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a player in a role play game. Give a brief introduction for the character given the user input."
+                },
+                {
+                    "role": "user",
+                    "content": starting_point.character + " is in " + starting_point.location +
+                               ". They want to achieve " + starting_point.purpose +
+                               ". The current weather is " + starting_point.weather + " and their mood is " + starting_point.mood + ".",
+                }
+            ],
+        }
+    )
+
+    if response.status_code == 200:
+        response_content = response.json()["choices"][0]["message"]["content"]
+        response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
+        return {"message": response_content}
+
+    return {"error": response.status_code}

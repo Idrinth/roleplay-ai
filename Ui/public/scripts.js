@@ -17,7 +17,7 @@
                 method: "POST",
                 body: JSON.stringify({
                     user_id: userId,
-                    password: "example"
+                    password: prompt("Enter your password.", "")
                 }),
                 headers: {
                     'Accept': 'application/json',
@@ -29,11 +29,36 @@
                 return;
             }
         } else {
+            const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".split("")
+            const password = chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)];
             const uuid = await (await fetch(`${apiHost}/register`, {
                 credentials: "include",
                 method: "POST",
                 body: JSON.stringify({
-                    password: "example"
+                    password: prompt("Enter a password for your account.", password)
                 }),
                 headers: {
                     'Accept': 'application/json',
@@ -85,7 +110,7 @@
     while (chat.id === chat.name) {
         chat.name = prompt("Enter a new name for your chat.", chat.name) || chat.id;
         await fetch(`${apiHost}/chat/${chat.id}`, {
-            method: 'PUT',
+            method: 'POST',
             body: JSON.stringify({
                 name: chat.name,
             }),
@@ -152,6 +177,7 @@
                 document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
                 document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode('[E]'));
                 document.getElementById('characters').lastChild.lastChild.classList.add('button');
+                document.getElementById('characters').lastChild.lastChild.setAttribute('title', 'Edit character');
                 document.getElementById('characters').lastChild.lastChild.onclick = (event) => {
                     event.stopPropagation();
                     const el = document.createElement('textarea');
@@ -166,6 +192,7 @@
                 document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
                 document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode('[D]'));
                 document.getElementById('characters').lastChild.lastChild.classList.add('button');
+                document.getElementById('characters').lastChild.lastChild.setAttribute('title', 'Delete character');
                 document.getElementById('characters').lastChild.lastChild.onclick = async (event) => {
                     event.stopPropagation();
                     if (confirm("Do you want to delete this character sheet?")) {
@@ -251,7 +278,7 @@
                         if (confirm("Do you want to save this modified character sheet?")) {
                             const id = el.getAttribute('data-id');
                             await fetch(`${apiHost}/chat/${chat.id}/characters/${id}`, {
-                                method: 'PUT',
+                                method: 'POST',
                                 headers: {
                                     'Accept': 'application/json',
                                     'Content-Type': 'application/json',
