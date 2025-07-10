@@ -378,9 +378,14 @@ async def whoami(user_jwt: Annotated[str | None, Cookie()] = None):
     user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Login Required"}
+    cursor = sql_connection.cursor()
+    cursor.execute("SELECT user_id, user_name FROM `chat_users`.`users` WHERE `user_id` = ?", [user_id])
+    chatuser = cursor.fetchone()
+    if not chatuser:
+        return {"error": "Login Required"}
     user = {
         "id": user_id,
-        "name": "User " + user_id,
+        "name": chatuser[1],
         "chats": [],
     }
     sql_connection.ping()
