@@ -29,11 +29,36 @@
                 return;
             }
         } else {
+            const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".split("")
+            const password = chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)]
+                + chars[Math.floor(Math.random() * chars.length)];
             const uuid = await (await fetch(`${apiHost}/register`, {
                 credentials: "include",
                 method: "POST",
                 body: JSON.stringify({
-                    password: prompt("Enter a password for your account.", "")
+                    password: prompt("Enter a password for your account.", password)
                 }),
                 headers: {
                     'Accept': 'application/json',
