@@ -8,11 +8,13 @@
     top: 0;
     left: -10rem;
     background-color: #3C3C3C;
-    transition: 1s;
+    transition: 0.7s;
 }
+
 .visible-side-menu {
     left: 0;
 }
+
 .book-marker {
     position: absolute;
     right: -32px;
@@ -22,7 +24,7 @@
     height: 22px;
 }
 
-.book-marker:hover {    
+.book-marker:hover {
     height: 32px;
     right: -45px;
     top: 11.2%;
