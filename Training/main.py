@@ -77,9 +77,6 @@ for fname in ["dwarf-at-inn", "gate-of-lothern"]:
     except Exception as e:
         print(f"{fname}: {e}")
 
-with open(f"/training/debug.json", "w") as file:
-    json.dump(dataset_list, file)
-
 trainer = SFTTrainer(
     model = model,
     tokenizer = tokenizer,
