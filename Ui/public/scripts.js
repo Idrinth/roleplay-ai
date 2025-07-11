@@ -404,7 +404,9 @@
       document.getElementsByTagName('html')[0]?.classList.contains('inverted-colors') ? 'light' : 'dark',
     );
   }
-  document.getElementById('imprint-open').onclick = () => {
+  document.getElementById('imprint-open').onclick = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     document.getElementById('imprint').removeAttribute('style');
   }
 })();
