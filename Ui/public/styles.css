@@ -176,6 +176,18 @@ input, textarea {
 a[target="_blank"]:after {
   content: "\0029F4";
 }
+#imprint {
+  position: absolute;
+  background: var(--main-bg);
+  padding: 1em;
+  left: 5%;
+  top: 5%;
+  width: 90%;
+  height: 90%;
+  overflow-y: auto;
+  border-radius: 0.25em;
+  box-shadow: 1em 1em 1em var(--main-shadow);
+}
 @media screen and (max-width: 1000px) {
   body {
     grid-template-columns: 3fr 1fr;
