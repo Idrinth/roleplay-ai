@@ -4,9 +4,15 @@ RUN npm install minify -g
 
 COPY Ui/public /public
 COPY Ui/.minify.json ./
-#RUN cat /public/scripts.js | minify --js > /public/scripts.js
-RUN cat /public/styles.css | minify --css > /public/styles.css
-#RUN cat /public/index.html | minify --html > /public/index.html
+
+RUN cat /public/scripts.js | minify --js > /tmp/scripts.js && \
+    [ -s /tmp/scripts.js ] && cp /tmp/scripts.js /public/scripts.js || echo "JS minification failed, keeping original"
+
+RUN cat /public/styles.css | minify --css > /tmp/styles.css && \
+    [ -s /tmp/styles.css ] && cp /tmp/styles.css /public/styles.css || echo "CSS minification failed, keeping original"
+
+RUN cat /public/index.html | minify --html > /tmp/index.html && \
+    [ -s /tmp/index.html ] && cp /tmp/index.html /public/index.html || echo "HTML minification failed, keeping original"
 
 FROM nginx:alpine
 
