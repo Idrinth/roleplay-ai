@@ -334,6 +334,7 @@
         await updateCharacters();
       }
     }
+    document.getElementById('imprint').setAttribute('style', 'display:none');
   }
   await updateCharacters();
   document.getElementById('add-character').onclick = async (event) => {
@@ -402,5 +403,8 @@
       'prefered-color-scheme',
       document.getElementsByTagName('html')[0]?.classList.contains('inverted-colors') ? 'light' : 'dark',
     );
+  }
+  document.getElementById('imprint-open').onclick = () => {
+    document.getElementById('imprint').removeAttribute('style');
   }
 })();
