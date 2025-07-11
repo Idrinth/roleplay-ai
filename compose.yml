@@ -202,8 +202,6 @@ services:
     env_file:
       - .env
     restart: always
-    ports:
-      - '127.0.0.1:8000:80'
     healthcheck:
       test: ["CMD", "curl", "http://0.0.0.0"]
       interval: 10s
@@ -253,5 +251,23 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  reverse-proxy:
+    deploy:
+      replicas: 1
+    build:
+      dockerfile: ReverseProxy/Dockerfile
+      no_cache: true
+    logging:
+      driver: loki
+      options:
+        loki-url: http://127.0.0.1:3100/loki/api/v1/push
+        mode: non-blocking
+        max-buffer-size: 4m
+        loki-retries: "3"
     ports:
-      - '127.0.0.1:8080:80'
+      - '127.0.0.1:8016:80'
+    depends_on:
+      ui:
+        condition: service_healthy
+      app:
+        condition: service_healthy
