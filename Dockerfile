@@ -1,5 +1,5 @@
 FROM python:3.13
 
-ADD App/requirements.txt ./
+ADD app/requirements.txt ./
 
 RUN pip install -r requirements.txt

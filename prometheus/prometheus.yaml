@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 5s
+  external_labels:
+    monitor: roleplay-ai-monitor
+scrape_configs:
+  - job_name: app
+    metrics_path: "/api/v1/metrics"
+    static_configs:
+      - targets:
+        - "app:80"

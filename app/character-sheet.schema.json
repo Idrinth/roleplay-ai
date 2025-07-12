@@ -1,0 +1,375 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Thalui Vampire Character Sheet",
+  "type": "object",
+  "required": [
+    "name",
+    "heritage",
+    "background",
+    "languages",
+    "magic",
+    "statblock",
+    "age",
+    "years_ago",
+    "roles",
+    "Sex"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "object",
+      "required": ["taken", "given", "oath", "family", "titles"],
+      "additionalProperties": false,
+      "properties": {
+        "taken": {
+          "type": "string",
+          "description": "The name taken after the Thalui oath"
+        },
+        "given": {
+          "type": "string",
+          "description": "Original birth name, not to be used officially"
+        },
+        "oath": {
+          "type": "string",
+          "enum": ["Thalui"],
+          "description": "The oath binding - must be Thalui"
+        },
+        "family": {
+          "type": "string",
+          "description": "Original family name, not to be used officially"
+        },
+        "titles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "All formal titles held"
+        }
+      }
+    },
+    "heritage": {
+      "type": "object",
+      "required": ["race", "bloodline"],
+      "additionalProperties": false,
+      "properties": {
+        "race": {
+          "type": "string",
+          "enum": ["Asur", "Asrai", "Druchii"],
+          "description": "Elven sub-race"
+        },
+        "bloodline": {
+          "type": "string",
+          "enum": ["Blood Dragon", "Lahmian", "von Carstein", "Necrarch", "Strigoi", "Vampire Coast"],
+          "description": "Vampiric bloodline"
+        }
+      }
+    },
+    "background": {
+      "type": "object",
+      "required": [
+        "former_occupation",
+        "while_alive",
+        "description",
+        "personality",
+        "place_of_birth",
+        "favorite_weapon",
+        "combat_style",
+        "siblings"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "former_occupation": {
+          "type": "string",
+          "description": "Profession before vampirism"
+        },
+        "while_alive": {
+          "type": "object",
+          "required": ["haircolor", "eyecolor"],
+          "additionalProperties": false,
+          "properties": {
+            "haircolor": {
+              "type": "string",
+              "description": "Hair color when alive"
+            },
+            "eyecolor": {
+              "type": "string",
+              "description": "Eye color when alive"
+            }
+          }
+        },
+        "description": {
+          "type": "string",
+          "description": "Physical and behavioral description"
+        },
+        "personality": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "Key personality traits"
+        },
+        "place_of_birth": {
+          "type": "string",
+          "description": "Birth location"
+        },
+        "favorite_weapon": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "Preferred weapons"
+        },
+        "combat_style": {
+          "type": "string",
+          "description": "Combat approach and style"
+        },
+        "parents": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "description": "A parents's description at the name of the parent"
+          }
+        },
+        "siblings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "description": "A sibling's description at the name of the sibling"
+          }
+        },
+        "connections": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "description": "A connection's description at the name of the connection"
+          }
+        }
+      }
+    },
+    "languages": {
+      "type": "object",
+      "required": ["Eltharin", "Human"],
+      "additionalProperties": true,
+      "properties": {
+        "Eltharin": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Old": {
+              "type": "string",
+              "enum": ["none", "basic", "advanced", "native"]
+            },
+            "Asur": {
+              "type": "string",
+              "enum": ["none", "basic", "advanced", "native"]
+            },
+            "Asrai": {
+              "type": "string",
+              "enum": ["none", "basic", "advanced", "native"]
+            },
+            "Druchii": {
+              "type": "string",
+              "enum": ["none", "basic", "advanced", "native"]
+            }
+          }
+        },
+        "Human": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Classical": {
+              "type": "string",
+              "enum": ["none", "basic", "advanced", "native"]
+            },
+            "Nehekharan": {
+              "type": "string",
+              "enum": ["none", "basic", "advanced", "native"]
+            },
+            "Reikspiel": {
+              "type": "string",
+              "enum": ["none", "basic", "advanced", "native"]
+            },
+            "Bretonnian": {
+              "type": "string",
+              "enum": ["none", "basic", "advanced", "native"]
+            }
+          }
+        },
+        "High_Magic_ritual_tongues": {
+          "type": "string",
+          "enum": ["none", "basic", "advanced", "native"]
+        }
+      }
+    },
+    "magic": {
+      "type": "object",
+      "required": ["capacity", "wind_strength_increase", "lores"],
+      "additionalProperties": false,
+      "properties": {
+        "capacity": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Magical capacity percentage compared to a fully trained human battlemage"
+        },
+        "wind_strength_increase": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "boost to winds of magic strength"
+        },
+        "lores": {
+          "type": "object",
+          "required": [
+            "Death", "Shadow", "Vampire", "Depth", "Life",
+            "Athel_Loren", "High_Magic", "Dark_Magic"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "Death": {
+              "type": "string",
+              "enum": ["none", "novice", "apprentice", "journeyman", "expert", "master"]
+            },
+            "Shadow": {
+              "type": "string",
+              "enum": ["none", "novice", "apprentice", "journeyman", "expert", "master"]
+            },
+            "Vampire": {
+              "type": "string",
+              "enum": ["none", "novice", "apprentice", "journeyman", "expert", "master"]
+            },
+            "Depth": {
+              "type": "string",
+              "enum": ["none", "novice", "apprentice", "journeyman", "expert", "master"]
+            },
+            "Life": {
+              "type": "string",
+              "enum": ["none", "novice", "apprentice", "journeyman", "expert", "master"]
+            },
+            "Athel_Loren": {
+              "type": "string",
+              "enum": ["none", "novice", "apprentice", "journeyman", "expert", "master"]
+            },
+            "High_Magic": {
+              "type": "string",
+              "enum": ["none", "novice", "apprentice", "journeyman", "expert", "master"]
+            },
+            "Dark_Magic": {
+              "type": "string",
+              "enum": ["none", "novice", "apprentice", "journeyman", "expert", "master"]
+            }
+          }
+        }
+      }
+    },
+    "statblock": {
+      "type": "object",
+      "required": [
+        "strength",
+        "movement_speed",
+        "reaction_speed",
+        "weapon_skill",
+        "ballistic_skill",
+        "toughness",
+        "fatigue"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "strength": {
+          "type": "integer",
+          "description": "percentage compared to an average elven warrior",
+          "minimum": 1
+        },
+        "movement_speed": {
+          "type": "integer",
+          "description": "percentage compared to an average elven warrior",
+          "minimum": 1
+        },
+        "reaction_speed": {
+          "type": "integer",
+          "description": "percentage compared to an average elven warrior",
+          "minimum": 1
+        },
+        "weapon_skill": {
+          "type": "integer",
+          "description": "percentage compared to an average elven warrior",
+          "minimum": 1
+        },
+        "ballistic_skill": {
+          "type": "integer",
+          "description": "percentage compared to an average elven warrior",
+          "minimum": 1
+        },
+        "toughness": {
+          "type": "integer",
+          "description": "percentage compared to an average elven warrior",
+          "minimum": 1
+        },
+        "fatigue": {
+          "type": "integer",
+          "description": "percentage compared to an average elven warrior",
+          "minimum": 1
+        }
+      }
+    },
+    "age": {
+      "type": "object",
+      "required": ["physical", "human_equivalent"],
+      "additionalProperties": false,
+      "properties": {
+        "physical": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Actual age in years"
+        },
+        "human_equivalent": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Equivalent human age for development"
+        }
+      }
+    },
+    "years_ago": {
+      "type": "object",
+      "required": ["born", "turned"],
+      "additionalProperties": false,
+      "properties": {
+        "born": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Years since birth"
+        },
+        "turned": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Years since vampiric transformation"
+        }
+      }
+    },
+    "roles": {
+      "type": "object",
+      "required": ["combat", "diplomacy", "civil"],
+      "additionalProperties": false,
+      "properties": {
+        "combat": {
+          "type": "string",
+          "description": "Combat role and capabilities"
+        },
+        "diplomacy": {
+          "type": "string",
+          "description": "Diplomatic role and approach"
+        },
+        "civil": {
+          "type": "string",
+          "description": "Civil/administrative role"
+        }
+      }
+    },
+    "Sex": {
+      "type": "string",
+      "enum": ["male", "female"],
+      "description": "Character's sex"
+    }
+  }
+}
