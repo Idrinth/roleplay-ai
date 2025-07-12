@@ -1,4 +1,5 @@
-const apiHost = location.protocol + '//' + location.hostname + '/api/v1'
+const apiHost = location.protocol + '//' + location.hostname + '/api/v1';
+
 async function getUser() {
     async function requestUser() {
         const url = `${apiHost}/whoami`;
@@ -86,7 +87,93 @@ async function getUser() {
     if (user) return user;
     return registerNewUser();
 }
+async function getChat(user) {
+    const uuidRegexp = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
 
+    function getChatByUrl() {
+        if (location.hash.replace(/[^0-9a-f-]+/g, '').match(uuidRegexp)) {
+            const likely = location.hash.replace(/[^0-9a-f-]+/g, '');
+            if (user.chats.length <= 0) return;
+            for (const chat of user.chats) {
+                if (chat.id === likely) {
+                    return chat;
+                }
+            }
+        }
+        return false;
+    }
+    function getChatByPrompting() {
+        if (user.chats.length > 0) {
+            for (const chat of user.chats) {
+                if (confirm(`Do you want to continue chat '${chat.name}'?`)) {
+                    return chat;
+                }
+            }
+        }
+        return false;
+    }
+    async function registerNewChat() {
+        const url = `${apiHost}/new`;
+        const payload = {
+            credentials: "include",
+            method: "GET",
+        }
+        try {
+            const chatRequest = await fetch(url, payload);
+            const chatId = await chatRequest.json() ?? "";
+            return {
+                id: chatId,
+                name: chatId
+            }
+        } catch (e) {
+            console.log(e)
+            return false;
+        }
+    }
+    async function fixChatNaming() {
+        const url = `${apiHost}/chat/${chat.id}`;
+        const payload = {
+            method: 'POST',
+            body: JSON.stringify({
+                name: chat.name,
+            }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            credentials: "include",
+        }
+
+        while (chat.id === chat.name) {
+            chat.name = prompt("Enter a new name for your chat.", chat.name) || chat.id;
+            await fetch(url, payload);
+        }
+    }
+
+    let chat = getChatByUrl();
+    if (chat) return chat;
+    chat = getChatByPrompting();
+    if (chat) return chat;
+    chat = registerNewChat();
+    if (!chat) return false;
+    fixChatNaming()
+    return chat;
+}
+function setTitleAndUrl(chatName) {
+    location.hash = `#${chat.id}`;
+    document.title = chatName + ' | ' + document.title;
+}
+async function init() {
+    const user = await getUser();
+    const chat = getChat(user);
+
+    if (!chat.id || !chat.id.match(uuidRegexp)) {
+        window.location = location.protocol + '//' + location.host;
+        return;
+    }
+    setTitleAndUrl(chat.name);
+
+}
 function rendersPreviousChatMessages() {
     await(async () => {
         const response = await fetch(`${apiHost}/chat/${chat.id}`, {
@@ -280,73 +367,8 @@ async function updateCharacters() {
     }
 }
 //<DEPENDENCY BLOCK>
-const uuidRegexp = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
 
-async function getChatOrRedirectIfNoChatOrAnnoyIntoCreationAaaandChangePageTitleToChatTitle() {
-    const chat = await (async () => {
-        if (location.hash.replace(/[^0-9a-f-]+/g, '').match(uuidRegexp)) {
-            const likely = location.hash.replace(/[^0-9a-f-]+/g, '');
-            if (user.chats.length > 0) {
-                for (const chat of user.chats) {
-                    if (chat.id === likely) {
-                        return chat;
-                    }
-                }
-            }
-        }
-        if (user.chats.length > 0) {
-            for (const chat of user.chats) {
-                if (confirm(`Do you want to continue chat '${chat.name}'?`)) {
-                    return chat;
-                }
-            }
-        }
-        const chatId = (await (await fetch(`${apiHost}/new`, {
-            credentials: "include",
-            method: "GET",
-        })).json()).chat ?? "";
-        return {
-            id: chatId,
-            name: chatId,
-        }
-    })();
 
-    if (!chat.id || !chat.id.match(uuidRegexp)) {
-        window.location = location.protocol + '//' + location.host;
-        return;
-    }
-    location.hash = `#${chat.id}`;
-    while (chat.id === chat.name) {
-        chat.name = prompt("Enter a new name for your chat.", chat.name) || chat.id;
-        await fetch(`${apiHost}/chat/${chat.id}`, {
-            method: 'POST',
-            body: JSON.stringify({
-                name: chat.name,
-            }),
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            credentials: "include",
-        })
-    }
-
-    while (chat.id === chat.name) {
-        chat.name = prompt("Enter a new name for your chat.", chat.name) || chat.id;
-        await fetch(`${apiHost}/chat/${chat.id}`, {
-            method: 'POST',
-            body: JSON.stringify({
-                name: chat.name,
-            }),
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            credentials: "include",
-        })
-    }
-    document.title = chat.name + ' | ' + document.title;
-}
 //</DEPENDENCY BLOCK>
 
 //DEPENDENCY BLOCK
