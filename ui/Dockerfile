@@ -2,8 +2,8 @@ FROM node:24-alpine AS build
 
 RUN npm install minify -g
 
-COPY Ui/public /public
-COPY Ui/.minify.json ./
+COPY ui/.minify.json ./
+COPY ui/public /public
 
 RUN cat /public/scripts.js | minify --js > /tmp/scripts.js && \
     [ -s /tmp/scripts.js ] && cp /tmp/scripts.js /public/scripts.js || echo "JS minification failed, keeping original"
