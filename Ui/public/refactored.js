@@ -163,6 +163,35 @@ function setTitleAndUrl(chatName) {
     location.hash = `#${chat.id}`;
     document.title = chatName + ' | ' + document.title;
 }
+function initializeChat(chatId) {
+    const sendButton = document.getElementById('send');
+    const loader = document.getElementById('loader')
+
+    const url = `${apiHost}/chat/${chatId}/active`;
+    const payload = {
+        credentials: "include",
+        method: "GET",
+        signal: AbortSignal.timeout(2400),
+    }
+
+    window.setInterval(async () => {
+        try {
+            const response = await fetch(url, payload);
+            const active = (await response.json()).active;
+            if (!active) {
+                sendButton.disabled = false;
+                loader.setAttribute('style', 'display: none');
+                return;
+            }
+        } catch (e) {
+            //this is expected
+            // (^-^)/ hi Björn :D
+            console.log(e)
+        }
+        sendButton.disabled = true;
+        loader.setAttribute('style', '');
+    }, 2500);
+}
 async function init() {
     const user = await getUser();
     const chat = getChat(user);
@@ -172,7 +201,7 @@ async function init() {
         return;
     }
     setTitleAndUrl(chat.name);
-
+    initializeChat(chat.id)
 }
 function rendersPreviousChatMessages() {
     await(async () => {
@@ -281,33 +310,7 @@ function sendTextEntryAndRenderRequestAndResponseOnScreen() {
         }
     });
 }
-function enableOrLockChatBasedOnActiveState() {
-    window.setInterval(async () => {
-        try {
-            const response = await fetch(
-                `${apiHost}/chat/${chat.id}/active`,
-                {
-                    credentials: "include",
-                    method: "GET",
-                    signal: AbortSignal.timeout(2400),
-                }
-            );
-            if (response.ok) {
-                const active = (await response.json()).active;
-                if (!active) {
-                    document.getElementById('send').disabled = false;
-                    document.getElementById('loader').setAttribute('style', 'display: none');
-                    return;
-                }
-            }
-        } catch (e) {
-            //this is expected
-            // (^-^)/ hi Björn :D
-        }
-        document.getElementById('send').disabled = true;
-        document.getElementById('loader').setAttribute('style', '');
-    }, 2500);
-}
+
 async function updateCharacters() {
     const response = await fetch(`${apiHost}/chat/${chat.id}/characters`, {
         method: 'GET',
