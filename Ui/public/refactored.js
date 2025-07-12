@@ -1,5 +1,27 @@
 const apiHost = location.protocol + '//' + location.hostname + '/api/v1';
+function create({ tag = 'div', cla = [], txt = '', src = '', parent, val = '', type = '', id } = {}) {
+    const el = document.createElement(tag);
+    if (Array.isArray(cla)) {
+        cla.forEach(className => el.classList.add(className));
+    } else if (typeof cla === 'string') {
+        el.classList.add(cla);
+    }
 
+    txt ? el.textContent = txt : null;
+    src ? el.src = src : null;
+    val ? el.value = val : null;
+    type ? el.setAttribute('type', type) : null;
+    id >= 0 ? el.id = id : null;
+    if (parent) {
+        if (typeof parent === 'string') {
+            document.querySelector(parent)?.appendChild(el);
+        } else if (parent instanceof HTMLElement) {
+            parent.appendChild(el);
+        }
+    }
+
+    return el;
+}
 async function getUser() {
     async function requestUser() {
         const url = `${apiHost}/whoami`;
@@ -192,6 +214,93 @@ function initializeChat(chatId) {
         loader.setAttribute('style', '');
     }, 2500);
 }
+async function requestCharacters() {
+    const url = `${apiHost}/chat/${chat.id}/characters`
+    const payload = {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+        credentials: "include"
+    };
+
+    try {
+        const charactersRequest = await fetch(url, payload);
+        const characters = await charactersRequest.json();
+        return characters;
+    } catch (e) {
+        console.log(e);
+        return false;
+    }
+}
+function clearCharactersList() {
+    const allCharacters = document.querySelectorAll('#characters-list .file-dropdown-item')
+    if (!allCharacters.length) return;
+    allCharacters.forEach(character => character.dispatchEvent(new Event('disappear')))
+}
+function renderCharacter(place, character) {
+    const name = character.name.taken;
+
+    const characterContainer = create({ tag: 'li', cla: 'file-dropdown-item', parent: place });
+    create({ tag: 'img', cla: 'character-icon', src: './images/default.png', parent: characterContainer });
+    create({ tag: 'span', cla: 'file-name', txt: name, parent: characterContainer });
+    const optionsMenu = create({ tag: 'div', cla: 'options-menu', parent: characterContainer });
+    create({ tag: 'img', cla: 'dropdown-icon', src: './images/ellipsis.png', parent: optionsMenu });
+    const optionsDropdown = create({ tag: 'div', cla: 'options-dropdown', parent: optionsMenu });
+    const editButton = create({ tag: 'div', cla: 'option-button-container', parent: optionsDropdown });
+    create({ tag: 'img', cla: 'option-icon', src: './images/edit.png', parent: editButton });
+    create({ tag: 'span', txt: 'Edit', parent: editButton });
+    const deleteButton = create({ tag: 'div', cla: 'option-button-container', parent: optionsDropdown });
+    create({ tag: 'img', cla: 'option-icon', src: './images/delete.png', parent: deleteButton });
+    create({ tag: 'span', txt: 'Delete', parent: deleteButton });
+
+
+    const disappear = () => {
+        editButton.removeEventListener('click', editCharacter)
+        deleteButton.removeEventListener('click', deleteCharacter)
+        characterContainer.remove();
+    }; characterContainer.addEventListener('disappear', disappear);
+
+    const editCharacter = () => {
+        const el = document.createElement('textarea');
+        el.setAttribute('id', 'charactersheet')
+        const char = { ...character };
+        char._id = undefined;
+        el.setAttribute('data-id', character._id['$oid']);
+        el.value = jsyaml.dump(char);
+        el.setAttribute('data-raw', el.value);
+        document.body.appendChild(el);
+    }; editButton.addEventListener('click', editCharacter);
+
+    const deleteCharacter = async () => {
+        if (confirm("Do you want to delete this character sheet?")) {
+            const url = `${apiHost}/chat/${chat.id}/characters/${character._id['$oid']}`
+            const payload = {
+                method: 'DELETE',
+                credentials: "include",
+            }
+            await fetch(url, payload);
+            await updateCharacters();
+        }
+        deleteUiComponent();
+    }; deleteButton.addEventListener('click', deleteCharacter);
+}
+function renderCharacters(characters) {
+    const charactersList = document.querySelector("#characters-list");
+    const { characters: charArray } = characters;
+    charArray.forEach(char => renderCharacter(charactersList, char))
+}
+async function updateCharacters() {
+    const characters = await requestCharacters()
+    if (!characters) {
+        alert("Sadly, your characters couldn't be loaded. Try again later.")
+        return;
+    }
+    clearCharactersList();
+    renderCharacters(characters);
+}
+
 async function init() {
     const user = await getUser();
     const chat = getChat(user);
@@ -201,8 +310,13 @@ async function init() {
         return;
     }
     setTitleAndUrl(chat.name);
-    initializeChat(chat.id)
+    initializeChat(chat.id);
+    updateCharacters();
 }
+
+
+
+/* THE ONES BELOW THIS LINE ARE JUST SEPARATED, NOT REFACTORED YET */
 function rendersPreviousChatMessages() {
     await(async () => {
         const response = await fetch(`${apiHost}/chat/${chat.id}`, {
@@ -311,64 +425,7 @@ function sendTextEntryAndRenderRequestAndResponseOnScreen() {
     });
 }
 
-async function updateCharacters() {
-    const response = await fetch(`${apiHost}/chat/${chat.id}/characters`, {
-        method: 'GET',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        },
-        credentials: "include"
-    });
-    if (response.ok) {
-        const json = await response.json();
-        if (json.error) {
-            console.error(json.error);
-            return;
-        }
-        if (json.exception) {
-            console.error(json.exception);
-            return;
-        }
-        while (document.getElementById('characters').children.length > 1) {
-            document.getElementById('characters').removeChild(document.getElementById('characters').lastChild);
-        }
-        for (const character of json.characters) {
-            document.getElementById('characters').appendChild(document.createElement('li'));
-            document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
-            document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode(character.name.taken));
-            document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
-            document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode('[E]'));
-            document.getElementById('characters').lastChild.lastChild.classList.add('button');
-            document.getElementById('characters').lastChild.lastChild.setAttribute('title', 'Edit character');
-            document.getElementById('characters').lastChild.lastChild.onclick = (event) => {
-                event.stopPropagation();
-                const el = document.createElement('textarea');
-                el.setAttribute('id', 'charactersheet')
-                const char = { ...character };
-                char._id = undefined;
-                el.setAttribute('data-id', character._id['$oid']);
-                el.value = jsyaml.dump(char);
-                el.setAttribute('data-raw', el.value);
-                document.body.appendChild(el);
-            }
-            document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
-            document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode('[D]'));
-            document.getElementById('characters').lastChild.lastChild.classList.add('button');
-            document.getElementById('characters').lastChild.lastChild.setAttribute('title', 'Delete character');
-            document.getElementById('characters').lastChild.lastChild.onclick = async (event) => {
-                event.stopPropagation();
-                if (confirm("Do you want to delete this character sheet?")) {
-                    await fetch(`${apiHost}/chat/${chat.id}/characters/${character._id['$oid']}`, {
-                        method: 'DELETE',
-                        credentials: "include",
-                    });
-                    await updateCharacters();
-                }
-            }
-        }
-    }
-}
+
 //<DEPENDENCY BLOCK>
 
 
