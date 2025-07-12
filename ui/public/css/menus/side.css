@@ -1,0 +1,62 @@
+.side-menu-container {
+    display: grid;
+    grid-template-rows: 25% 2rem 1fr;
+    height: 100vh;
+    width: 10rem;
+    padding: 0 1rem;
+    position: absolute;
+    top: 0;
+    left: -10rem;
+    background-color: #3C3C3C;
+    transition: 0.7s;
+}
+
+.visible-side-menu {
+    left: 0;
+}
+
+.book-marker {
+    position: absolute;
+    right: -32px;
+    top: 11.5%;
+    cursor: pointer;
+    transition: 0.3s;
+    height: 22px;
+}
+
+.book-marker:hover {
+    height: 32px;
+    right: -45px;
+    top: 11.2%;
+}
+
+.new-chat-button {
+    height: 2rem;
+    align-self: center;
+    border: none;
+    background-color: #3C3C3C;
+    color: #fff;
+    text-align: left;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.chat-title {
+    color: #A7A7A7;
+}
+
+.chat-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.chat-item {
+    list-style-type: none;
+}
+
+.chat-link {
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.8rem;
+}
