@@ -1,4 +1,92 @@
 const apiHost = location.protocol + '//' + location.hostname + '/api/v1'
+async function getUser() {
+    async function requestUser() {
+        const url = `${apiHost}/whoami`;
+        const payload = {
+            credentials: "include",
+            method: "GET",
+        }
+
+        try {
+            const user = await fetch(url, payload).then(r => r.json())
+            return user.error ? false : user;
+        } catch (e) {
+            console.log(e)
+            return false;
+        }
+    }
+    function generateRandomPassword() {
+        const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        const passwordArray = []
+        for (let i = 0; i < 23; i++) {
+            passwordArray.push(chars[Math.floor(Math.random() * chars.length)])
+        }
+        return passwordArray.join('')
+    }
+    async function attemptLogin() {
+        const url = `${apiHost}/login`;
+        const user_id = prompt("Enter your User-ID if you already have one.", "");
+        if (!user_id) return false;
+        const password = prompt("Enter your password.", "");
+        const payload = {
+            credentials: "include",
+            method: "POST",
+            body: JSON.stringify({
+                user_id,
+                password
+            }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+        }
+
+        try {
+            const loginRequest = await fetch(url, payload);
+            const loginSuccess = await loginRequest.text();
+            if (loginSuccess !== "true") {
+                alert("Login failed!");
+                location.reload()
+            }
+            return requestUser();
+        } catch (e) {
+            console.log(e)
+            return false;
+        }
+    }
+    async function registerNewUser() {
+        const password = generateRandomPassword();
+        const url = `${apiHost}/register`;
+        const payload = {
+            credentials: "include",
+            method: "POST",
+            body: JSON.stringify({
+                password: prompt("Enter a password for your account.", password)
+            }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }
+        }
+        try {
+            const uuidRequest = await fetch(url, payload);
+            const uuid = await uuidRequest.text();
+            alert(`Your user-id is ${uuid} - please save that for logging in. Right now the password is hardcoded as example.`)
+            return requestUser()
+        } catch (e) {
+            alert("Failed to register new user. Please try again later.");
+            console.log(e);
+            return false;
+        }
+    }
+
+    let user = await requestUser();
+    if (user) return user;
+    user = await attemptLogin()
+    if (user) return user;
+    return registerNewUser();
+}
+
 function rendersPreviousChatMessages() {
     await(async () => {
         const response = await fetch(`${apiHost}/chat/${chat.id}`, {
@@ -193,78 +281,7 @@ async function updateCharacters() {
 }
 //<DEPENDENCY BLOCK>
 const uuidRegexp = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
-function getOrForceUserIntoExistanceLmao() {
-    const user = await(async () => {
-        const user = await (await fetch(`${apiHost}/whoami`, {
-            credentials: "include",
-            method: "GET",
-        })).json();
-        if (!user.error) {
-            return user;
-        }
-        const userId = prompt("Enter your User-ID if you already have one.", "");
-        if (userId) {
-            if ((await (await fetch(`${apiHost}/login`, {
-                credentials: "include",
-                method: "POST",
-                body: JSON.stringify({
-                    user_id: userId,
-                    password: prompt("Enter your password.", "")
-                }),
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-            })).text()) !== "true") {
-                alert("Login failed!");
-                location.reload()
-                return;
-            }
-        } else {
-            const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".split("")
-            const password = chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)]
-                + chars[Math.floor(Math.random() * chars.length)];
-            const uuid = await (await fetch(`${apiHost}/register`, {
-                credentials: "include",
-                method: "POST",
-                body: JSON.stringify({
-                    password: prompt("Enter a password for your account.", password)
-                }),
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-            })).text();
-            alert(`Your user-id is ${uuid} - please save that for logging in. Right now the password is hardcoded as example.`)
-        }
-        return await (await fetch(`${apiHost}/whoami`, {
-            credentials: "include",
-            method: "GET",
-        })).json();
-    })();
-}
+
 async function getChatOrRedirectIfNoChatOrAnnoyIntoCreationAaaandChangePageTitleToChatTitle() {
     const chat = await (async () => {
         if (location.hash.replace(/[^0-9a-f-]+/g, '').match(uuidRegexp)) {
