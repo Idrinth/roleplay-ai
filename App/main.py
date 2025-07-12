@@ -188,6 +188,7 @@ async def me(user: User, user_jwt: Annotated[str | None, Cookie()] = None):
 async def register(response: Response, register_data: Register):
     user_id = str(uuid.uuid4())
     encrypted_password = PasswordHasher().hash(register_data.password)
+    sql_connection.ping()
     sql_connection.cursor().execute("INSERT INTO `chat_users`.`users` (user_id, password, active) VALUES (?, ?, ?)", [user_id, encrypted_password, 1])
     response.set_cookie(
         key="user_jwt",
