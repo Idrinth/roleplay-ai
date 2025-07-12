@@ -1,0 +1,518 @@
+const apiHost = location.protocol + '//' + location.hostname + '/api/v1';
+function create({ tag = 'div', cla = [], txt = '', src = '', parent, val = '', type = '', id } = {}) {
+    const el = document.createElement(tag);
+    if (Array.isArray(cla)) {
+        cla.forEach(className => el.classList.add(className));
+    } else if (typeof cla === 'string') {
+        el.classList.add(cla);
+    }
+
+    txt ? el.textContent = txt : null;
+    src ? el.src = src : null;
+    val ? el.value = val : null;
+    type ? el.setAttribute('type', type) : null;
+    id >= 0 ? el.id = id : null;
+    if (parent) {
+        if (typeof parent === 'string') {
+            document.querySelector(parent)?.appendChild(el);
+        } else if (parent instanceof HTMLElement) {
+            parent.appendChild(el);
+        }
+    }
+
+    return el;
+}
+async function getUser() {
+    async function requestUser() {
+        const url = `${apiHost}/whoami`;
+        const payload = {
+            credentials: "include",
+            method: "GET",
+        }
+
+        try {
+            const user = await fetch(url, payload).then(r => r.json())
+            return user.error ? false : user;
+        } catch (e) {
+            console.log(e)
+            return false;
+        }
+    }
+    function generateRandomPassword() {
+        const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        const passwordArray = []
+        for (let i = 0; i < 23; i++) {
+            passwordArray.push(chars[Math.floor(Math.random() * chars.length)])
+        }
+        return passwordArray.join('')
+    }
+    async function attemptLogin() {
+        const url = `${apiHost}/login`;
+        const user_id = prompt("Enter your User-ID if you already have one.", "");
+        if (!user_id) return false;
+        const password = prompt("Enter your password.", "");
+        const payload = {
+            credentials: "include",
+            method: "POST",
+            body: JSON.stringify({
+                user_id,
+                password
+            }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+        }
+
+        try {
+            const loginRequest = await fetch(url, payload);
+            const loginSuccess = await loginRequest.text();
+            if (loginSuccess !== "true") {
+                alert("Login failed!");
+                location.reload()
+            }
+            return requestUser();
+        } catch (e) {
+            console.log(e)
+            return false;
+        }
+    }
+    async function registerNewUser() {
+        const password = generateRandomPassword();
+        const url = `${apiHost}/register`;
+        const payload = {
+            credentials: "include",
+            method: "POST",
+            body: JSON.stringify({
+                password: prompt("Enter a password for your account.", password)
+            }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }
+        }
+        try {
+            const uuidRequest = await fetch(url, payload);
+            const uuid = await uuidRequest.text();
+            alert(`Your user-id is ${uuid} - please save that for logging in. Right now the password is hardcoded as example.`)
+            return requestUser()
+        } catch (e) {
+            alert("Failed to register new user. Please try again later.");
+            console.log(e);
+            return false;
+        }
+    }
+
+    let user = await requestUser();
+    if (user) return user;
+    user = await attemptLogin()
+    if (user) return user;
+    return registerNewUser();
+}
+async function getChat(user) {
+    const uuidRegexp = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
+
+    function getChatByUrl() {
+        if (location.hash.replace(/[^0-9a-f-]+/g, '').match(uuidRegexp)) {
+            const likely = location.hash.replace(/[^0-9a-f-]+/g, '');
+            if (user.chats.length <= 0) return;
+            for (const chat of user.chats) {
+                if (chat.id === likely) {
+                    return chat;
+                }
+            }
+        }
+        return false;
+    }
+    function getChatByPrompting() {
+        if (user.chats.length > 0) {
+            for (const chat of user.chats) {
+                if (confirm(`Do you want to continue chat '${chat.name}'?`)) {
+                    return chat;
+                }
+            }
+        }
+        return false;
+    }
+    async function registerNewChat() {
+        const url = `${apiHost}/new`;
+        const payload = {
+            credentials: "include",
+            method: "GET",
+        }
+        try {
+            const chatRequest = await fetch(url, payload);
+            const chatId = await chatRequest.json() ?? "";
+            return {
+                id: chatId,
+                name: chatId
+            }
+        } catch (e) {
+            console.log(e)
+            return false;
+        }
+    }
+    async function fixChatNaming() {
+        const url = `${apiHost}/chat/${chat.id}`;
+        const payload = {
+            method: 'POST',
+            body: JSON.stringify({
+                name: chat.name,
+            }),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            credentials: "include",
+        }
+
+        while (chat.id === chat.name) {
+            chat.name = prompt("Enter a new name for your chat.", chat.name) || chat.id;
+            await fetch(url, payload);
+        }
+    }
+
+    let chat = getChatByUrl();
+    if (chat) return chat;
+    chat = getChatByPrompting();
+    if (chat) return chat;
+    chat = registerNewChat();
+    if (!chat) return false;
+    fixChatNaming()
+    return chat;
+}
+function setTitleAndUrl(chatName) {
+    location.hash = `#${chat.id}`;
+    document.title = chatName + ' | ' + document.title;
+}
+function initializeChat(chatId) {
+    const sendButton = document.getElementById('send');
+    const loader = document.getElementById('loader')
+
+    const url = `${apiHost}/chat/${chatId}/active`;
+    const payload = {
+        credentials: "include",
+        method: "GET",
+        signal: AbortSignal.timeout(2400),
+    }
+
+    window.setInterval(async () => {
+        try {
+            const response = await fetch(url, payload);
+            const active = (await response.json()).active;
+            if (!active) {
+                sendButton.disabled = false;
+                loader.setAttribute('style', 'display: none');
+                return;
+            }
+        } catch (e) {
+            //this is expected
+            // (^-^)/ hi Björn :D
+            console.log(e)
+        }
+        sendButton.disabled = true;
+        loader.setAttribute('style', '');
+    }, 2500);
+}
+async function requestCharacters() {
+    const url = `${apiHost}/chat/${chat.id}/characters`
+    const payload = {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+        credentials: "include"
+    };
+
+    try {
+        const charactersRequest = await fetch(url, payload);
+        const characters = await charactersRequest.json();
+        return characters;
+    } catch (e) {
+        console.log(e);
+        return false;
+    }
+}
+function clearCharactersList() {
+    const allCharacters = document.querySelectorAll('#characters-list .file-dropdown-item')
+    if (!allCharacters.length) return;
+    allCharacters.forEach(character => character.dispatchEvent(new Event('disappear')))
+}
+function renderCharacter(place, character) {
+    const name = character.name.taken;
+
+    const characterContainer = create({ tag: 'li', cla: 'file-dropdown-item', parent: place });
+    create({ tag: 'img', cla: 'character-icon', src: './images/default.png', parent: characterContainer });
+    create({ tag: 'span', cla: 'file-name', txt: name, parent: characterContainer });
+    const optionsMenu = create({ tag: 'div', cla: 'options-menu', parent: characterContainer });
+    create({ tag: 'img', cla: 'dropdown-icon', src: './images/ellipsis.png', parent: optionsMenu });
+    const optionsDropdown = create({ tag: 'div', cla: 'options-dropdown', parent: optionsMenu });
+    const editButton = create({ tag: 'div', cla: 'option-button-container', parent: optionsDropdown });
+    create({ tag: 'img', cla: 'option-icon', src: './images/edit.png', parent: editButton });
+    create({ tag: 'span', txt: 'Edit', parent: editButton });
+    const deleteButton = create({ tag: 'div', cla: 'option-button-container', parent: optionsDropdown });
+    create({ tag: 'img', cla: 'option-icon', src: './images/delete.png', parent: deleteButton });
+    create({ tag: 'span', txt: 'Delete', parent: deleteButton });
+
+
+    const disappear = () => {
+        editButton.removeEventListener('click', editCharacter)
+        deleteButton.removeEventListener('click', deleteCharacter)
+        characterContainer.remove();
+    }; characterContainer.addEventListener('disappear', disappear);
+
+    const editCharacter = () => {
+        const el = document.createElement('textarea');
+        el.setAttribute('id', 'charactersheet')
+        const char = { ...character };
+        char._id = undefined;
+        el.setAttribute('data-id', character._id['$oid']);
+        el.value = jsyaml.dump(char);
+        el.setAttribute('data-raw', el.value);
+        document.body.appendChild(el);
+    }; editButton.addEventListener('click', editCharacter);
+
+    const deleteCharacter = async () => {
+        if (confirm("Do you want to delete this character sheet?")) {
+            const url = `${apiHost}/chat/${chat.id}/characters/${character._id['$oid']}`
+            const payload = {
+                method: 'DELETE',
+                credentials: "include",
+            }
+            await fetch(url, payload);
+            await updateCharacters();
+        }
+        deleteUiComponent();
+    }; deleteButton.addEventListener('click', deleteCharacter);
+}
+function renderCharacters(characters) {
+    const charactersList = document.querySelector("#characters-list");
+    const { characters: charArray } = characters;
+    charArray.forEach(char => renderCharacter(charactersList, char))
+}
+async function updateCharacters() {
+    const characters = await requestCharacters()
+    if (!characters) {
+        alert("Sadly, your characters couldn't be loaded. Try again later.")
+        return;
+    }
+    clearCharactersList();
+    renderCharacters(characters);
+}
+
+async function init() {
+    const user = await getUser();
+    const chat = getChat(user);
+
+    if (!chat.id || !chat.id.match(uuidRegexp)) {
+        window.location = location.protocol + '//' + location.host;
+        return;
+    }
+    setTitleAndUrl(chat.name);
+    initializeChat(chat.id);
+    updateCharacters();
+}
+
+
+
+/* THE ONES BELOW THIS LINE ARE JUST SEPARATED, NOT REFACTORED YET */
+function rendersPreviousChatMessages() {
+    await(async () => {
+        const response = await fetch(`${apiHost}/chat/${chat.id}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            credentials: "include",
+        });
+        if (response.ok) {
+            const converter = new showdown.Converter();
+            const json = await response.json();
+            if (json.error) {
+                console.error(json.error);
+            } else if (json.exception) {
+                console.error(json.exception);
+            } else {
+                for (const message of json.messages) {
+                    document.getElementById('chat').appendChild(document.createElement('li'));
+                    document.getElementById('chat').lastChild.innerHTML = (message.role === 'agent' ? '<span class="gamemaster"></span>' : '') + converter.makeHtml(message.content);
+                    document.getElementById('chat').lastChild.classList.add(message.role);
+                }
+            }
+        }
+    })();
+}
+
+function closesCharEditorAndFUCKyouTheCharWillBeUpdated() {
+    document.body.onclick = async (event) => {
+        const el = document.getElementById('charactersheet');
+        if (el) {
+            if (event.target !== el) {
+                if (el.hasAttribute('data-id')) {
+                    if (el.value && el.getAttribute('data-raw') !== el.value) {
+                        if (confirm("Do you want to save this modified character sheet?")) {
+                            const id = el.getAttribute('data-id');
+                            await fetch(`${apiHost}/chat/${chat.id}/characters/${id}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(jsyaml.load(el.value)),
+                                credentials: "include",
+                            });
+                        }
+                    }
+                } else if (el.value) {
+                    if (confirm("Do you want to save this new character sheet?")) {
+                        await fetch(`${apiHost}/chat/${chat.id}/characters`, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(jsyaml.load(el.value)),
+                            credentials: "include",
+                        })
+                    }
+                }
+                document.body.removeChild(el);
+                await updateCharacters();
+            }
+        }
+    }
+}
+function sendTextEntryAndRenderRequestAndResponseOnScreen() {
+    document.getElementById('send').addEventListener('click', async function () {
+        const now = Date.now();
+        const value = document.getElementById('chat-entry').value;
+        if (!value) {
+            return;
+        }
+        const converter = new showdown.Converter();
+        document.getElementById('send').disabled = true;
+        document.getElementById('chat-entry').value = '';
+        document.getElementById('chat').appendChild(document.createElement('li'));
+        document.getElementById('chat').lastChild.innerHTML = converter.makeHtml(value);
+        document.getElementById('chat').lastChild.classList.add('user');
+        try {
+            const response = await fetch(`${apiHost}/chat/${chat.id}`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ description: value }),
+                credentials: "include",
+            });
+            if (response.ok) {
+                const json = await response.json();
+                if (json.error) {
+                    console.error(json.error);
+                } else if (json.exception) {
+                    console.error(json.exception);
+                } else {
+                    document.getElementById('chat').appendChild(document.createElement('li'));
+                    document.getElementById('chat').lastChild.innerHTML = '<span class="gamemaster"></span>' + converter.makeHtml(json.message) + `<span class="duration">${Math.ceil(Date.now() / 1000 - now / 1000)}s</span>`;
+                    document.getElementById('chat').lastChild.classList.add('agent');
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    });
+}
+
+
+//<DEPENDENCY BLOCK>
+
+
+//</DEPENDENCY BLOCK>
+
+//DEPENDENCY BLOCK
+async function getCharTemplate() {
+    const characterFiller = await (await fetch('/char-template.yaml')).text();
+}
+function detectNewCharacterClickAndFillTextAreaWithTemplate() {
+    document.getElementById('add-character').onclick = async (event) => {
+        event.stopPropagation();
+        const el = document.createElement('textarea');
+        el.setAttribute('id', 'charactersheet');
+        el.value = characterFiller;
+        document.body.appendChild(el);
+    }
+}
+//</DEPENDENCY BLOCK>
+function getDatabaseWorldStateAndSetTooltip() {
+    await(async () => {
+        const response = await fetch(`${apiHost}/chat/${chat.id}/world`, {
+            method: "GET",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            credentials: "include",
+        });
+        if (response.ok) {
+            const keywords = (await response.json()).world;
+            document.getElementById('world').previousElementSibling.setAttribute('title', keywords.join("\n"))
+            document.getElementById('world').setAttribute('data-original', JSON.stringify(keywords))
+            document.getElementById('world').value = keywords.join(", ")
+        }
+    })();
+}
+function toggleColorScheme() {
+    document.getElementById('logo').onclick = () => {
+        document.getElementsByTagName('html')[0]?.classList.toggle('inverted-colors');
+        window.localStorage && window.localStorage.setItem(
+            'prefered-color-scheme',
+            document.getElementsByTagName('html')[0]?.classList.contains('inverted-colors') ? 'light' : 'dark',
+        );
+    }
+}
+function getAndHandleWorldKeywords() {
+    document.getElementById("world").onchange = () => {
+        const keywords = document.getElementById('world').value.split(",").map((keyword) => {
+            return keyword.replace(/^\s+|\s+$/g, '').replace(/\s{2,}/g, ' ')
+        }).filter((keyword) => {
+            return !!keyword;
+        });
+        keywords.sort();
+        const oldKeywords = JSON.parse(document.getElementById('world').getAttribute('data-original')).sort();
+        if (keywords.join() === oldKeywords.join()) {
+            return;
+        }
+        document.getElementById('world').setAttribute('data-original', JSON.stringify(keywords))
+        document.getElementById('world').previousElementSibling.setAttribute('title', keywords.join("\n"))
+        fetch(`${apiHost}/chat/${chat.id}/world`, {
+            method: "PUT",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                keywords,
+            }),
+            credentials: "include",
+        })
+    }
+
+}
+function detectSystemPrefferedColorScheme() {
+    if (window.matchMedia && !window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.getElementsByTagName('html')[0]?.classList.toggle('inverted-colors');
+    }
+}
+function detectUserDefinedPreferredColorScheme() {
+    if (window.localStorage) {
+        const preferedColorScheme = window.localStorage.getItem('prefered-color-scheme');
+        if (preferedColorScheme === 'dark') {
+            document.getElementsByTagName('html')[0]?.classList.remove('inverted-colors');
+        } else if (preferedColorScheme === 'light') {
+            document.getElementsByTagName('html')[0]?.classList.add('inverted-colors');
+        }
+        window.localStorage.setItem('prefered-color-scheme', document.getElementsByTagName('html')[0]?.classList.contains('inverted-colors') ? 'light' : 'dark');
+    }
+}
