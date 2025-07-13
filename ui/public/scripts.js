@@ -226,6 +226,51 @@
       if (!allCharacterBtns.length) return;
       allCharacterBtns.forEach(character => character.dispatchEvent(new Event('disappear')))
     }
+    function renderCharacter(place, character) {
+      const name = character.name.taken;
+
+      const characterContainer = create({ tag: 'li', cla: 'file-dropdown-item', id: 'character-button', parent: place });
+      create({ tag: 'img', cla: 'character-icon', src: './images/default.png', parent: characterContainer });
+      create({ tag: 'span', cla: 'file-name', txt: name, parent: characterContainer });
+      const optionsMenu = create({ tag: 'div', cla: 'options-menu', parent: characterContainer });
+      create({ tag: 'img', cla: 'dropdown-icon', src: './images/ellipsis.png', parent: optionsMenu });
+      const optionsDropdown = create({ tag: 'div', cla: 'options-dropdown', parent: optionsMenu });
+      const editButton = create({ tag: 'div', cla: 'option-button-container', parent: optionsDropdown });
+      create({ tag: 'img', cla: 'option-icon', src: './images/edit.png', parent: editButton });
+      create({ tag: 'span', txt: 'Edit', parent: editButton });
+      const deleteButton = create({ tag: 'div', cla: 'option-button-container', parent: optionsDropdown });
+      create({ tag: 'img', cla: 'option-icon', src: './images/delete.png', parent: deleteButton });
+      create({ tag: 'span', txt: 'Delete', parent: deleteButton });
+
+
+      const disappear = () => {
+        editButton.removeEventListener('click', editCharacter)
+        deleteButton.removeEventListener('click', deleteCharacter)
+        characterContainer.remove();
+      }; characterContainer.addEventListener('disappear', disappear);
+
+      const editCharacter = () => {
+        const char = { ...character };
+        char._id = undefined;
+        characterSheetEditor.setAttribute('data-id', character._id['$oid']);
+        characterSheetEditor.value = jsyaml.dump(char);
+        characterSheetEditor.setAttribute('data-raw', characterSheetEditor.value);
+        document.body.appendChild(el);
+      }; editButton.addEventListener('click', editCharacter);
+
+      const deleteCharacter = async () => {
+        if (confirm("Do you want to delete this character sheet?")) {
+          const url = `${apiHost}/chat/${chat.id}/characters/${character._id['$oid']}`
+          const payload = {
+            method: 'DELETE',
+            credentials: "include",
+          }
+          await fetch(url, payload);
+          await updateCharacters();
+        }
+        deleteUiComponent();
+      }; deleteButton.addEventListener('click', deleteCharacter);
+    }
     const response = await fetch(`${apiHost}/chat/${chat.id}/characters`, {
       method: 'GET',
       headers: {
