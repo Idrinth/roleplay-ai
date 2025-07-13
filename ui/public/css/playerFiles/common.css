@@ -39,6 +39,9 @@
     border-radius: 6px;
     padding: 0.5rem;
     gap: 0.5rem;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    min-height: 25svh;
 }
 
 .file-dropdown-item {

@@ -1,6 +1,6 @@
 .side-menu-container {
     display: grid;
-    grid-template-rows: 25% 2rem 1fr;
+    grid-template-rows: 25% 2rem 1fr 3rem;
     height: 100vh;
     width: 10rem;
     padding: 0 1rem;
@@ -59,4 +59,31 @@
     color: #fff;
     text-decoration: none;
     font-size: 0.8rem;
+}
+.config-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.setting-icon {
+    height: 24px;
+    width: 24px;
+    border: none;
+    background-color: transparent;
+    outline: none;
+    background-position: center;
+    background-size: contain;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.setting-icon:hover {
+    filter: invert(1);
+    transform: scale(1.5);
+}
+.config {
+    background-image: url('../../images/loader-light.png');
+}
+
+.theme-changer {
+    background-image: url('../../images/moon-light.png');
 }

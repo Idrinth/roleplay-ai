@@ -15,7 +15,8 @@
     padding: 1rem 2rem;
     border: solid 2px #838383;
     border-radius: 6px;
-    background-color: #E8E8E8;
+    background-color: #171717;
+    color: #fff;
 }
 
 .chat {

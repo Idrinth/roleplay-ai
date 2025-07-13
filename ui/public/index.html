@@ -13,7 +13,7 @@
 <body>
     <header class="menu-container">
         <img class="logo" src="./images/logo.dark.svg" id="logo">
-        <h1 class="mobile-hidden title">Gamemaster A.I</h1>
+        <h1 class="mobile-hidden title" id="app-title">Gamemaster A.I</h1>
         <div class="desktop-hidden mobile-navigation-panel">
             <span class="navigation-position" id="navigation-position-1"></span>
             <span class="navigation-position" id="navigation-position-2"></span>
@@ -31,6 +31,10 @@
                 <li class="chat-item"><a class="chat-link" href="index.html">Aspargus and...</a></li>
             </ul>
         </nav>
+        <div class="config-container">
+            <button id="config" class="setting-icon config"></button>
+            <button id="theme-changer" class="setting-icon theme-changer"></button>
+        </div>
     </aside>
     <main>
         <div class="chat-outer-container">
@@ -201,7 +205,7 @@
                             </div>
                         </li>
                     </ul>
-                    <div class="keyword-container">
+                    <div class="keywords-container">
                         <h4>Keywords:</h4>
                         <textarea class="keywords-entry" name="" id="world"></textarea>
                     </div>
