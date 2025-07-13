@@ -2,6 +2,29 @@
   const apiHost = location.protocol + '//' + location.hostname + '/api/v1'
   const characterFiller = await (await fetch('/char-template.yaml')).text();
   const uuidRegexp = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
+  const createEl = ({ tag = 'div', cla = [], txt = '', src = '', parent, val = '', type = '', id } = {}) => {
+    const el = document.createElement(tag);
+    if (Array.isArray(cla)) {
+      cla.forEach(className => el.classList.add(className));
+    } else if (typeof cla === 'string') {
+      el.classList.add(cla);
+    }
+
+    txt ? el.textContent = txt : null;
+    src ? el.src = src : null;
+    val ? el.value = val : null;
+    type ? el.setAttribute('type', type) : null;
+    id >= 0 ? el.id = id : null;
+    if (parent) {
+      if (typeof parent === 'string') {
+        document.querySelector(parent)?.appendChild(el);
+      } else if (parent instanceof HTMLElement) {
+        parent.appendChild(el);
+      }
+    }
+
+    return el;
+  }
   const user = await (async () => {
     const user = await (await fetch(`${apiHost}/whoami`, {
       credentials: "include",
@@ -211,7 +234,7 @@
           event.stopPropagation();
           const el = document.createElement('textarea');
           el.setAttribute('id', 'charactersheet')
-          const char = {...character};
+          const char = { ...character };
           char._id = undefined;
           el.setAttribute('data-id', character._id['$oid']);
           el.value = jsyaml.dump(char);
@@ -254,7 +277,7 @@
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({description: value}),
+        body: JSON.stringify({ description: value }),
         credentials: "include",
       });
       if (response.ok) {
