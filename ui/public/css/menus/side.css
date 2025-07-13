@@ -7,7 +7,7 @@
     position: absolute;
     top: 0;
     left: -10rem;
-    background-color: #3C3C3C;
+    background-color: var(--sideMenu);
     transition: 0.7s;
 }
 
@@ -34,15 +34,15 @@
     height: 2rem;
     align-self: center;
     border: none;
-    background-color: #3C3C3C;
-    color: #fff;
+    background-color: var(--sideMenu);
+    color: var(--text);
     text-align: left;
     font-size: 1.2rem;
     cursor: pointer;
 }
 
 .chat-title {
-    color: #A7A7A7;
+    color: var(--text);
 }
 
 .chat-history-list {
@@ -56,15 +56,17 @@
 }
 
 .chat-link {
-    color: #fff;
+    color: var(--text);
     text-decoration: none;
     font-size: 0.8rem;
 }
+
 .config-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
+
 .setting-icon {
     height: 24px;
     width: 24px;
@@ -76,14 +78,15 @@
     cursor: pointer;
     transition: 0.3s;
 }
-.setting-icon:hover {
-    filter: invert(1);
+
+.setting-icon:hover {    
     transform: scale(1.5);
 }
+
 .config {
     background-image: url('../../images/loader-light.png');
 }
 
 .theme-changer {
-    background-image: url('../../images/moon-light.png');
+    background-image: var(--themeIcon);
 }

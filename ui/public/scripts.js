@@ -452,7 +452,7 @@
     }
     window.localStorage.setItem('prefered-color-scheme', document.getElementsByTagName('html')[0]?.classList.contains('inverted-colors') ? 'light' : 'dark');
   }
-  document.getElementById('logo').onclick = () => {
+  document.getElementById('theme-changer').onclick = () => {
     document.getElementsByTagName('html')[0]?.classList.toggle('inverted-colors');
     window.localStorage && window.localStorage.setItem(
       'prefered-color-scheme',
