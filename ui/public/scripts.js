@@ -271,6 +271,11 @@
         deleteUiComponent();
       }; deleteButton.addEventListener('click', deleteCharacter);
     }
+    function renderCharacters(characters) {
+      const charactersList = document.querySelector("#characters-list");
+      const { characters: charArray } = characters;
+      charArray.forEach(char => renderCharacter(charactersList, char))
+    }
     const response = await fetch(`${apiHost}/chat/${chat.id}/characters`, {
       method: 'GET',
       headers: {
