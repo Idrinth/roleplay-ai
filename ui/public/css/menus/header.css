@@ -8,6 +8,7 @@
 .logo {
     width: 3rem;
     height: 3rem;
+    filter: var(--buttonTheme);
 }
 
 .title {

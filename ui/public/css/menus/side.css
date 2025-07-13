@@ -1,5 +1,7 @@
 .side-menu-container {
     display: grid;
+    justify-content: center;
+
     grid-template-rows: 25% 2rem 1fr 3rem;
     height: 100vh;
     width: 10rem;
@@ -34,7 +36,7 @@
     height: 2rem;
     align-self: center;
     border: none;
-    background-color: var(--sideMenu);
+    background-color: transparent;
     color: var(--text);
     text-align: left;
     font-size: 1.2rem;
@@ -42,24 +44,52 @@
 }
 
 .chat-title {
+    font-size: 0.7rem;
     color: var(--text);
+}
+
+.chat-history-outer-container {
+    width: 8rem;
 }
 
 .chat-history-list {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    width: 100%;
 }
 
 .chat-item {
     list-style-type: none;
+    width: 100%;
 }
 
 .chat-link {
-    color: var(--text);
-    text-decoration: none;
+    display: block;
     font-size: 0.8rem;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-decoration: none;
+    border-radius: 6px;
+    background-color: var(--sideMenu);
+    color: var(--text);
+    transition: 0.3s;
 }
+
+.chat-link:hover {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    text-indent: 0.5rem;
+    filter: invert(1);
+    position: relative;
+    z-index: 1;    
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
 
 .config-container {
     display: flex;
@@ -79,7 +109,7 @@
     transition: 0.3s;
 }
 
-.setting-icon:hover {    
+.setting-icon:hover {
     transform: scale(1.5);
 }
 
