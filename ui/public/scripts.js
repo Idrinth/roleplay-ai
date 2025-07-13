@@ -440,23 +440,24 @@
       credentials: "include",
     })
   }
-  if (window.matchMedia && !window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.getElementsByTagName('html')[0]?.classList.toggle('inverted-colors');
+  if (window.matchMedia && !window.matchMedia('(prefers-color-scheme: light)').matches) {
+    document.getElementsByTagName('html')[0]?.classList.remove('light');
   }
   if (window.localStorage) {
     const preferedColorScheme = window.localStorage.getItem('prefered-color-scheme');
     if (preferedColorScheme === 'dark') {
-      document.getElementsByTagName('html')[0]?.classList.remove('inverted-colors');
+      document.getElementsByTagName('html')[0]?.classList.remove('light');
     } else if (preferedColorScheme === 'light') {
-      document.getElementsByTagName('html')[0]?.classList.add('inverted-colors');
+      document.getElementsByTagName('html')[0]?.classList.add('light');
     }
-    window.localStorage.setItem('prefered-color-scheme', document.getElementsByTagName('html')[0]?.classList.contains('inverted-colors') ? 'light' : 'dark');
+    window.localStorage.setItem('prefered-color-scheme', document.getElementsByTagName('html')[0]?.classList.contains('light') ? 'light' : 'dark');
   }
   document.getElementById('theme-changer').onclick = () => {
-    document.getElementsByTagName('html')[0]?.classList.toggle('inverted-colors');
+    console.log(document.getElementsByTagName('html'))
+    document.getElementsByTagName('html')[0]?.classList.toggle('light');
     window.localStorage && window.localStorage.setItem(
       'prefered-color-scheme',
-      document.getElementsByTagName('html')[0]?.classList.contains('inverted-colors') ? 'light' : 'dark',
+      document.getElementsByTagName('html')[0]?.classList.contains('light') ? 'light' : 'dark',
     );
   }
   document.getElementById('imprint-open').onclick = (event) => {

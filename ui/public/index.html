@@ -241,28 +241,6 @@
     <div id="loader" style="display:none"><img src="loader.gif" alt="Loading" /></div> -->
 
     <script src="./modules/side-menu.js"></script>
-    <script>
-        if (window.matchMedia && !window.matchMedia('(prefers-color-scheme: light)').matches) {
-            document.getElementsByTagName('html')[0]?.classList.remove('light');
-        }
-        if (window.localStorage) {
-            const preferedColorScheme = window.localStorage.getItem('prefered-color-scheme');
-            if (preferedColorScheme === 'dark') {
-                document.getElementsByTagName('html')[0]?.classList.remove('light');
-            } else if (preferedColorScheme === 'light') {
-                document.getElementsByTagName('html')[0]?.classList.add('light');
-            }
-            window.localStorage.setItem('prefered-color-scheme', document.getElementsByTagName('html')[0]?.classList.contains('light') ? 'light' : 'dark');
-        }
-        document.getElementById('theme-changer').onclick = () => {
-            console.log(    document.getElementsByTagName('html'))
-            document.getElementsByTagName('html')[0]?.classList.toggle('light');
-            window.localStorage && window.localStorage.setItem(
-                'prefered-color-scheme',
-                document.getElementsByTagName('html')[0]?.classList.contains('light') ? 'light' : 'dark',
-            );
-        }
-    </script>
     <!-- <script type="text/javascript" src="./showdown.min.js"></script>
     <script type="text/javascript" src="./js-yaml.min.js"></script>
     <script type="text/javascript" src="./refactored.js"></script> -->
