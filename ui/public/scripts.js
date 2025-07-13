@@ -276,61 +276,18 @@
       const { characters: charArray } = characters;
       charArray.forEach(char => renderCharacter(charactersList, char))
     }
-    const response = await fetch(`${apiHost}/chat/${chat.id}/characters`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      credentials: "include"
-    });
-    if (response.ok) {
-      const json = await response.json();
-      if (json.error) {
-        console.error(json.error);
+    try {
+      const characters = await requestCharacters()
+      if (!characters) {
+        alert("Sadly, your characters couldn't be loaded. Try again later.")
         return;
       }
-      if (json.exception) {
-        console.error(json.exception);
-        return;
-      }
-      while (document.getElementById('characters').children.length > 1) {
-        document.getElementById('characters').removeChild(document.getElementById('characters').lastChild);
-      }
-      for (const character of json.characters) {
-        document.getElementById('characters').appendChild(document.createElement('li'));
-        document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
-        document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode(character.name.taken));
-        document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
-        document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode('[E]'));
-        document.getElementById('characters').lastChild.lastChild.classList.add('button');
-        document.getElementById('characters').lastChild.lastChild.setAttribute('title', 'Edit character');
-        document.getElementById('characters').lastChild.lastChild.onclick = (event) => {
-          event.stopPropagation();
-          const el = document.createElement('textarea');
-          el.setAttribute('id', 'charactersheet')
-          const char = { ...character };
-          char._id = undefined;
-          el.setAttribute('data-id', character._id['$oid']);
-          el.value = jsyaml.dump(char);
-          el.setAttribute('data-raw', el.value);
-          document.body.appendChild(el);
-        }
-        document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
-        document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode('[D]'));
-        document.getElementById('characters').lastChild.lastChild.classList.add('button');
-        document.getElementById('characters').lastChild.lastChild.setAttribute('title', 'Delete character');
-        document.getElementById('characters').lastChild.lastChild.onclick = async (event) => {
-          event.stopPropagation();
-          if (confirm("Do you want to delete this character sheet?")) {
-            await fetch(`${apiHost}/chat/${chat.id}/characters/${character._id['$oid']}`, {
-              method: 'DELETE',
-              credentials: "include",
-            });
-            await updateCharacters();
-          }
-        }
-      }
+      clearCharactersList();
+      renderCharacters(characters);
+      return true;
+    } catch (e) {
+      console.log("Error when attempting to update characters. Please, try again.")
+      return false;
     }
   }
   document.getElementById('send').addEventListener('click', async function () {
