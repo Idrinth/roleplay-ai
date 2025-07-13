@@ -221,6 +221,11 @@
         return false;
       }
     }
+    function clearCharactersList() {
+      const allCharacterBtns = document.querySelectorAll('#character-button')
+      if (!allCharacterBtns.length) return;
+      allCharacterBtns.forEach(character => character.dispatchEvent(new Event('disappear')))
+    }
     const response = await fetch(`${apiHost}/chat/${chat.id}/characters`, {
       method: 'GET',
       headers: {
