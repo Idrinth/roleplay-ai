@@ -201,6 +201,26 @@
   }, 2500);
 
   const updateCharacters = async () => {
+    async function requestCharacters() {
+      const url = `${apiHost}/chat/${chat.id}/characters`
+      const payload = {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        credentials: "include"
+      };
+
+      try {
+        const charactersRequest = await fetch(url, payload);
+        const characters = await charactersRequest.json();
+        return characters;
+      } catch (e) {
+        console.log(e);
+        return false;
+      }
+    }
     const response = await fetch(`${apiHost}/chat/${chat.id}/characters`, {
       method: 'GET',
       headers: {
