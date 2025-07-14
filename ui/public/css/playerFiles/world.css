@@ -20,7 +20,7 @@
 .keywords-container {
     padding: 0px 0.5rem;
     padding-right: 1rem;
-        color: var(--text);
+    color: var(--text);
 }
 
 .keywords-entry {
@@ -33,4 +33,21 @@
     padding: 0.2rem;
     color: var(--text);
 
+}
+
+
+
+@media screen and (max-width: 768px) {
+
+    .world-files-inner-container .file-dropdown-item {
+        list-style: none;
+        display: grid;
+        grid-template-columns: 1fr 1rem;
+        padding: 0 0rem 0.5rem 0;
+        gap: 0.5rem;
+        width: 95%;
+        
+        height: 2rem;
+        
+    }
 }

@@ -37,7 +37,7 @@
     align-self: center;
     border: none;
     background-color: transparent;
-    color: var(--text);
+    color: var(--sideText);
     text-align: left;
     font-size: 1.2rem;
     cursor: pointer;
@@ -45,7 +45,7 @@
 
 .chat-title {
     font-size: 0.7rem;
-    color: var(--text);
+    color: var(--sideText);
 }
 
 .chat-history-outer-container {
@@ -74,8 +74,9 @@
     text-decoration: none;
     border-radius: 6px;
     background-color: var(--sideMenu);
-    color: var(--text);
+    color: var(--sideText);
     transition: 0.3s;
+    text-transform: capitalize;
 }
 
 .chat-link:hover {
@@ -85,7 +86,7 @@
     text-indent: 0.5rem;
     filter: invert(1);
     position: relative;
-    z-index: 1;    
+    z-index: 1;
     word-break: break-word;
     overflow-wrap: anywhere;
 }
@@ -119,4 +120,36 @@
 
 .theme-changer {
     background-image: var(--themeIcon);
+}
+
+
+@media screen and (max-width: 768px) {
+    .side-menu-container {
+        position: initial;
+        height: 100%;
+        width: 100vw;
+        flex-shrink: 0;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+    }
+
+    .new-chat-button {
+        text-align: center;
+    }
+
+    .book-marker {
+        display: none;
+    }
+
+    .chat-history-outer-container {
+        width: 90vw;
+    }
+
+    .chat-link {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
 }

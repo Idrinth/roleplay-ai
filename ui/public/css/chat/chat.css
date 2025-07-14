@@ -22,6 +22,7 @@
     height: 100%;
     width: 100%;
     color: var(--text);
+    overflow-y: scroll;
 }
 
 .chat-entry-container {
@@ -39,6 +40,7 @@
     color: var(--text);
     border: none;
     outline: none;
+    text-indent: 0.5rem;
 }
 
 .send-button {
@@ -57,4 +59,49 @@
 
 .send-button:hover {
     scale: 1.2;
+}
+
+@media screen and (max-width: 768px) {
+    .chat-outer-container {
+        height: 100%;
+        width: 100vw;
+        flex-shrink: 0;
+        padding: 0;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+
+    }
+
+    .chat-inner-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        overflow: hidden;
+        height: 100%;
+        width: 100%;
+        padding: 6svh 0.5rem 1rem 0.5rem;        
+        border: solid 2px var(--borders);        
+        background-color: var(--chat);        
+    }
+
+    .chat {
+        padding-left: 0.5rem;
+    }
+
+    .chat-entry-container {
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .send-button {
+        width: 6rem;
+    }
+
+    .send-button:hover {
+        scale: 1;
+    }
+
+    .send-button:active {
+        scale: 1.2;
+    }
 }
