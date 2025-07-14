@@ -147,12 +147,14 @@
     }
 
     .files-title {
+        margin: 0 auto;
+        width: 50%;
         scale: 0.8;
-        background-size: 50%;
+        background-size: 100%;
     }
 
     .files-dropdown-list {
-        flex-shrink: 0;        
+        flex-shrink: 0;
         padding: 0.8rem;
         overflow-x: hidden;
         overflow-y: scroll;
@@ -166,4 +168,16 @@
         gap: 0.5rem;
         width: 100%;
     }
+
+
+    .files-title:hover {
+        transform: scale(1);
+        font-size: 0.8rem;
+    }
+
+    .files-title:active {
+        transform: scale(1.1);
+        font-size: 0.9rem;
+    }
+
 }

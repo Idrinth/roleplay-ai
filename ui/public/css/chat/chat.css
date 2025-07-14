@@ -61,6 +61,32 @@
     scale: 1.2;
 }
 
+.gamemaster {
+    background-image: url('../../images/logo.light.svg');
+    background-size: 100% 100%;
+    width: 1em;
+    height: 1em;
+    padding-left: 1rem;
+    display: inline-block;
+}
+
+.light .gamemaster {
+    background-image: url('../../images/logo.dark.svg');
+}
+
+.duration {
+    text-align: right;
+    font-style: italic;
+    color: var(--main-shadow);
+}
+
+li.agent {
+    background-color: rgba(0, 0, 125, 0.0625);
+    border-radius: 3px;
+    box-shadow: 2px 2px rgba(0, 0, 255, 0.125);
+    margin-bottom: 5px;
+}
+
 @media screen and (max-width: 768px) {
     .chat-outer-container {
         height: 100%;
@@ -79,9 +105,9 @@
         overflow: hidden;
         height: 100%;
         width: 100%;
-        padding: 6svh 0.5rem 1rem 0.5rem;        
-        border: solid 2px var(--borders);        
-        background-color: var(--chat);        
+        padding: 6svh 0.5rem 1rem 0.5rem;
+        border: solid 2px var(--borders);
+        background-color: var(--chat);
     }
 
     .chat {

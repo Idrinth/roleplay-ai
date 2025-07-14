@@ -229,18 +229,18 @@
     function renderCharacter(place, character) {
       const name = character.name.taken;
 
-      const characterContainer = create({ tag: 'li', cla: 'file-dropdown-item', id: 'character-button', parent: place });
-      create({ tag: 'img', cla: 'character-icon', src: './images/default.png', parent: characterContainer });
-      create({ tag: 'span', cla: 'file-name', txt: name, parent: characterContainer });
-      const optionsMenu = create({ tag: 'div', cla: 'options-menu', parent: characterContainer });
-      create({ tag: 'img', cla: 'dropdown-icon', src: './images/ellipsis.png', parent: optionsMenu });
-      const optionsDropdown = create({ tag: 'div', cla: 'options-dropdown', parent: optionsMenu });
-      const editButton = create({ tag: 'div', cla: 'option-button-container', parent: optionsDropdown });
-      create({ tag: 'img', cla: 'option-icon', src: './images/edit.png', parent: editButton });
-      create({ tag: 'span', txt: 'Edit', parent: editButton });
-      const deleteButton = create({ tag: 'div', cla: 'option-button-container', parent: optionsDropdown });
-      create({ tag: 'img', cla: 'option-icon', src: './images/delete.png', parent: deleteButton });
-      create({ tag: 'span', txt: 'Delete', parent: deleteButton });
+      const characterContainer = createEl({ tag: 'li', cla: 'file-dropdown-item', id: 'character-button', parent: place });
+      createEl({ tag: 'img', cla: 'character-icon', src: './images/default.png', parent: characterContainer });
+      createEl({ tag: 'span', cla: 'file-name', txt: name, parent: characterContainer });
+      const optionsMenu = createEl({ tag: 'div', cla: 'options-menu', parent: characterContainer });
+      createEl({ tag: 'img', cla: 'dropdown-icon', src: './images/ellipsis.png', parent: optionsMenu });
+      const optionsDropdown = createEl({ tag: 'div', cla: 'options-dropdown', parent: optionsMenu });
+      const editButton = createEl({ tag: 'div', cla: 'option-button-container', parent: optionsDropdown });
+      createEl({ tag: 'img', cla: 'option-icon', src: './images/edit.png', parent: editButton });
+      createEl({ tag: 'span', txt: 'Edit', parent: editButton });
+      const deleteButton = createEl({ tag: 'div', cla: 'option-button-container', parent: optionsDropdown });
+      createEl({ tag: 'img', cla: 'option-icon', src: './images/delete.png', parent: deleteButton });
+      createEl({ tag: 'span', txt: 'Delete', parent: deleteButton });
 
 
       const disappear = () => {
@@ -440,6 +440,38 @@
       credentials: "include",
     })
   }
+  window.addEventListener("DOMContentLoaded", () => {
+    if (window.innerWidth > 100) return;
+    const container = document.querySelector("main");
+    const logo = document.querySelector("#logo");
+    container.scrollLeft = window.innerWidth;
+    container.style.scrollBehavior = 'smooth';
+    let previousIndex = 1;
+
+    container.addEventListener("scroll", () => {
+      const screenWidth = window.innerWidth;
+      const currentIndex = Math.round(container.scrollLeft / screenWidth);
+
+      if (currentIndex !== previousIndex) {
+        const goingRight = currentIndex > previousIndex;
+
+        switch (currentIndex) {
+          case 0:
+            logo.style.order = goingRight ? 2 : 0;
+            break;
+          case 1:
+            logo.style.order = 2;
+            break;
+          case 2:
+            logo.style.order = goingRight ? 4 : 2;
+            break;
+        }
+
+        previousIndex = currentIndex;
+      }
+    });
+  });
+
   if (window.matchMedia && !window.matchMedia('(prefers-color-scheme: light)').matches) {
     document.getElementsByTagName('html')[0]?.classList.remove('light');
   }
@@ -460,6 +492,19 @@
       document.getElementsByTagName('html')[0]?.classList.contains('light') ? 'light' : 'dark',
     );
   }
+  const bookMarker = document.querySelector("#book-marker");
+  const sideMenuContainer = document.querySelector("#side-menu-container");
+
+  function toggleSideMenu() {
+    const menuIsVisible = sideMenuContainer.classList.contains('visible-side-menu');
+    if (menuIsVisible) {
+      sideMenuContainer.classList.remove("visible-side-menu");
+      return;
+    }
+    sideMenuContainer.classList.add("visible-side-menu");
+  }
+
+  bookMarker.addEventListener('click', toggleSideMenu);
   document.getElementById('imprint-open').onclick = (event) => {
     event.preventDefault();
     event.stopPropagation();
