@@ -1,1 +1,4 @@
-unsloth~=2025.6.5
+torch~=2.7.1
+unsloth~=2025.7.3
+pyyaml~=6.0.2
+opensloth~=0.1.8

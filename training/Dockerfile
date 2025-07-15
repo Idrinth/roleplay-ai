@@ -7,13 +7,9 @@ COPY training/requirements.txt ./
 RUN python3 -m venv ./.venv && .venv/bin/pip install --no-cache-dir -r requirements.txt
 RUN mkdir /raw-data
 
-WORKDIR /ollama
-RUN git clone https://github.com/ggml-org/llama.cpp.git .
-RUN python3 -m venv ./.venv && .venv/bin/pip install --no-cache-dir -r requirements.txt
-
 WORKDIR /training
 COPY training/config.json ./
 COPY training/*.py ./training
-COPY training/data/*.json /raw-data/
+COPY training/data/*.yml /raw-data/
 
 ENTRYPOINT [".venv/bin/python3", "training"]
