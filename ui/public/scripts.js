@@ -65,7 +65,7 @@
           'Content-Type': 'application/json',
         },
       })).text();
-      alert(`Your user-id is ${uuid} - please save that for logging in. Right now the password is hardcoded as example.`)
+      alert(`Your user-id is ${uuid} - please save that for logging in.`)
     }
     return await (await fetch(`${apiHost}/whoami`, {
       credentials: "include",
@@ -176,7 +176,64 @@
     document.getElementById('send').disabled = true;
     document.getElementById('loader').setAttribute('style', '');
   }, 2500);
-
+  const updateDocuments = await (async () => {
+    const response = await fetch(`${apiHost}/chat/${chat.id}/documents`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      credentials: "include"
+    });
+    if (response.ok) {
+      const json = await response.json();
+      if (json.error) {
+        console.error(json.error);
+        return;
+      }
+      if (json.exception) {
+        console.error(json.exception);
+        return;
+      }
+      while (document.getElementById('documents').children.length > 1) {
+        document.getElementById('documents').removeChild(document.getElementById('characters').lastChild);
+      }
+      for (const md_document of json.documents) {
+        document.getElementById('documents').appendChild(document.createElement('li'));
+        document.getElementById('documents').lastChild.appendChild(document.createElement('span'));
+        document.getElementById('documents').lastChild.lastChild.appendChild(document.createTextNode(md_document.name));
+        document.getElementById('documents').lastChild.appendChild(document.createElement('span'));
+        document.getElementById('documents').lastChild.lastChild.appendChild(document.createTextNode('[E]'));
+        document.getElementById('documents').lastChild.lastChild.classList.add('button');
+        document.getElementById('documents').lastChild.lastChild.setAttribute('title', 'Edit document');
+        document.getElementById('documents').lastChild.lastChild.onclick = (event) => {
+          event.stopPropagation();
+          const el = document.createElement('textarea');
+          el.setAttribute('id', 'document')
+          const doc = {...md_document};
+          doc._id = undefined;
+          el.setAttribute('data-id', document.id['$oid']);
+          el.value = doc.document;
+          el.setAttribute('data-raw', el.document);
+          document.body.appendChild(el);
+        }
+        document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
+        document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode('[D]'));
+        document.getElementById('characters').lastChild.lastChild.classList.add('button');
+        document.getElementById('characters').lastChild.lastChild.setAttribute('title', 'Delete character');
+        document.getElementById('characters').lastChild.lastChild.onclick = async (event) => {
+          event.stopPropagation();
+          if (confirm("Do you want to delete this document?")) {
+            await fetch(`${apiHost}/chat/${chat.id}/characters/${md_document._id['$oid']}`, {
+              method: 'DELETE',
+              credentials: "include",
+            });
+            await updateDocuments();
+          }
+        }
+      }
+    }
+  })
   const updateCharacters = async () => {
     const response = await fetch(`${apiHost}/chat/${chat.id}/characters`, {
       method: 'GET',
@@ -300,6 +357,7 @@
   })();
   document.body.onclick = async (event) => {
     const el = document.getElementById('charactersheet');
+    const el2 = document.getElementById('document');
     if (el) {
       if (event.target !== el) {
         if (el.hasAttribute('data-id')) {
@@ -334,6 +392,40 @@
         await updateCharacters();
       }
     }
+    if (el2) {
+      if (event.target !== el2) {
+        if (el2.hasAttribute('data-id')) {
+          if (el2.value && el2.getAttribute('data-raw') !== el2.value) {
+            if (confirm("Do you want to save this modified character sheet?")) {
+              const id = el2.getAttribute('data-id');
+              await fetch(`${apiHost}/chat/${chat.id}/documents/${id}`, {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({document: el2.value},),
+                credentials: "include",
+              });
+            }
+          }
+        } else if (el2.value) {
+          if (confirm("Do you want to save this new document?")) {
+            await fetch(`${apiHost}/chat/${chat.id}/documents`, {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({document: el2.value},),
+              credentials: "include",
+            })
+          }
+        }
+        document.body.removeChild(el);
+        await updateCharacters();
+      }
+    }
     document.getElementById('imprint').setAttribute('style', 'display:none');
   }
   await updateCharacters();
@@ -342,6 +434,14 @@
     const el = document.createElement('textarea');
     el.setAttribute('id', 'charactersheet');
     el.value = characterFiller;
+    document.body.appendChild(el);
+  }
+  await updateDocuments();
+  document.getElementById('add-document').onclick = async (event) => {
+    event.stopPropagation();
+    const el = document.createElement('textarea');
+    el.setAttribute('id', 'document');
+    el.value = '';
     document.body.appendChild(el);
   }
   await (async () => {
