@@ -138,10 +138,7 @@ async def login(response: Response, login_data: Login):
     if not chatuser:
         return {"error": "Login failed"}
     try:
-        if login_data.password != "example":
-            PasswordHasher().verify(chatuser[1], login_data.password)
-        elif chatuser[1] == "example":
-            raise VerifyMismatchError
+        PasswordHasher().verify(chatuser[1], login_data.password)
     except VerifyMismatchError as e:
         return {"error": "Login failed"}
     response.set_cookie(
