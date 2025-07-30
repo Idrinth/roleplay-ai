@@ -6,8 +6,8 @@ from typing import Dict, List
 import requests
 
 llm_model = os.getenv('LLM_MODEL')
-beam_url = os.getenv('BEAM_API_KEY')
-beam_key = os.getenv('BEAM_DEPLOYMENT_URL')
+beam_url = os.getenv('BEAM_DEPLOYMENT_URL')
+beam_key = os.getenv('BEAM_API_KEY')
 llm_to_use = os.getenv('LLM_TO_USE')
 
 def ask_llm(messages: List[Dict[string, string]]):
