@@ -95,7 +95,7 @@ li.agent {
 textarea {
   resize: none;
 }
-#charactersheet {
+#charactersheet, #document {
   display: block;
   position: absolute;
   z-index: 11111;
