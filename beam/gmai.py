@@ -28,9 +28,9 @@ def answer(context, **params):
     model, tokenizer = context.on_start_value
 
     text = tokenizer.apply_chat_template(params["messages"], tokenize=True, add_generation_prompt=True, return_tensors="pt")
-    generate_ids = model.generate(text, max_length=550)
+    generated = model.generate(text, max_new_tokens=550)
     result = tokenizer.batch_decode(
-        generate_ids,
+        generated,
         skip_special_tokens=True,
         clean_up_tokenization_spaces=True
     )[0]
