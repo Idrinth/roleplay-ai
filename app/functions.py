@@ -62,7 +62,7 @@ def get_system_prompt(characters, world: str, short_term_summary: str, medium_te
             "\n```json\n" + json.dumps(characters, default=json_util.default) + "\n```\n"\
             "## Character Sheet Schema:\n```json\n" + schema + "\n```\n"
     if len(world) > 0:
-        out += "# World:\n" + ", ".join(world) + "\n"
+        out += "# World:\n" + world + "\n"
     if short_term_summary != "":
         out += "# Short Term Summary:\n" + short_term_summary +"\n"
     if medium_term_summary != "":
