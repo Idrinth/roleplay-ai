@@ -15,7 +15,7 @@ def download_models():
     volumes=[Volume(name="gamemaster-ai-cache", mount_path=CACHE_PATH)],
     cpu=1,
     gpu=["A100-40", "H100"],
-    memory="4Gi",
+    memory="32Gi",
     autoscaler=QueueDepthAutoscaler(
         max_containers=5,
         tasks_per_container=1,
