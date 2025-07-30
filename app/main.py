@@ -138,10 +138,7 @@ async def login(response: Response, login_data: Login):
     if not chatuser:
         return {"error": "Login failed"}
     try:
-        if login_data.password != "example":
-            PasswordHasher().verify(chatuser[1], login_data.password)
-        elif chatuser[1] == "example":
-            raise VerifyMismatchError
+        PasswordHasher().verify(chatuser[1], login_data.password)
     except VerifyMismatchError as e:
         return {"error": "Login failed"}
     response.set_cookie(
@@ -259,15 +256,15 @@ async def chat_document_list(chat_id: str, user_jwt: Annotated[str | None, Cooki
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
     cursor = sql_connection.cursor()
-    cursor.execute(f"SELECT id, name FROM `{mariadb_name(user_id, chat_id)}`.documents;")
+    cursor.execute(f"SELECT id, name, content FROM `{mariadb_name(user_id, chat_id)}`.documents;")
     documents = []
     for row in cursor.fetchall():
-        documents.append({"id": row[0], "name": row[1]})
+        documents.append({"id": row[0], "name": row[1], "document": row[2]})
     return {
         "documents": documents,
     }
 
-@app.get("/chat/{chat_id}/documents/{document_id}")
+@app.delete("/chat/{chat_id}/documents/{document_id}")
 async def chat_document_delete(chat_id: str, document_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
     user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
@@ -297,10 +294,7 @@ async def chat_document_add(chat_id: str, document: Document, user_jwt: Annotate
     )[0]
     document_uuid = str(uuid.UUID(document_id))
     sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.documents (id, name, content) VALUES (?, ?, ?);)", [document_uuid, document.name, document.content])
-    return {
-        "id": document_uuid,
-        "name": document.name,
-    }
+    return True
 
 @app.post("/chat/{chat_id}/characters")
 async def chat_character_add(chat_id: str, character: Character, user_jwt: Annotated[str | None, Cookie()] = None):
