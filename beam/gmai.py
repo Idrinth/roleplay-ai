@@ -4,7 +4,7 @@ CACHE_PATH = "./weights"
 
 def download_models():
     from transformers import AutoTokenizer, AutoModelForCausalLM
-    model = AutoModelForCausalLM.from_pretrained("teknium/OpenHermes-2.5-Mistral-7B", cache_dir=CACHE_PATH)
+    model = AutoModelForCausalLM.from_pretrained("TheBloke/OpenHermes-2.5-Mistral-7B-GPTQ", cache_dir=CACHE_PATH)
     tokenizer = AutoTokenizer.from_pretrained("teknium/OpenHermes-2.5-Mistral-7B", cache_dir=CACHE_PATH)
 
     return model, tokenizer
@@ -22,13 +22,13 @@ def download_models():
     ),
     keep_warm_seconds=90,
     authorized=True,
-    image=Image(python_version="python3.12", python_packages="requirements.remote.txt", env_vars="HF_HUB_ENABLE_HF_TRANSFER=1"),
+    image=Image(python_version="python3.11", python_packages="requirements.remote.txt", env_vars="HF_HUB_ENABLE_HF_TRANSFER=1"),
 )
 def answer(context, **params):
     model, tokenizer = context.on_start_value
 
     text = tokenizer.apply_chat_template(params["messages"], tokenize=True, add_generation_prompt=True, return_tensors="pt")
-    generated = model.generate(text, max_new_tokens=550)
+    generated = model.to("cuda:0").generate(text.to("cuda:0"), max_new_tokens=550)
     result = tokenizer.batch_decode(
         generated,
         skip_special_tokens=True,
