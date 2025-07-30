@@ -1,4 +1,3 @@
-transformers~=4.54.1
 auto-gptq~=0.7.1
 torch~=2.7.1
 huggingface_hub[hf-transfer]~=0.34.3
@@ -7,3 +6,4 @@ blobfile~=3.0.0
 protobuf~=6.31.1
 sentencepiece~=0.2.0
 optimum~=1.27.0
+transformers[mistral-common]~=4.54.1

@@ -4,8 +4,8 @@ CACHE_PATH = "./weights"
 
 def download_models():
     from transformers import AutoTokenizer, AutoModelForCausalLM
-    model = AutoModelForCausalLM.from_pretrained("TheBloke/OpenHermes-2.5-Mistral-7B-GPTQ", cache_dir=CACHE_PATH)
-    tokenizer = AutoTokenizer.from_pretrained("teknium/OpenHermes-2.5-Mistral-7B", cache_dir=CACHE_PATH)
+    model = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3", cache_dir=CACHE_PATH)
+    tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3", cache_dir=CACHE_PATH)
 
     return model, tokenizer
 
