@@ -437,6 +437,10 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
         print(f"{e}")
     messages = []
     try:
+        messages.append({
+            "role": "system",
+            "content": get_rules()
+        })
         sql_connection.ping()
         cursor = sql_connection.cursor()
         cursor.execute(f"SELECT * FROM (SELECT creator, content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid DESC LIMIT 20) as a ORDER BY aid;")
@@ -450,10 +454,6 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
             })
             old_message_count += 1
             previous_response = message[1]
-        messages.append({
-            "role": "system",
-            "content": get_rules()
-        })
         vectordb_results = []
         if qdrant.collection_exists(chat_id):
             search_result = qdrant.query(
@@ -465,10 +465,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
                 vectordb_results.append(simplify_result(res))
         system_prompt = get_system_prompt(characters, world, short_term_summary, medium_term_summary, long_term_summary, vectordb_results)
         if system_prompt:
-            messages.append({
-                "role": "system",
-                "content": system_prompt
-            })
+            messages[0]["content"] += "\n\n" + system_prompt
         messages.append({
             "role": "user",
             "content": action.description,
