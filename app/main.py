@@ -201,7 +201,7 @@ async def new_chat(user_jwt: Annotated[str | None, Cookie()] = None):
         "content text, PRIMARY KEY(aid)) charset=utf8;"
     )
     sql_connection.cursor().execute(
-        f"CREATE TABLE IF NOT EXISTS {mariadb_name(user_id, chat_id)}.documents (id char(36) NOT NULL, document_name varchar(255),"
+        f"CREATE TABLE IF NOT EXISTS `{mariadb_name(user_id, chat_id)}`.documents (id char(36) NOT NULL, document_name varchar(255),"
         "content text, PRIMARY KEY(id)) charset=utf8;"
     )
     sql_connection.cursor().execute(
