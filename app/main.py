@@ -2,7 +2,6 @@ import json
 import re
 import time
 
-import requests
 from qdrant_client import QdrantClient
 from fastapi import FastAPI, Cookie, BackgroundTasks, Response
 import mariadb
@@ -22,6 +21,7 @@ from argon2.exceptions import VerifyMismatchError
 from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint, User
 from .functions import is_uuid_like, simplify_result, mariadb_name, mongodb_name, to_mongo_compatible, \
     get_system_prompt, get_rules, user_id_from_jwt, user_id_to_jwt
+from .llm_wrapper import ask_llm
 
 llm_model = os.getenv('LLM_MODEL')
 
@@ -97,24 +97,11 @@ async def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_k
     for message in cursor.fetchall():
         summary += message[1] + "\n"
     if summary:
-        response = requests.post(
-            "http://llama:8000/v1/chat/completions",
-            headers={
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": llm_model,
-                "messages": [{
-                    "role": "user",
-                    "content": "Please summarize the following story extract in a brief paragraph, so that the major developments are known:\n" + summary,
-                }],
-            }
-        )
-
-        if response.status_code == 200:
-            response_content = response.json()["choices"][0]["message"]["content"]
-            response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
-            redis.set(redis_key, response_content)
+        response = ask_llm([{
+            "role": "user",
+            "content": "Please summarize the following story extract in a brief paragraph, so that the major developments are known:\n" + summary,
+        }])
+        redis.set(redis_key, response)
 
 def update_history_dbs(chat_id:str, user_id, action: str, result: str, previous_response: str):
     qdrant.add(
@@ -486,29 +473,13 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
             "role": "user",
             "content": action.description,
         })
-        response = requests.post(
-            "http://llama:8000/v1/chat/completions",
-            headers={
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": llm_model,
-                "messages": messages,
-            }
-        )
-
-        if response.status_code == 200:
-            response_content = response.json()["choices"][0]["message"]["content"]
-            response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
-            background_tasks.add_task(update_history_dbs, chat_id, user_id, action.description, response_content, previous_response)
-            background_tasks.add_task(update_summary, chat_id, user_id, 20, 40, f"{user_id}-{chat_id}.short_text_summary")
-            background_tasks.add_task(update_summary, chat_id, user_id, 40, 80, f"{user_id}-{chat_id}.medium_text_summary")
-            background_tasks.add_task(update_summary, chat_id, user_id, 80, 160, f"{user_id}-{chat_id}.long_text_summary")
-            background_tasks.add_task(redis.set, f"{user_id}-{chat_id}.is-active", "false")
-            return {"message": response_content}
-
+        response = ask_llm(messages,)
+        background_tasks.add_task(update_history_dbs, chat_id, user_id, action.description, response, previous_response)
+        background_tasks.add_task(update_summary, chat_id, user_id, 20, 40, f"{user_id}-{chat_id}.short_text_summary")
+        background_tasks.add_task(update_summary, chat_id, user_id, 40, 80, f"{user_id}-{chat_id}.medium_text_summary")
+        background_tasks.add_task(update_summary, chat_id, user_id, 80, 160, f"{user_id}-{chat_id}.long_text_summary")
         background_tasks.add_task(redis.set, f"{user_id}-{chat_id}.is-active", "false")
-        return {"error": response.status_code}
+        return {"message": response}
     except mariadb.Error as e:
         background_tasks.add_task(redis.set, f"{user_id}-{chat_id}.chat_is-active", "false")
         print(e)
@@ -519,14 +490,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
 
 @app.post("/starting-point-proposal")
 async def post_proposals(starting_point: ChatStartingPoint):
-    response = requests.post(
-        "http://llama:8000/v1/chat/completions",
-        headers={
-            "Content-Type": "application/json"
-        },
-        json={
-            "model": llm_model,
-            "messages": [
+    response = ask_llm([
                 {
                     "role": "system",
                     "content": "You are a player in a role play game. Give a brief introduction for the character given the user input."
@@ -536,14 +500,7 @@ async def post_proposals(starting_point: ChatStartingPoint):
                     "content": starting_point.character + " is in " + starting_point.location +
                                ". They want to achieve " + starting_point.purpose +
                                ". The current weather is " + starting_point.weather + " and their mood is " + starting_point.mood + ".",
-                }
-            ],
-        }
-    )
+                },
+            ],)
 
-    if response.status_code == 200:
-        response_content = response.json()["choices"][0]["message"]["content"]
-        response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
-        return {"message": response_content}
-
-    return {"error": response.status_code}
+    return {"message": response}
