@@ -7,13 +7,14 @@ CACHE_PATH = "./weights"
 def download_models():
     from transformers import AutoTokenizer, AutoModelForCausalLM
     from huggingface_hub import login
+    import torch
     import os
     login(
         token=os.getenv("HUGGINGFACE_TOKEN", "") or "",
         new_session=False,
     )
-    model = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3", cache_dir=CACHE_PATH)
-    tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3", cache_dir=CACHE_PATH)
+    model = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3", cache_dir=CACHE_PATH, torch_dtype=torch.bfloat16, device_map="auto")
+    tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3", cache_dir=CACHE_PATH, torch_dtype=torch.bfloat16, device_map="auto")
 
     return model, tokenizer
 
@@ -37,7 +38,6 @@ def answer(context, **params):
     import torch
     model, tokenizer = context.on_start_value
 
-    print(params["messages"])
     params["messages"][len(params["messages"]) - 1]["content"] += "\n\nYou are the Game Master, react as the world. Follow the rules in the system prompt."
     messages = []
     roles = {
@@ -45,6 +45,7 @@ def answer(context, **params):
         "agent": "assistant",
         "assistant": "assistant",
         "system": "system",
+        "developer": "system",
     }
     for message in params["messages"]:
         messages.append({
@@ -59,6 +60,7 @@ def answer(context, **params):
         attention_mask=attention_mask.to("cuda:0"),
         max_new_tokens=550,
         pad_token_id=tokenizer.eos_token_id,
+        temperature=0.1,
     )
     result = tokenizer.batch_decode(
         generated,
@@ -68,5 +70,4 @@ def answer(context, **params):
 
     outputs = result.split(params["messages"][len(params["messages"]) - 1]["content"])
     output = outputs[len(outputs) - 1]
-    print(output)
     return {"answer": output}

@@ -114,7 +114,7 @@
         }
       }
     }
-    if (user.chats.length > 0) {
+    if (user.chats.length > 0 && location.hash !== '#new') {
       for (const chat of user.chats) {
         if (confirm(`Do you want to continue chat '${chat.name}'?`)) {
           return chat;
