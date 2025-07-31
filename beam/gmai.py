@@ -37,7 +37,7 @@ def answer(context, **params):
     model, tokenizer = context.on_start_value
 
     print(params["messages"])
-    params["messages"][len(params["messages"]) - 1]["content"] += "\n\nYou are the Game Master, react as the world."
+    params["messages"][len(params["messages"]) - 1]["content"] += "\n\nYou are the Game Master, react as the world. Follow the rules in the system prompt."
     messages = []
     roles = {
         "user": "user",
@@ -51,8 +51,8 @@ def answer(context, **params):
             "role": roles[message["role"]],
         })
 
-    text = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=False, return_tensors="pt")
-    generated = model.to("cuda:0").generate(text.to("cuda:0"), max_new_tokens=550)
+    text = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, return_tensors="pt")
+    generated = model.to("cuda:0").generate(text.to("cuda:0"), max_new_tokens=110)
     result = tokenizer.batch_decode(
         generated,
         skip_special_tokens=True,
