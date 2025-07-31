@@ -13,8 +13,18 @@ def download_models():
         token=os.getenv("HUGGINGFACE_TOKEN", "") or "",
         new_session=False,
     )
-    model = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3", cache_dir=CACHE_PATH, torch_dtype=torch.bfloat16, device_map="auto")
-    tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3", cache_dir=CACHE_PATH, torch_dtype=torch.bfloat16, device_map="auto")
+    model = AutoModelForCausalLM.from_pretrained(
+        "mistralai/Mistral-7B-Instruct-v0.3",
+        cache_dir=CACHE_PATH,
+        torch_dtype=torch.bfloat16,
+        device_map="auto",
+    )
+    tokenizer = AutoTokenizer.from_pretrained(
+        "mistralai/Mistral-7B-Instruct-v0.3",
+        cache_dir=CACHE_PATH,
+        torch_dtype=torch.bfloat16,
+        device_map="auto",
+    )
 
     return model, tokenizer
 
@@ -60,7 +70,6 @@ def answer(context, **params):
         attention_mask=attention_mask.to("cuda:0"),
         max_new_tokens=550,
         pad_token_id=tokenizer.eos_token_id,
-        temperature=0.1,
     )
     result = tokenizer.batch_decode(
         generated,
