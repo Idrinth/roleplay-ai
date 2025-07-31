@@ -426,7 +426,7 @@
             })
           }
         }
-        document.body.removeChild(el);
+        document.body.removeChild(el2);
         await updateCharacters();
       }
     }
