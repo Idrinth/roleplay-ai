@@ -242,11 +242,12 @@ async def chat_document_list(chat_id: str, user_jwt: Annotated[str | None, Cooki
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
+    sql_connection.ping()
     cursor = sql_connection.cursor()
     cursor.execute(f"SELECT id, name, content FROM `{mariadb_name(user_id, chat_id)}`.documents;")
     documents = []
     for row in cursor.fetchall():
-        documents.append({"id": row[0], "name": row[1], "document": row[2]})
+        documents.append({"id": row[0], "name": row[1], "content": row[2]})
     return {
         "documents": documents,
     }
