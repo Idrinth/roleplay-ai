@@ -34,6 +34,7 @@ def download_models():
     image=Image(python_version="python3.11", python_packages="requirements.remote.txt", env_vars="HF_HUB_ENABLE_HF_TRANSFER=1"),
 )
 def answer(context, **params):
+    import torch
     model, tokenizer = context.on_start_value
 
     print(params["messages"])
@@ -52,11 +53,17 @@ def answer(context, **params):
         })
 
     text = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, return_tensors="pt")
-    generated = model.to("cuda:0").generate(text.to("cuda:0"), max_new_tokens=550)
+    attention_mask = torch.ones(text.shape, dtype=torch.long)
+    generated = model.to("cuda:0").generate(
+        text.to("cuda:0"),
+        attention_mask=attention_mask.to("cuda:0"),
+        max_new_tokens=550,
+        pad_token_id=tokenizer.eos_token_id,
+    )
     result = tokenizer.batch_decode(
         generated,
         skip_special_tokens=True,
-        clean_up_tokenization_spaces=False
+        clean_up_tokenization_spaces=False,
     )[0]
 
     outputs = result.split(params["messages"][len(params["messages"]) - 1]["content"])
