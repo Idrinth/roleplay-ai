@@ -114,7 +114,7 @@
         }
       }
     }
-    if (user.chats.length > 0) {
+    if (user.chats.length > 0 && location.hash !== '#new') {
       for (const chat of user.chats) {
         if (confirm(`Do you want to continue chat '${chat.name}'?`)) {
           return chat;
@@ -138,7 +138,7 @@
   location.hash = `#${chat.id}`;
   while (chat.id === chat.name) {
     chat.name = prompt("Enter a new name for your chat.", chat.name) || chat.id;
-    await fetch(`${apiHost}/chat/${chat.id}`, {
+    await fetch(`${apiHost}/chat/${chat.id}/name`, {
       method: 'POST',
       body: JSON.stringify({
         name: chat.name,
