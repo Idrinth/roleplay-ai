@@ -37,7 +37,7 @@ def answer(context, **params):
     model, tokenizer = context.on_start_value
 
     print(params["messages"])
-    params["messages"][len(params["messages"]) - 1]["content"] += "\n\nReact as the World to the actions above."
+    params["messages"][len(params["messages"]) - 1]["content"] += "\n\nYou are the Game Master, react as the world."
     messages = []
     roles = {
         "user": "user",
