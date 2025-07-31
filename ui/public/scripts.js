@@ -138,7 +138,7 @@
   location.hash = `#${chat.id}`;
   while (chat.id === chat.name) {
     chat.name = prompt("Enter a new name for your chat.", chat.name) || chat.id;
-    await fetch(`${apiHost}/chat/${chat.id}`, {
+    await fetch(`${apiHost}/chat/${chat.id}/name`, {
       method: 'POST',
       body: JSON.stringify({
         name: chat.name,
