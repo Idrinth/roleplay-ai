@@ -212,9 +212,10 @@
           el.setAttribute('id', 'document')
           const doc = {...md_document};
           doc._id = undefined;
-          el.setAttribute('data-id', document.id['$oid']);
-          el.value = doc.document;
-          el.setAttribute('data-raw', el.document);
+          el.setAttribute('data-id', md_document.id['$oid']);
+          el.setAttribute('data-name', doc.name);
+          el.value = doc.content;
+          el.setAttribute('data-raw', el.content);
           document.body.appendChild(el);
         }
         document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
@@ -396,7 +397,7 @@
       if (event.target !== el2) {
         if (el2.hasAttribute('data-id')) {
           if (el2.value && el2.getAttribute('data-raw') !== el2.value) {
-            if (confirm("Do you want to save this modified character sheet?")) {
+            if (confirm("Do you want to save this modifieddocument?")) {
               const id = el2.getAttribute('data-id');
               await fetch(`${apiHost}/chat/${chat.id}/documents/${id}`, {
                 method: 'POST',
@@ -404,7 +405,7 @@
                   'Accept': 'application/json',
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({document: el2.value},),
+                body: JSON.stringify({content: el2.value, name: el2.getAttribute('data-name')},),
                 credentials: "include",
               });
             }
@@ -417,7 +418,10 @@
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({document: el2.value},),
+              body: JSON.stringify({
+                content: el2.value,
+                name: prompt("What is your document named?")
+              },),
               credentials: "include",
             })
           }
