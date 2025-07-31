@@ -212,9 +212,10 @@
           el.setAttribute('id', 'document')
           const doc = {...md_document};
           doc._id = undefined;
-          el.setAttribute('data-id', document.id['$oid']);
-          el.value = doc.document;
-          el.setAttribute('data-raw', el.document);
+          el.setAttribute('data-id', md_document.id['$oid']);
+          el.setAttribute('data-name', doc.name);
+          el.value = doc.content;
+          el.setAttribute('data-raw', el.content);
           document.body.appendChild(el);
         }
         document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
@@ -356,26 +357,26 @@
     }
   })();
   document.body.onclick = async (event) => {
-    const el = document.getElementById('charactersheet');
-    const el2 = document.getElementById('document');
-    if (el) {
-      if (event.target !== el) {
-        if (el.hasAttribute('data-id')) {
-          if (el.value && el.getAttribute('data-raw') !== el.value) {
+    const charactersheetElement = document.getElementById('charactersheet');
+    const documentElement = document.getElementById('document');
+    if (charactersheetElement) {
+      if (event.target !== charactersheetElement) {
+        if (charactersheetElement.hasAttribute('data-id')) {
+          if (charactersheetElement.value && charactersheetElement.getAttribute('data-raw') !== charactersheetElement.value) {
             if (confirm("Do you want to save this modified character sheet?")) {
-              const id = el.getAttribute('data-id');
+              const id = charactersheetElement.getAttribute('data-id');
               await fetch(`${apiHost}/chat/${chat.id}/characters/${id}`, {
                 method: 'POST',
                 headers: {
                   'Accept': 'application/json',
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(jsyaml.load(el.value)),
+                body: JSON.stringify(jsyaml.load(charactersheetElement.value)),
                 credentials: "include",
               });
             }
           }
-        } else if (el.value) {
+        } else if (charactersheetElement.value) {
           if (confirm("Do you want to save this new character sheet?")) {
             await fetch(`${apiHost}/chat/${chat.id}/characters`, {
               method: 'POST',
@@ -383,33 +384,33 @@
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify(jsyaml.load(el.value)),
+              body: JSON.stringify(jsyaml.load(charactersheetElement.value)),
               credentials: "include",
             })
           }
         }
-        document.body.removeChild(el);
+        document.body.removeChild(charactersheetElement);
         await updateCharacters();
       }
     }
-    if (el2) {
-      if (event.target !== el2) {
-        if (el2.hasAttribute('data-id')) {
-          if (el2.value && el2.getAttribute('data-raw') !== el2.value) {
-            if (confirm("Do you want to save this modified character sheet?")) {
-              const id = el2.getAttribute('data-id');
+    if (documentElement) {
+      if (event.target !== documentElement) {
+        if (documentElement.hasAttribute('data-id')) {
+          if (documentElement.value && documentElement.getAttribute('data-raw') !== documentElement.value) {
+            if (confirm("Do you want to save this modifieddocument?")) {
+              const id = documentElement.getAttribute('data-id');
               await fetch(`${apiHost}/chat/${chat.id}/documents/${id}`, {
                 method: 'POST',
                 headers: {
                   'Accept': 'application/json',
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({document: el2.value},),
+                body: JSON.stringify({content: documentElement.value, name: documentElement.getAttribute('data-name')},),
                 credentials: "include",
               });
             }
           }
-        } else if (el2.value) {
+        } else if (documentElement.value) {
           if (confirm("Do you want to save this new document?")) {
             await fetch(`${apiHost}/chat/${chat.id}/documents`, {
               method: 'POST',
@@ -417,12 +418,15 @@
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({document: el2.value},),
+              body: JSON.stringify({
+                content: documentElement.value,
+                name: prompt("What is your document named?")
+              },),
               credentials: "include",
             })
           }
         }
-        document.body.removeChild(el);
+        document.body.removeChild(documentElement);
         await updateCharacters();
       }
     }
