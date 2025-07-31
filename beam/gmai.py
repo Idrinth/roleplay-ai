@@ -1,15 +1,24 @@
-from beam import endpoint, Image, QueueDepthAutoscaler, Volume
+import os
+
+from beam import endpoint, Image, QueueDepthAutoscaler, Volume, env
 
 CACHE_PATH = "./weights"
 
 def download_models():
     from transformers import AutoTokenizer, AutoModelForCausalLM
+    from huggingface_hub import login
+    import os
+    login(
+        token=os.getenv("HUGGINGFACE_TOKEN", "") or "",
+        new_session=False,
+    )
     model = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3", cache_dir=CACHE_PATH)
     tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3", cache_dir=CACHE_PATH)
 
     return model, tokenizer
 
 @endpoint(
+    secrets=["HUGGINGFACE_TOKEN"],
     name="gamemaster-ai",
     on_start=download_models,
     volumes=[Volume(name="gamemaster-ai-cache", mount_path=CACHE_PATH)],
@@ -27,13 +36,30 @@ def download_models():
 def answer(context, **params):
     model, tokenizer = context.on_start_value
 
-    text = tokenizer.apply_chat_template(params["messages"], tokenize=True, add_generation_prompt=True, return_tensors="pt")
+    print(params["messages"])
+    params["messages"][len(params["messages"]) - 1]["content"] += "\n\nReact as the World to the actions above."
+    messages = []
+    roles = {
+        "user": "user",
+        "agent": "assistant",
+        "assistant": "assistant",
+        "system": "system",
+    }
+    for message in params["messages"]:
+        messages.append({
+            "content": message["content"],
+            "role": roles[message["role"]],
+        })
+
+    text = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=False, return_tensors="pt")
     generated = model.to("cuda:0").generate(text.to("cuda:0"), max_new_tokens=550)
     result = tokenizer.batch_decode(
         generated,
         skip_special_tokens=True,
-        clean_up_tokenization_spaces=True
+        clean_up_tokenization_spaces=False
     )[0]
 
-    parts = result.split("\n assistant\n")
-    return {"answer": parts[len(parts) - 1]}
+    outputs = result.split(params["messages"][len(params["messages"]) - 1]["content"])
+    output = outputs[len(outputs) - 1]
+    print(output)
+    return {"answer": output}
