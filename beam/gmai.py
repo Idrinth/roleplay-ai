@@ -52,7 +52,7 @@ def answer(context, **params):
         })
 
     text = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, return_tensors="pt")
-    generated = model.to("cuda:0").generate(text.to("cuda:0"), max_new_tokens=110)
+    generated = model.to("cuda:0").generate(text.to("cuda:0"), max_new_tokens=550)
     result = tokenizer.batch_decode(
         generated,
         skip_special_tokens=True,
