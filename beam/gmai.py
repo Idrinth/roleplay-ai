@@ -14,13 +14,13 @@ def download_models():
         new_session=False,
     )
     model = AutoModelForCausalLM.from_pretrained(
-        "mistralai/Mistral-7B-Instruct-v0.3",
+        "TheBloke/OpenHermes-2.5-Mistral-7B-GPTQ",
         cache_dir=CACHE_PATH,
         torch_dtype=torch.bfloat16,
         device_map="auto",
     )
     tokenizer = AutoTokenizer.from_pretrained(
-        "mistralai/Mistral-7B-Instruct-v0.3",
+        "teknium/OpenHermes-2.5-Mistral-7B",
         cache_dir=CACHE_PATH,
         torch_dtype=torch.bfloat16,
         device_map="auto",
@@ -35,7 +35,7 @@ def download_models():
     volumes=[Volume(name="gamemaster-ai-cache", mount_path=CACHE_PATH)],
     cpu=1,
     gpu=["A100-40", "H100"],
-    memory="32Gi",
+    memory="8Gi",
     autoscaler=QueueDepthAutoscaler(
         max_containers=5,
         tasks_per_container=1,
@@ -48,7 +48,7 @@ def answer(context, **params):
     import torch
     model, tokenizer = context.on_start_value
 
-    params["messages"][len(params["messages"]) - 1]["content"] += "\n\nYou are the Game Master, react as the world. Follow the rules in the system prompt."
+    params["messages"][len(params["messages"]) - 1]["content"] += "\n\n" + params["messages"][0]["content"]
     messages = []
     roles = {
         "user": "user",
@@ -74,9 +74,9 @@ def answer(context, **params):
     result = tokenizer.batch_decode(
         generated,
         skip_special_tokens=True,
-        clean_up_tokenization_spaces=False,
+        clean_up_tokenization_spaces=True,
     )[0]
 
-    outputs = result.split(params["messages"][len(params["messages"]) - 1]["content"])
+    outputs = result.split("\n assistant\n")
     output = outputs[len(outputs) - 1]
     return {"answer": output}

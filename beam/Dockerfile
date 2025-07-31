@@ -8,4 +8,9 @@ RUN beam configure default --token ${BEAM_TOKEN} || true
 COPY beam/requirements.remote.txt ./
 COPY beam/gmai.py ./
 
-ENTRYPOINT ["beam", "deploy", "gmai.py:answer"]
+RUN beam deploy gmai.py:answer
+
+RUN curl -X POST 'https://gamemaster-ai-9e68ad7.app.beam.cloud/warmup' \
+    -H "Authorization: Bearer ${BEAM_TOKEN}"
+
+ENTRYPOINT ["echo", "ready"]
