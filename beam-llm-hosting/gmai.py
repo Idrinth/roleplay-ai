@@ -14,13 +14,13 @@ def download_models():
         new_session=False,
     )
     model = AutoModelForCausalLM.from_pretrained(
-        "TheBloke/OpenHermes-2.5-Mistral-7B-GPTQ",
+        "Idrinth/gamemasterai",
         cache_dir=CACHE_PATH,
         torch_dtype=torch.bfloat16,
         device_map="auto",
     )
     tokenizer = AutoTokenizer.from_pretrained(
-        "teknium/OpenHermes-2.5-Mistral-7B",
+        "Idrinth/gamemasterai",
         cache_dir=CACHE_PATH,
         torch_dtype=torch.bfloat16,
         device_map="auto",
