@@ -1,38 +1,28 @@
-# Roleplay AI Architecture Summary
+# Wolfgang 'Storyteller' AI
 
-**Goal**: Build a roleplay AI that overcomes contexct window limitations and provides reliable long-form storytelling.
+This small repository is meant to create a better AI for role playing by providing a game master style assistant.
 
-## Database Layer
-- **Qdrant**: Vector database for semantic story search (10 results per query)
-- **MongoDB**: Character sheets with flexible schema for easy updates
-- **MariaDB**: Conversation history in structured SQL
-- **Redis**: Cache for summaries (world state, party state, story history)
+Everything is open source, but the project is also hosted at [roleplay-ai.bjoern-buettner.me](https://roleplay-ai.bjoern-buettner.me) and the AI is available at [huggingface.co/Idrinth/roleplayai](https://huggingface.co/Idrinth/roleplayai).
 
-## Context Assembly
-- Location-aware vector search results
-- Recent conversation messages  
-- Character sheets for active characters
-- Cached summaries of world/party state and story history
+We are always looking for contributors:
 
-## LLM Strategy
-- **Primary**: Self-hosted Llama (cost control, portability)
+## Devs
 
-## Processing Flow
+- Issue creation
+- Issue solving
 
-### Fast Path (immediate user response):
-1. Retrieve context from all databases
-2. Add query to databases
-3. Get LLM response
-4. Return to user immediately
+## Designers
 
-### Background Path (async after response):
-5. Add response to databases
-6. Update character sheets via small LLM call
-7. Update summaries via small LLM call
-8. Refresh Redis cache
+- new themes
+- improvements to user experience
+- issue creation
 
-## User Experience
-- Block message sending during background processing
-- Disabled send button with informative tooltips
-- Sub-second perceived response time
-- Prevents consistency issues from overlapping requests
+## Writers
+
+- expand training data in [the easy to use yaml files](/beam-llm-training/data)
+- add new training scenarios
+
+## Others
+
+- testing
+- reporting issues
