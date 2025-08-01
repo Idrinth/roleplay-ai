@@ -1,15 +1,17 @@
-FROM nvidia/cuda:12.9.1-base-ubuntu24.04
+FROM python:3.11
 
-RUN apt update && apt install python3.12 python3.12-venv python3-pip git cmake libcurl4-openssl-dev build-essential -y
+ARG BEAM_TOKEN
 
 WORKDIR /training
 COPY training/requirements.txt ./
-RUN python3 -m venv ./.venv && .venv/bin/pip install --no-cache-dir -r requirements.txt
-RUN mkdir /raw-data
+RUN mkdir /training/raw-data
 
-WORKDIR /training
-COPY training/config.json ./
-COPY training/*.py ./training
-COPY training/data/*.yml /raw-data/
+RUN pip install --no-cache-dir -r requirements.txt
+RUN beam configure default --token ${BEAM_TOKEN} || true
 
-ENTRYPOINT [".venv/bin/python3", "training"]
+COPY training/requirements.remote.txt ./
+COPY training/__init__.py ./
+COPY training/data/*.yml ./raw-data/
+COPY training/main.py ./
+
+ENTRYPOINT ["python", "main.py"]
