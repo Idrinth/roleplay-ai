@@ -244,7 +244,7 @@ async def chat_document_list(chat_id: str, user_jwt: Annotated[str | None, Cooki
         return {"error": "Not a valid Chat"}
     sql_connection.ping()
     cursor = sql_connection.cursor()
-    cursor.execute(f"SELECT id, name, content FROM `{mariadb_name(user_id, chat_id)}`.documents;")
+    cursor.execute(f"SELECT id, document_name, content FROM `{mariadb_name(user_id, chat_id)}`.documents;")
     documents = []
     for row in cursor.fetchall():
         documents.append({"id": row[0], "name": row[1], "content": row[2]})
@@ -281,7 +281,7 @@ async def chat_document_add(chat_id: str, document: Document, user_jwt: Annotate
         documents=[document.content],
     )[0]
     document_uuid = str(uuid.UUID(document_id))
-    sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.documents (id, name, content) VALUES (?, ?, ?);)", [document_uuid, document.name, document.content])
+    sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.documents (id, document_name, content) VALUES (?, ?, ?);)", [document_uuid, document.name, document.content])
     return True
 
 @app.post("/chat/{chat_id}/characters")
