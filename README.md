@@ -2,7 +2,7 @@
 
 This small repository is meant to create a better AI for role playing by providing a game master style assistant.
 
-Everything is open source, but the project is also hosted at [roleplay-ai.bjoern-buettner.me](https://roleplay-ai.bjoern-buettner.me) and the AI is available at [huggingface.co/Idrinth/roleplayai](https://huggingface.co/Idrinth/roleplayai).
+Everything is open source, but the project is also hosted at [roleplay-ai.bjoern-buettner.me](https://roleplay-ai.bjoern-buettner.me) and the AI is available at [huggingface.co/Idrinth/gamemasterai](https://huggingface.co/Idrinth/gamemasterai).
 
 We are always looking for contributors:
 
