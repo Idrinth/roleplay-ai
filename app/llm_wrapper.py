@@ -11,7 +11,7 @@ beam_key = os.getenv('BEAM_API_KEY')
 llm_to_use = os.getenv('LLM_TO_USE')
 
 def ask_llm(messages: List[Dict[string, string]]):
-    if llm_to_use == "beam":
+    if llm_to_use == "beam-llm-hosting":
         response = requests.post(
             beam_url,
             headers={
