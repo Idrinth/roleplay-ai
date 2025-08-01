@@ -4,6 +4,8 @@ This small repository is meant to create a better AI for role playing by providi
 
 Everything is open source, but the project is also hosted at [roleplay-ai.bjoern-buettner.me](https://roleplay-ai.bjoern-buettner.me) and the AI is available at [huggingface.co/Idrinth/gamemasterai](https://huggingface.co/Idrinth/gamemasterai).
 
+If you feel like helping or have questions, you can find us on my [Discord](https://discord.gg/idrinth) or in the issues.
+
 We are always looking for contributors:
 
 ## Devs
