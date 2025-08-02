@@ -100,7 +100,7 @@ class Languages(BaseModel):
     high_magic_ritual_tongues: Optional[LanguageLevel] = Field(default=LanguageLevel.NONE)
 
     class Config:
-        allow_population_by_field_name = True
+        validate_by_name = True
 
 class Background(BaseModel):
     former_occupation: str
@@ -115,7 +115,7 @@ class Background(BaseModel):
     connections: Optional[Dict[str, str]] = None
 
     class Config:
-        allow_population_by_field_name = True
+        validate_by_name = True
 
 class MagicLores(BaseModel):
     Death: MagicLevel
@@ -128,7 +128,7 @@ class MagicLores(BaseModel):
     Dark_Magic: MagicLevel
 
     class Config:
-        allow_population_by_field_name = True
+        validate_by_name = True
 
 class Magic(BaseModel):
     capacity: int = Field(ge=0)
@@ -136,7 +136,7 @@ class Magic(BaseModel):
     lores: MagicLores
 
     class Config:
-        allow_population_by_field_name = True
+        validate_by_name = True
 
 class Statblock(BaseModel):
     strength: int = Field(ge=1)
@@ -148,14 +148,14 @@ class Statblock(BaseModel):
     fatigue: int = Field(ge=0)
 
     class Config:
-        allow_population_by_field_name = True
+        validate_by_name = True
 
 class Age(BaseModel):
     physical: int = Field(ge=0)
     human_equivalent: int = Field(ge=0)
 
     class Config:
-        allow_population_by_field_name = True
+        validate_by_name = True
 
 class YearsAgo(BaseModel):
     born: int = Field(ge=18)
@@ -179,5 +179,5 @@ class Character(BaseModel):
     Sex: Sex
 
     class Config:
-        allow_population_by_field_name = True
+        validate_by_name = True
         use_enum_values = True
