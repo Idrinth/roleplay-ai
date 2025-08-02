@@ -487,18 +487,22 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
         raise
 
 @app.post("/starting-point-proposal")
-async def post_proposals(starting_point: ChatStartingPoint):
+async def post_proposals(starting_point: ChatStartingPoint, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
     response = ask_llm([
-                {
-                    "role": "system",
-                    "content": "You are a player in a role play game. Give a brief introduction for the character given the user input."
-                },
-                {
-                    "role": "user",
-                    "content": starting_point.character + " is in " + starting_point.location +
-                               ". They want to achieve " + starting_point.purpose +
-                               ". The current weather is " + starting_point.weather + " and their mood is " + starting_point.mood + ".",
-                },
-            ],)
+        {
+            "role": "system",
+            "content": "You are a player in a role play game. Give a brief introduction for the character and "
+                       "situation given the user input from the users point of view."
+        },
+        {
+            "role": "user",
+            "content": starting_point.character + " is in " + starting_point.location +
+                       ". They want to achieve " + starting_point.purpose +
+                       ". The current weather is " + starting_point.weather + " and their mood is " + starting_point.mood + ".",
+        },
+    ],)
 
     return {"message": response}
