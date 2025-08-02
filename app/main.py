@@ -424,7 +424,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
         return {"error": "Not a valid Chat"}
     if not action.description:
         return {"error": "A description is required."}
-    if redis.get(chat_id + ".chat_is_active") == "true":
+    if redis.get(f"{user_id}-{chat_id}.chat_is_active") == "true":
         return {"error": "Chat is already active."}
     redis.set(f"{user_id}-{chat_id}.chat_is_active", "true")
     long_term_summary = redis.get(f"{user_id}-{chat_id}.long_text_summary") or ""
