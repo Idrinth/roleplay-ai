@@ -471,7 +471,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
             "role": "user",
             "content": action.description,
         })
-        response = ask_llm(messages,)
+        response = await ask_llm(messages,)
         background_tasks.add_task(update_history_dbs, chat_id, user_id, action.description, response, previous_response)
         background_tasks.add_task(update_summary, chat_id, user_id, 20, 40, f"{user_id}-{chat_id}.short_text_summary")
         background_tasks.add_task(update_summary, chat_id, user_id, 40, 80, f"{user_id}-{chat_id}.medium_text_summary")
@@ -488,7 +488,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
 
 @app.post("/starting-point-proposal")
 async def post_proposals(starting_point: ChatStartingPoint):
-    response = ask_llm([
+    response = await ask_llm([
                 {
                     "role": "system",
                     "content": "You are a player in a role play game. Give a brief introduction for the character given the user input."

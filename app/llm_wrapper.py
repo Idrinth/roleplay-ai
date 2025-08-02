@@ -1,6 +1,5 @@
 import os
 import re
-import string
 from typing import Dict, List
 import aiohttp
 
@@ -11,7 +10,7 @@ beam_url = os.getenv('BEAM_DEPLOYMENT_URL')
 beam_key = os.getenv('BEAM_API_KEY')
 llm_to_use = os.getenv('LLM_TO_USE')
 
-async def ask_llm(messages: List[Dict[string, string]]):
+async def ask_llm(messages: List[Dict[str, str]]):
     if llm_to_use == "beam":
         async with aiohttp.ClientSession() as session:
             async with session.post(
