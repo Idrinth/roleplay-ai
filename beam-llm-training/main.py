@@ -87,10 +87,11 @@ def train():
         except Exception as e:
             print(f"{fname}: {e}")
 
+    dataset = Dataset.from_list(dataset_list)
     trainer = SFTTrainer(
         model=model,
         tokenizer=tokenizer,
-        train_dataset=Dataset.from_list(dataset_list),
+        train_dataset=dataset,
         dataset_text_field="text",
         max_seq_length=MAX_SEQUENCE_LENGTH,
         dataset_num_proc=2,
@@ -113,6 +114,7 @@ def train():
 
     trainer.train()
 
+    dataset.push_to_hub("Idrinth/gamemasterai", token=os.environ["HUGGINGFACE_TOKEN"])
     model.push_to_hub("Idrinth/gamemasterai", tokenizer, quantization_method="q4_k_m", token=os.environ["HUGGINGFACE_TOKEN"])
     print(f"Saved Model at Idrinth/gamemasterai")
 
