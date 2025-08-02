@@ -155,7 +155,7 @@
   window.setInterval(async () => {
     try {
       const response = await fetch(
-        `${apiHost}/chat/${chat.id}/active`,
+        `${apiHost}/chat/${chat.id}/active?${Date.now()}`,
         {
           credentials: "include",
           method: "GET",
