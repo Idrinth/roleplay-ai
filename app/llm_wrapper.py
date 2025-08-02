@@ -25,11 +25,13 @@ async def ask_llm(messages: List[Dict[string, string]]):
                 }
             ) as response:
 
-                if response.status_code == 200:
-                    response_content = response.json()["answer"]
+                if response.status == 200:
+                    response_content = (await response.json())["answer"]
                     response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
 
                     return response_content
+                else:
+                    raise ValueError("Could not get successful response from LLM")
     elif llm_to_use == "local":
         async with aiohttp.ClientSession() as session:
             async with session.post(
@@ -43,9 +45,11 @@ async def ask_llm(messages: List[Dict[string, string]]):
                 }
             ) as response:
 
-                if response.status_code == 200:
-                    response_content = response.json()["choices"][0]["message"]["content"]
+                if response.status == 200:
+                    response_content = (await response.json())["choices"][0]["message"]["content"]
                     response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
 
                     return response_content
+                else:
+                    raise ValueError("Could not get successful response from LLM")
     raise ValueError("Could not get response from LLM")
