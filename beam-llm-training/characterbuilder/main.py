@@ -9,22 +9,21 @@ NAME = "characterbuilding"
 
 def callback(data):
     dataset_list = []
-    for data in data["introductions"]:
-        prompt = f"Name: {data['name']}\nGender: {data['gender']}\nRace: {data['race']}\nWear/Clothing: {data['wear']}\nProfession: {data['profession']}\nlocation: {data['location']}\nPurpose/Goal: {data['purpose']}\nMood/Feeling: {data['mood']}\nGenre: {data['genre']}\nWorld: {data['world']}\nWeather: {data['weather']}\n"
-        for response in data["introductions"]:
-            dataset_list.append({
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    },
-                    {
-                        "role": "assistant",
-                        "content": response,
-                    }
-                ],
-                "text": ">>> User: " + prompt + "\n>>> Assistant: " + response + "\n"
-            })
+    prompt = f"Name: {data['name']}\nGender: {data['gender']}\nRace: {data['race']}\nWear/Clothing: {data['wear']}\nProfession: {data['profession']}\nlocation: {data['location']}\nPurpose/Goal: {data['purpose']}\nMood/Feeling: {data['mood']}\nGenre: {data['genre']}\nWorld: {data['world']}\nWeather: {data['weather']}\n"
+    for introduction in data["introductions"]:
+        dataset_list.append({
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
+                {
+                    "role": "assistant",
+                    "content": introduction,
+                }
+            ],
+            "text": ">>> User: " + prompt + "\n>>> Assistant: " + introduction + "\n"
+        })
     return dataset_list
 
 @function(
