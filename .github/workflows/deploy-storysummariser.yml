@@ -7,6 +7,7 @@ on:
     - beam-llm-hosting/shared/*.py
     - beam-llm-hosting/storysummariser/*.py
     - beam-llm-hosting/storysummariser/*.txt
+    - beam-llm-hosting/storysummariser/Dockerfile
 jobs:
   build:
     runs-on: ubuntu-latest
