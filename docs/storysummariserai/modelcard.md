@@ -14,14 +14,14 @@ datasets:
 
 # Model Card for Idrinth/StorySummariserAI
 
-This model is fine-tuned to provide a game master for mind theatre role play sessions. Currently the tuning is VERY LIMITED, but we are adding more story bits over time to fix that.
+This model is fine-tuned to provide a summarising service for mind theatre role play sessions. Currently the tuning is VERY LIMITED, but we are adding more story bits over time to fix that.
 
 
 ## Model Details
 
 ### Model Description
 
-This model is trained to prevent player character playing. This should lead to better role playing sessions with it.
+This model is trained to focus on player related action. This should lead to better role playing summaries with it.
 
 ### Model Sources
 
