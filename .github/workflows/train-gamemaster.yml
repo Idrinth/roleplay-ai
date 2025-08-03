@@ -8,6 +8,7 @@ on:
     - beam-llm-training/gamemaster/*.py
     - beam-llm-training/gamemaster/data/*.yml
     - beam-llm-training/gamemaster/*.txt
+    - beam-llm-training/gamemaster/Dockerfile
 jobs:
   build:
     runs-on: ubuntu-latest

@@ -8,6 +8,7 @@ on:
     - beam-llm-training/storysummariser/*.py
     - beam-llm-training/storysummariser/data/*.yml
     - beam-llm-training/storysummariser/*.txt
+    - beam-llm-training/storysummariser/Dockerfile
 jobs:
   build:
     runs-on: ubuntu-latest
