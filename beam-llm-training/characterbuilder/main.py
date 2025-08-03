@@ -5,7 +5,7 @@ from shared.trainer_for_training import get_trainer
 from shared.constants import GLOBAL_BZ, DEVICES, MAX_SEQUENCE_LENGTH, BZ
 from shared.export_results import export
 
-NAME = "characterbuilding"
+NAME = "characterbuilder"
 
 def callback(data):
     dataset_list = []
