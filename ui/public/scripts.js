@@ -21,7 +21,7 @@
     return new Promise(resolve => {
       const prmt = document.createElement('div');
       prmt.setAttribute('id', 'prompt');
-      prmt.appendChild(document.createElement('label'));
+      prmt.appendChild(document.createElement('p'));
       prmt.firstElementChild.appendChild(document.createTextNode(text));
       prmt.appendChild(document.createElement('button'));
       prmt.lastElementChild.appendChild(document.createTextNode('Yes'));
