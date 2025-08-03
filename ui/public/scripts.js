@@ -166,10 +166,10 @@
     world.lastElementChild.onclick = async() => {
       if (confirm(`Do you want to delete ${achat.name}?`)) {
         await fetch(
-          `${apiHost}/chat/${achat.id}`,
+          `${apiHost}/chat/${achat.id}/delete`,
           {
             credentials: "include",
-            method: "DELETE",
+            method: "POST",
             signal: AbortSignal.timeout(10000),
           }
         );
@@ -255,8 +255,8 @@
         document.getElementById('characters').lastElementChild.lastElementChild.onclick = async (event) => {
           event.stopPropagation();
           if (confirm("Do you want to delete this document?")) {
-            await fetch(`${apiHost}/chat/${chat.id}/characters/${md_document._id['$oid']}`, {
-              method: 'DELETE',
+            await fetch(`${apiHost}/chat/${chat.id}/characters/${md_document._id['$oid']}/delete`, {
+              method: 'POST',
               credentials: "include",
             });
             await updateDocuments();
@@ -313,8 +313,8 @@
         document.getElementById('characters').lastElementChild.lastElementChild.onclick = async (event) => {
           event.stopPropagation();
           if (confirm("Do you want to delete this character sheet?")) {
-            await fetch(`${apiHost}/chat/${chat.id}/characters/${character._id['$oid']}`, {
-              method: 'DELETE',
+            await fetch(`${apiHost}/chat/${chat.id}/characters/${character._id['$oid']}/delete`, {
+              method: 'POST',
               credentials: "include",
             });
             await updateCharacters();
