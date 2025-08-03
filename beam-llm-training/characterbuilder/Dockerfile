@@ -11,7 +11,8 @@ RUN beam configure default --token ${BEAM_TOKEN} || true
 
 COPY beam-llm-training-characterbuilder/requirements.remote.txt ./
 COPY beam-llm-training-characterbuilder/__init__.py ./
-COPY beam-llm-training-characterbuilder/data/*.yml ./raw-data/
+COPY beam-llm-training/shared/*.py ./
 COPY beam-llm-training-characterbuilder/main.py ./
+COPY beam-llm-training-characterbuilder/data/*.yml ./raw-data/
 
 ENTRYPOINT ["python", "main.py"]
