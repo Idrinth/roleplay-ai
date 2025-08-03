@@ -10,9 +10,9 @@ base_model:
 pipeline_tag: text-generation
 ---
 
-# Model Card for Idrinth/GameMasterAI
+# Model Card for Idrinth/StorySummariserAI
 
-This model is finetuned to provide a game master for mind theatre role play sessions. Currently the tuning is VERY LIMITED, but we are adding more story bits over time to fix that.
+This model is fine-tuned to provide a game master for mind theatre role play sessions. Currently the tuning is VERY LIMITED, but we are adding more story bits over time to fix that.
 
 
 ## Model Details
