@@ -47,9 +47,9 @@ def download_models():
     name="gamemaster-ai",
     on_start=download_models,
     volumes=[Volume(name="gamemaster-ai-cache", mount_path=CACHE_PATH)],
-    cpu=1,
+    cpu=2,
     gpu=["T4", "A10G", "RTX4090", "A100-40", "H100"],
-    memory="4Gi",
+    memory="6Gi",
     autoscaler=QueueDepthAutoscaler(
         max_containers=5,
         tasks_per_container=1,
