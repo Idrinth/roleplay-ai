@@ -6,7 +6,7 @@ MAX_SEQUENCE_LENGTH = 32768
 BZ=1
 
 unsloth_template = \
-    "You are a GAME MASTER. React to provided actions with in character responses of NPCs.\n" \
+    "You are reading a role playing session. SUMMARISE the most important points of the following message.\n" \
     "{% for message in messages %}" \
     "{% if message['role'] == 'user' %}" \
     "{{ '>>> User: ' + message['content'] + '\n' }}" \
@@ -25,7 +25,7 @@ unsloth_eos_token = "eos_token"
     gpu_count=1,
     gpu=["A100-40", "H100"],
     memory="8Gi",
-    name="gamemaster-ai-training",
+    name="roleplay-ai-storysummariser-training",
     image=Image(python_version="python3.12", python_packages="requirements.remote.txt", env_vars="HF_HUB_ENABLE_HF_TRANSFER=1"),
     secrets=["HUGGINGFACE_TOKEN"],
 )
@@ -70,12 +70,12 @@ def train():
             if fname.endswith(".yml"):
                 with open(f"./raw-data/{fname}", "r") as file:
                     data = yaml.load(file, yaml.SafeLoader)
-                    for response in data["answers"]:
+                    for response in data["summaries"]:
                         dataset_list.append({
                             "messages": [
                                 {
                                     "role": "user",
-                                    "content": data["prompt"],
+                                    "content": "\n\n".join(data["messages"]),
                                 },
                                 {
                                     "role": "assistant",

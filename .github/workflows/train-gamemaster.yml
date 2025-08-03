@@ -1,0 +1,16 @@
+name: Fine Tune Game Master
+on:
+  push:
+    branches:
+      - the-one
+    paths:
+    - beam-llm-training-gamemaster/*.py
+    - beam-llm-training-gamemaster/data/*.yml
+    - beam-llm-training-gamemaster/*.txt
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Run Docker-Image
+      run: docker build --build-arg BEAM_TOKEN=${secrets.BEAM_TOKEN} --name=totrain beam-llm-training-gamemaster/Dockerfile && docker run totrain

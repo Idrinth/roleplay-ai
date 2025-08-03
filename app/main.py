@@ -21,7 +21,7 @@ from argon2.exceptions import VerifyMismatchError
 from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint, User
 from .functions import is_uuid_like, simplify_result, mariadb_name, mongodb_name, to_mongo_compatible, \
     get_system_prompt, get_rules, user_id_from_jwt, user_id_to_jwt
-from .llm_wrapper import ask_llm
+from .llm_wrapper import ask_storysummarizer, ask_gamemaster, ask_characterbuilder
 
 llm_model = os.getenv('LLM_MODEL')
 
@@ -93,14 +93,20 @@ async def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_k
     cursor = sql_connection.cursor()
     cursor.execute(
         f"SELECT * FROM (SELECT content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid DESC LIMIT {start},{end}) as a ORDER BY aid;")
-    summary = ""
+    summary = []
     for message in cursor.fetchall():
-        summary += message[1] + "\n"
+        summary.append(message[0])
     if summary:
-        response = await ask_llm([{
-            "role": "user",
-            "content": "Please summarize the following story extract in a brief paragraph, so that the major developments are known:\n" + summary,
-        }])
+        response = await ask_storysummarizer([
+            {
+                "role": "system",
+                "content": "You are reading a role playing session. SUMMARISE the most important points of the following message.",
+            },
+            {
+                "role": "user",
+                "content": "\n\n".join(summary),
+            }
+        ])
         redis.set(redis_key, response)
 
 def update_history_dbs(chat_id:str, user_id, action: str, result: str, previous_response: str):
@@ -473,7 +479,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
             "role": "user",
             "content": action.description,
         })
-        response = await ask_llm(messages,)
+        response = await ask_gamemaster(messages,)
         background_tasks.add_task(update_history_dbs, chat_id, user_id, action.description, response, previous_response)
         background_tasks.add_task(update_summary, chat_id, user_id, 20, 40, f"{user_id}-{chat_id}.short_text_summary")
         background_tasks.add_task(update_summary, chat_id, user_id, 40, 80, f"{user_id}-{chat_id}.medium_text_summary")
@@ -490,17 +496,25 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
 
 @app.post("/starting-point-proposal")
 async def post_proposals(starting_point: ChatStartingPoint):
-    response = await ask_llm([
-                {
-                    "role": "system",
-                    "content": "You are a player in a role play game. Give a brief introduction for the character given the user input."
-                },
-                {
-                    "role": "user",
-                    "content": starting_point.character + " is in " + starting_point.location +
-                               ". They want to achieve " + starting_point.purpose +
-                               ". The current weather is " + starting_point.weather + " and their mood is " + starting_point.mood + ".",
-                },
-            ],)
+    response = await ask_characterbuilder([
+        {
+           "role": "system",
+           "content": "You are a player in a role play game. Give a brief introduction for the character and world given by the user input."
+        },
+        {
+            "role": "user",
+            "content": f"Name: {starting_point.name}\n"
+                f"Gender: {starting_point.gender}\n"
+                f"Race: {starting_point.race}\n"
+                f"Wear/Clothing: {starting_point.wear}\n"
+                f"Profession: {starting_point.profession}\n"
+                f"location: {starting_point.location}\n"
+                f"Purpose/Goal: {starting_point.purpose}\n"
+                f"Mood/Feeling: {starting_point.mood}\n"
+                f"Genre: {starting_point.genre}\n"
+                f"World: {starting_point.world}\n"
+                f"Weather: {starting_point.weather}\n",
+        },
+    ],)
 
     return {"message": response}

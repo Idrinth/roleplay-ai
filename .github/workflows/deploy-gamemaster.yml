@@ -1,0 +1,15 @@
+name: Game Master Deployment
+on:
+  push:
+    branches:
+      - the-one
+    paths:
+    - beam-llm-hosting-gamemaster/*.py
+    - beam-llm-hosting-gamemaster/*.txt
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Run Docker-Image
+      run: docker build --build-arg BEAM_TOKEN=${secrets.BEAM_TOKEN} --name=todeploy beam-llm-hosting-gamemaster/Dockerfile && docker run todeploy

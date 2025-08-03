@@ -1,0 +1,16 @@
+name: Fine Tune Character Builder
+on:
+  push:
+    branches:
+      - the-one
+    paths:
+    - beam-llm-training-characterbuilder/*.py
+    - beam-llm-training-characterbuilder/data/*.yml
+    - beam-llm-training-characterbuilder/*.txt
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Run Docker-Image
+      run: docker build --build-arg BEAM_TOKEN=${secrets.BEAM_TOKEN} --name=totrain beam-llm-training-characterbuilder/Dockerfile && docker run totrain

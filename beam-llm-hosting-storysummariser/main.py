@@ -14,7 +14,7 @@ def download_models():
         new_session=False,
     )
 
-    model_name = "Idrinth/gamemasterai"
+    model_name = "Idrinth/storysummariserai"
     base_model_name = "mistralai/Mistral-7B-Instruct-v0.3"
 
     base_model = AutoModelForCausalLM.from_pretrained(
@@ -44,9 +44,9 @@ def download_models():
 
 @endpoint(
     secrets=["HUGGINGFACE_TOKEN"],
-    name="gamemaster-ai",
+    name="roleplay-ai-storysummariser",
     on_start=download_models,
-    volumes=[Volume(name="gamemaster-ai-cache", mount_path=CACHE_PATH)],
+    volumes=[Volume(name="roleplay-ai-cache", mount_path=CACHE_PATH)],
     cpu=2,
     gpu=["T4", "A10G", "RTX4090", "A100-40", "H100"],
     memory="6Gi",
