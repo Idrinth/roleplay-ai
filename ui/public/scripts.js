@@ -383,6 +383,23 @@
           document.getElementById('chat').lastElementChild.innerHTML = (message.role === 'agent' ? '<span class="gamemaster"></span>' : '') + converter.makeHtml(message.content);
           document.getElementById('chat').lastElementChild.classList.add(message.role);
         }
+        if (json.messages.length === 0 && !document.getElementById('chat-entry').value) {
+          const value = await fetch(`/starting-point-proposal`, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              character: prompt("What is your character's name?"),
+              location: prompt("Where is your character?"),
+              mood: prompt("What is your character's mood?"),
+              weather: prompt("What is your weather like?"),
+            }),
+            credentials: "include",
+          });
+          document.getElementById('chat-entry').value = (await value.json()).message;
+        }
       }
     }
   })();
@@ -460,7 +477,6 @@
         await updateCharacters();
       }
     }
-    document.getElementById('imprint').setAttribute('style', 'display:none');
   }
   await updateCharacters();
   document.getElementById('add-character').onclick = async (event) => {
