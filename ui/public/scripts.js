@@ -151,6 +151,36 @@
     })
   }
   document.title = chat.name + ' | ' + document.title;
+  
+  for (const achat of user.chats) {
+    document.getElementById('worlds').appendChild(document.createElement('li'));
+    const world = document.getElementById('worlds').lastElementChild;
+    world.appendChild(document.createElement('a'));
+    world.lastElementChild.innerHTML = achat.name;
+    world.lastElementChild.setAttribute('href', '/chat/' + achat.id);
+    world.lastElementChild.setAttribute('data-id', achat.id);
+    world.appendChild(document.createElement('span'));
+    world.lastElementChild.appendChild(document.createTextNode('[D]'));
+    world.lastElementChild.classList.add('button');
+    world.lastElementChild.setAttribute('title', 'Delete chat');
+    world.lastElementChild.onclick = async() => {
+      if (confirm(`Do you want to delete ${achat.name}?`)) {
+        await fetch(
+          `${apiHost}/chat/${achat.id}`,
+          {
+            credentials: "include",
+            method: "DELETE",
+            signal: AbortSignal.timeout(10000),
+          }
+        );
+        if (chat.id === achat.id) {
+          window.location = location.protocol + '//' + location.hostname + '/chat';
+          return;
+        }
+        document.getElementById('worlds').removeChild(world);
+      }
+    }
+  }
 
   window.setInterval(async () => {
     try {
@@ -195,18 +225,18 @@
         console.error(json.exception);
         return;
       }
-      while (document.getElementById('documents').children.length > 1) {
-        document.getElementById('documents').removeChild(document.getElementById('characters').lastChild);
+      while (document.getElementById('documents').children.length > 2) {
+        document.getElementById('documents').removeChild(document.getElementById('characters').lastElementChild);
       }
       for (const md_document of json.documents) {
         document.getElementById('documents').appendChild(document.createElement('li'));
-        document.getElementById('documents').lastChild.appendChild(document.createElement('span'));
-        document.getElementById('documents').lastChild.lastChild.appendChild(document.createTextNode(md_document.name));
-        document.getElementById('documents').lastChild.appendChild(document.createElement('span'));
-        document.getElementById('documents').lastChild.lastChild.appendChild(document.createTextNode('[E]'));
-        document.getElementById('documents').lastChild.lastChild.classList.add('button');
-        document.getElementById('documents').lastChild.lastChild.setAttribute('title', 'Edit document');
-        document.getElementById('documents').lastChild.lastChild.onclick = (event) => {
+        document.getElementById('documents').lastElementChild.appendChild(document.createElement('span'));
+        document.getElementById('documents').lastElementChild.lastElementChild.appendChild(document.createTextNode(md_document.name));
+        document.getElementById('documents').lastElementChild.appendChild(document.createElement('span'));
+        document.getElementById('documents').lastElementChild.lastElementChild.appendChild(document.createTextNode('[E]'));
+        document.getElementById('documents').lastElementChild.lastElementChild.classList.add('button');
+        document.getElementById('documents').lastElementChild.lastElementChild.setAttribute('title', 'Edit document');
+        document.getElementById('documents').lastElementChild.lastElementChild.onclick = (event) => {
           event.stopPropagation();
           const el = document.createElement('textarea');
           el.setAttribute('id', 'document')
@@ -218,11 +248,11 @@
           el.setAttribute('data-raw', el.content);
           document.body.appendChild(el);
         }
-        document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
-        document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode('[D]'));
-        document.getElementById('characters').lastChild.lastChild.classList.add('button');
-        document.getElementById('characters').lastChild.lastChild.setAttribute('title', 'Delete character');
-        document.getElementById('characters').lastChild.lastChild.onclick = async (event) => {
+        document.getElementById('characters').lastElementChild.appendChild(document.createElement('span'));
+        document.getElementById('characters').lastElementChild.lastElementChild.appendChild(document.createTextNode('[D]'));
+        document.getElementById('characters').lastElementChild.lastElementChild.classList.add('button');
+        document.getElementById('characters').lastElementChild.lastElementChild.setAttribute('title', 'Delete character');
+        document.getElementById('characters').lastElementChild.lastElementChild.onclick = async (event) => {
           event.stopPropagation();
           if (confirm("Do you want to delete this document?")) {
             await fetch(`${apiHost}/chat/${chat.id}/characters/${md_document._id['$oid']}`, {
@@ -255,17 +285,17 @@
         return;
       }
       while (document.getElementById('characters').children.length > 1) {
-        document.getElementById('characters').removeChild(document.getElementById('characters').lastChild);
+        document.getElementById('characters').removeChild(document.getElementById('characters').lastElementChild);
       }
       for (const character of json.characters) {
         document.getElementById('characters').appendChild(document.createElement('li'));
-        document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
-        document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode(character.name.taken));
-        document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
-        document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode('[E]'));
-        document.getElementById('characters').lastChild.lastChild.classList.add('button');
-        document.getElementById('characters').lastChild.lastChild.setAttribute('title', 'Edit character');
-        document.getElementById('characters').lastChild.lastChild.onclick = (event) => {
+        document.getElementById('characters').lastElementChild.appendChild(document.createElement('span'));
+        document.getElementById('characters').lastElementChild.lastElementChild.appendChild(document.createTextNode(character.name.taken));
+        document.getElementById('characters').lastElementChild.appendChild(document.createElement('span'));
+        document.getElementById('characters').lastElementChild.lastElementChild.appendChild(document.createTextNode('[E]'));
+        document.getElementById('characters').lastElementChild.lastElementChild.classList.add('button');
+        document.getElementById('characters').lastElementChild.lastElementChild.setAttribute('title', 'Edit character');
+        document.getElementById('characters').lastElementChild.lastElementChild.onclick = (event) => {
           event.stopPropagation();
           const el = document.createElement('textarea');
           el.setAttribute('id', 'charactersheet')
@@ -276,11 +306,11 @@
           el.setAttribute('data-raw', el.value);
           document.body.appendChild(el);
         }
-        document.getElementById('characters').lastChild.appendChild(document.createElement('span'));
-        document.getElementById('characters').lastChild.lastChild.appendChild(document.createTextNode('[D]'));
-        document.getElementById('characters').lastChild.lastChild.classList.add('button');
-        document.getElementById('characters').lastChild.lastChild.setAttribute('title', 'Delete character');
-        document.getElementById('characters').lastChild.lastChild.onclick = async (event) => {
+        document.getElementById('characters').lastElementChild.appendChild(document.createElement('span'));
+        document.getElementById('characters').lastElementChild.lastElementChild.appendChild(document.createTextNode('[D]'));
+        document.getElementById('characters').lastElementChild.lastElementChild.classList.add('button');
+        document.getElementById('characters').lastElementChild.lastElementChild.setAttribute('title', 'Delete character');
+        document.getElementById('characters').lastElementChild.lastElementChild.onclick = async (event) => {
           event.stopPropagation();
           if (confirm("Do you want to delete this character sheet?")) {
             await fetch(`${apiHost}/chat/${chat.id}/characters/${character._id['$oid']}`, {
@@ -303,8 +333,8 @@
     document.getElementById('send').disabled = true;
     document.getElementById('chat-entry').value = '';
     document.getElementById('chat').appendChild(document.createElement('li'));
-    document.getElementById('chat').lastChild.innerHTML = converter.makeHtml(value);
-    document.getElementById('chat').lastChild.classList.add('user');
+    document.getElementById('chat').lastElementChild.innerHTML = converter.makeHtml(value);
+    document.getElementById('chat').lastElementChild.classList.add('user');
     try {
       const response = await fetch(`${apiHost}/chat/${chat.id}`, {
         method: 'POST',
@@ -323,8 +353,8 @@
           console.error(json.exception);
         } else {
           document.getElementById('chat').appendChild(document.createElement('li'));
-          document.getElementById('chat').lastChild.innerHTML = '<span class="gamemaster"></span>' + converter.makeHtml(json.message) + `<span class="duration">${Math.ceil(Date.now() / 1000 - now / 1000)}s</span>`;
-          document.getElementById('chat').lastChild.classList.add('agent');
+          document.getElementById('chat').lastElementChild.innerHTML = '<span class="gamemaster"></span>' + converter.makeHtml(json.message) + `<span class="duration">${Math.ceil(Date.now() / 1000 - now / 1000)}s</span>`;
+          document.getElementById('chat').lastElementChild.classList.add('agent');
         }
       }
     } catch (e) {
@@ -350,8 +380,8 @@
       } else {
         for (const message of json.messages) {
           document.getElementById('chat').appendChild(document.createElement('li'));
-          document.getElementById('chat').lastChild.innerHTML = (message.role === 'agent' ? '<span class="gamemaster"></span>' : '') + converter.makeHtml(message.content);
-          document.getElementById('chat').lastChild.classList.add(message.role);
+          document.getElementById('chat').lastElementChild.innerHTML = (message.role === 'agent' ? '<span class="gamemaster"></span>' : '') + converter.makeHtml(message.content);
+          document.getElementById('chat').lastElementChild.classList.add(message.role);
         }
       }
     }
