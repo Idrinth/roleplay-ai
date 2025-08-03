@@ -2,6 +2,57 @@
   const apiHost = location.protocol + '//' + location.hostname + '/api/v1'
   const characterFiller = await (await fetch('/char-template.yaml')).text();
   const uuidRegexp = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
+  const prompt = async (text, defaultText) => {
+    return new Promise(resolve => {
+      const prmt = document.createElement('div');
+      prmt.setAttribute('id', 'prompt');
+      prmt.appendChild(document.createElement('label'));
+      prmt.firstElementChild.appendChild(document.createTextNode(text));
+      prmt.appendChild(document.createElement('input'));
+      prmt.lastElementChild.value = defaultText;
+      prmt.lastElementChild.onchange = () => {
+        document.body.removeChild(prmt);
+        resolve(prmt.lastElementChild.value);
+      }
+      document.body.appendChild(prmt);
+    });
+  }
+  const confirm = async (text) => {
+    return new Promise(resolve => {
+      const prmt = document.createElement('div');
+      prmt.setAttribute('id', 'prompt');
+      prmt.appendChild(document.createElement('label'));
+      prmt.firstElementChild.appendChild(document.createTextNode(text));
+      prmt.appendChild(document.createElement('button'));
+      prmt.lastElementChild.appendChild(document.createTextNode('Yes'));
+      prmt.lastElementChild.onchange = () => {
+        document.body.removeChild(prmt);
+        resolve(true);
+      }
+      prmt.appendChild(document.createElement('button'));
+      prmt.lastElementChild.appendChild(document.createTextNode('No'));
+      prmt.lastElementChild.onchange = () => {
+        document.body.removeChild(prmt);
+        resolve(false);
+      }
+      document.body.appendChild(prmt);
+    });
+  }
+  const alert = async(text) => {
+    return new Promise(resolve => {
+      const prmt = document.createElement('div');
+      prmt.setAttribute('id', 'prompt');
+      prmt.appendChild(document.createElement('p'));
+      prmt.firstElementChild.appendChild(document.createTextNode(text));
+      prmt.appendChild(document.createElement('button'));
+      prmt.lastElementChild.appendChild(document.createTextNode('OK'));
+      prmt.lastElementChild.onchange = () => {
+        document.body.removeChild(prmt);
+        resolve();
+      }
+      document.body.appendChild(prmt);
+    });
+  }
   const user = await (async () => {
     const user = await (await fetch(`${apiHost}/whoami`, {
       credentials: "include",
@@ -10,21 +61,21 @@
     if (!user.error) {
       return user;
     }
-    const userId = prompt("Enter your User-ID if you already have one.", "");
+    const userId = await prompt("Enter your User-ID if you already have one.", "");
     if (userId) {
       if ((await (await fetch(`${apiHost}/login`, {
         credentials: "include",
         method: "POST",
         body: JSON.stringify({
           user_id: userId,
-          password: prompt("Enter your password.", "")
+          password: await prompt("Enter your password.", "")
         }),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
       })).text()) !== "true") {
-        alert("Login failed!");
+        await alert("Login failed!");
         location.reload()
         return;
       }
@@ -58,14 +109,14 @@
         credentials: "include",
         method: "POST",
         body: JSON.stringify({
-          password: prompt("Enter a password for your account.", password)
+          password: await prompt("Enter a password for your account.", password)
         }),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
       })).text();
-      alert(`Your user-id is ${uuid} - please save that for logging in.`)
+      await alert(`Your user-id is ${uuid} - please save that for logging in.`)
     }
     return await (await fetch(`${apiHost}/whoami`, {
       credentials: "include",
@@ -76,8 +127,8 @@
   document.getElementById('playername').innerText = (user.name ?? user.id);
   document.getElementById('playername').onclick = async () => {
     const previous = user.name ?? user.id;
-    const name = prompt("Enter a new name for yourself.", previous);
-    const password = prompt("Enter a new password for yourself.", "");
+    const name = await prompt("Enter a new name for yourself.", previous);
+    const password = await prompt("Enter a new password for yourself.", "");
     const data = {};
     let changed = false;
     if (name && name !== previous) {
@@ -115,7 +166,7 @@
     }
     if (user.chats.length > 0 && pathId !== 'new') {
       for (const chat of user.chats) {
-        if (confirm(`Do you want to continue chat '${chat.name}'?`)) {
+        if (await confirm(`Do you want to continue chat '${chat.name}'?`)) {
           return chat;
         }
       }
@@ -136,19 +187,21 @@
   } else if(chat.id !== location.pathname.split('/')[2] ?? '') {
     window.location = location.protocol + '//' + location.host + '/chat/' + chat.id
   }
-  while (chat.id === chat.name) {
-    chat.name = prompt("Enter a new name for your chat.", chat.name) || chat.id;
-    await fetch(`${apiHost}/chat/${chat.id}/name`, {
-      method: 'POST',
-      body: JSON.stringify({
-        name: chat.name,
-      }),
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      credentials: "include",
-    })
+  while (chat.id === chat.name || !chat.name) {
+    chat.name = (await prompt("Enter a new name for your chat.", chat.name)) || chat.id;
+    if (chat.name) {
+      await fetch(`${apiHost}/chat/${chat.id}/name`, {
+        method: 'POST',
+        body: JSON.stringify({
+          name: chat.name,
+        }),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        credentials: "include",
+      });
+    }
   }
   document.title = chat.name + ' | ' + document.title;
   
@@ -164,7 +217,7 @@
     world.lastElementChild.classList.add('button');
     world.lastElementChild.setAttribute('title', 'Delete chat');
     world.lastElementChild.onclick = async() => {
-      if (confirm(`Do you want to delete ${achat.name}?`)) {
+      if (await confirm(`Do you want to delete ${achat.name}?`)) {
         await fetch(
           `${apiHost}/chat/${achat.id}/delete`,
           {
@@ -248,13 +301,13 @@
           el.setAttribute('data-raw', el.content);
           document.body.appendChild(el);
         }
-        document.getElementById('characters').lastElementChild.appendChild(document.createElement('span'));
-        document.getElementById('characters').lastElementChild.lastElementChild.appendChild(document.createTextNode('[D]'));
-        document.getElementById('characters').lastElementChild.lastElementChild.classList.add('button');
-        document.getElementById('characters').lastElementChild.lastElementChild.setAttribute('title', 'Delete character');
-        document.getElementById('characters').lastElementChild.lastElementChild.onclick = async (event) => {
+        document.getElementById('documents').lastElementChild.appendChild(document.createElement('span'));
+        document.getElementById('documents').lastElementChild.lastElementChild.appendChild(document.createTextNode('[D]'));
+        document.getElementById('documents').lastElementChild.lastElementChild.classList.add('button');
+        document.getElementById('documents').lastElementChild.lastElementChild.setAttribute('title', 'Delete document');
+        document.getElementById('documents').lastElementChild.lastElementChild.onclick = async (event) => {
           event.stopPropagation();
-          if (confirm("Do you want to delete this document?")) {
+          if (await confirm("Do you want to delete this document?")) {
             await fetch(`${apiHost}/chat/${chat.id}/characters/${md_document._id['$oid']}/delete`, {
               method: 'POST',
               credentials: "include",
@@ -312,7 +365,7 @@
         document.getElementById('characters').lastElementChild.lastElementChild.setAttribute('title', 'Delete character');
         document.getElementById('characters').lastElementChild.lastElementChild.onclick = async (event) => {
           event.stopPropagation();
-          if (confirm("Do you want to delete this character sheet?")) {
+          if (await confirm("Do you want to delete this character sheet?")) {
             await fetch(`${apiHost}/chat/${chat.id}/characters/${character._id['$oid']}/delete`, {
               method: 'POST',
               credentials: "include",
@@ -391,15 +444,15 @@
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              character: prompt("What is your character's name?"),
-              location: prompt("Where is your character?"),
-              purpose: prompt("What is their purpose there?"),
-              mood: prompt("What is your character's mood?"),
-              weather: prompt("What is your weather like?"),
+              character: await prompt("What is your character's name?"),
+              location: await prompt("Where is your character?"),
+              purpose: await prompt("What is their purpose there?"),
+              mood: await prompt("What is your character's mood?"),
+              weather: await prompt("What is your weather like?"),
             }),
             credentials: "include",
           });
-          document.getElementById('chat-entry').value = (await value.json()).message;
+          document.getElementById('chat-entry').value = document.getElementById('chat-entry').value || (await value.json()).message;
         }
       }
     }
@@ -411,7 +464,7 @@
       if (event.target !== charactersheetElement) {
         if (charactersheetElement.hasAttribute('data-id')) {
           if (charactersheetElement.value && charactersheetElement.getAttribute('data-raw') !== charactersheetElement.value) {
-            if (confirm("Do you want to save this modified character sheet?")) {
+            if (await confirm("Do you want to save this modified character sheet?")) {
               const id = charactersheetElement.getAttribute('data-id');
               await fetch(`${apiHost}/chat/${chat.id}/characters/${id}`, {
                 method: 'POST',
@@ -425,7 +478,7 @@
             }
           }
         } else if (charactersheetElement.value) {
-          if (confirm("Do you want to save this new character sheet?")) {
+          if (await confirm("Do you want to save this new character sheet?")) {
             await fetch(`${apiHost}/chat/${chat.id}/characters`, {
               method: 'POST',
               headers: {
@@ -445,7 +498,7 @@
       if (event.target !== documentElement) {
         if (documentElement.hasAttribute('data-id')) {
           if (documentElement.value && documentElement.getAttribute('data-raw') !== documentElement.value) {
-            if (confirm("Do you want to save this modifieddocument?")) {
+            if (await confirm("Do you want to save this modified document?")) {
               const id = documentElement.getAttribute('data-id');
               await fetch(`${apiHost}/chat/${chat.id}/documents/${id}`, {
                 method: 'POST',
@@ -459,7 +512,7 @@
             }
           }
         } else if (documentElement.value) {
-          if (confirm("Do you want to save this new document?")) {
+          if (await confirm("Do you want to save this new document?")) {
             await fetch(`${apiHost}/chat/${chat.id}/documents`, {
               method: 'POST',
               headers: {
