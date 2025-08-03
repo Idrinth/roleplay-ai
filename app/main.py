@@ -252,7 +252,7 @@ async def chat_document_list(chat_id: str, user_jwt: Annotated[str | None, Cooki
         "documents": documents,
     }
 
-@app.delete("/chat/{chat_id}/documents/{document_id}")
+@app.post("/chat/{chat_id}/documents/{document_id}/delete")
 async def chat_document_delete(chat_id: str, document_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
     user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
@@ -306,7 +306,7 @@ async def chat_character_update(chat_id: str, character_id: str, character: Char
     my_col.insert_one(to_mongo_compatible(character, character_id))
     return True
 
-@app.delete("/chat/{chat_id}/characters/{character_id}")
+@app.post("/chat/{chat_id}/characters/{character_id}/delete")
 async def chat_character_delete(chat_id: str, character_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
     user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
@@ -337,7 +337,7 @@ async def chat_active(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = 
         return {"error": "Not a valid Chat"}
     return {"active": redis.get(f"{user_id}-{chat_id}.active") == "true"}
 
-@app.delete("/chat/{chat_id}")
+@app.post("/chat/{chat_id}/delete")
 async def chat_delete(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
     user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
