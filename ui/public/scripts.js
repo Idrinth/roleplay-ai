@@ -2,7 +2,7 @@
   const apiHost = location.protocol + '//' + location.hostname + '/api/v1'
   const characterFiller = await (await fetch('/char-template.yaml')).text();
   const uuidRegexp = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
-  const prompt = async (text, defaultText) => {
+  const prompt = async (text, defaultText = '') => {
     return new Promise(resolve => {
       const prmt = document.createElement('div');
       prmt.setAttribute('id', 'prompt');
@@ -30,13 +30,13 @@
       prmt.firstElementChild.appendChild(document.createTextNode(text));
       prmt.appendChild(document.createElement('button'));
       prmt.lastElementChild.appendChild(document.createTextNode('Yes'));
-      prmt.lastElementChild.onchange = () => {
+      prmt.lastElementChild.onclick = () => {
         document.body.removeChild(prmt);
         resolve(true);
       }
       prmt.appendChild(document.createElement('button'));
       prmt.lastElementChild.appendChild(document.createTextNode('No'));
-      prmt.lastElementChild.onchange = () => {
+      prmt.lastElementChild.onclick = () => {
         document.body.removeChild(prmt);
         resolve(false);
       }
@@ -51,7 +51,7 @@
       prmt.firstElementChild.appendChild(document.createTextNode(text));
       prmt.appendChild(document.createElement('button'));
       prmt.lastElementChild.appendChild(document.createTextNode('OK'));
-      prmt.lastElementChild.onchange = () => {
+      prmt.lastElementChild.onclick = () => {
         document.body.removeChild(prmt);
         resolve();
       }
