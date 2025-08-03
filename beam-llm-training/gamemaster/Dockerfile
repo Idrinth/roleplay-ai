@@ -9,9 +9,13 @@ RUN mkdir /training/raw-data
 RUN pip install --no-cache-dir -r requirements.txt
 RUN beam configure default --token ${BEAM_TOKEN} || true
 
+WORKDIR /training/shared
+COPY beam-llm-training/shared/*.py ./
+
+WORKDIR /training
+
 COPY beam-llm-training/gamemaster/requirements.remote.txt ./
 COPY beam-llm-training/gamemaster/__init__.py ./
-COPY beam-llm-training/shared/*.py ./
 COPY beam-llm-training/gamemaster/main.py ./
 COPY beam-llm-training/gamemaster/data/*.yml ./raw-data/
 

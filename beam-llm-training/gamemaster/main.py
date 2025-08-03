@@ -1,9 +1,9 @@
 from beam import function, Image
-from .model_for_training import load_model_tokenizer
-from .dataset_for_training import load_dataset
-from .trainer_for_training import get_trainer
-from .constants import GLOBAL_BZ, DEVICES, MAX_SEQUENCE_LENGTH, BZ
-from .export_results import export
+from shared.model_for_training import load_model_tokenizer
+from shared.dataset_for_training import load_dataset
+from shared.trainer_for_training import get_trainer
+from shared.constants import GLOBAL_BZ, DEVICES, MAX_SEQUENCE_LENGTH, BZ
+from shared.export_results import export
 
 NAME = "gamemaster"
 
