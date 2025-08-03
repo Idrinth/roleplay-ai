@@ -23,11 +23,17 @@ class Document(BaseModel):
     content: str
 
 class ChatStartingPoint(BaseModel):
-    character: str
+    name: str
     location: str
     purpose: str
     weather: str
     mood: str
+    wear: str
+    gender: str
+    race: str
+    profession: str
+    world: str
+    genre: str
 
 class User(BaseModel):
     username: str | None = None

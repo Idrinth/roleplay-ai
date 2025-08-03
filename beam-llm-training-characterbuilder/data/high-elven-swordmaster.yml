@@ -1,0 +1,14 @@
+name: Idrinth
+location: Ulthuan
+purpose: find a cult of chaos
+weather: text
+mood: text
+wear: text
+gender: text
+race: text
+profession: text
+world: text
+genre: text
+introductions:
+  - text1
+  - text2

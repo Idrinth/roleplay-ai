@@ -16,6 +16,9 @@
       prmt.appendChild(document.createElement('button'));
       prmt.lastElementChild.appendChild(document.createTextNode('Send'));
       prmt.lastElementChild.onclick = () => {
+        if (! prmt.lastElementChild.previousElementSibling.value) {
+          return;
+        }
         document.body.removeChild(prmt);
         resolve(prmt.lastElementChild.previousElementSibling.value);
       }
@@ -441,7 +444,7 @@
           document.getElementById('chat').lastElementChild.innerHTML = (message.role === 'agent' ? '<span class="gamemaster"></span>' : '') + converter.makeHtml(message.content);
           document.getElementById('chat').lastElementChild.classList.add(message.role);
         }
-        if (json.messages.length === 0 && !document.getElementById('chat-entry').value) {
+        if (json.messages.length === 0 && !document.getElementById('chat-entry').value && await confirm('Do you want help with your beginning scene?')) {
           const value = await fetch(`${apiHost}/starting-point-proposal`, {
             method: 'POST',
             headers: {
@@ -449,11 +452,17 @@
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              character: await prompt("What is your character's name?"),
+              name: await prompt("What is your character's name?"),
+              race: await prompt("What is your character's race?"),
+              gender: await prompt("What is your character's gender?"),
+              wear: await prompt("What does your character wear?"),
+              profession: await prompt("What is your character's profession?"),
               location: await prompt("Where is your character?"),
               purpose: await prompt("What is their purpose there?"),
               mood: await prompt("What is your character's mood?"),
               weather: await prompt("What is your weather like?"),
+              genre: await prompt("What is genre does the world fall into?"),
+              world: await prompt("What is the world like? Please provide keywords separated by comma."),
             }),
             credentials: "include",
           });

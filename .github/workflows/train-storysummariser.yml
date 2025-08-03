@@ -1,0 +1,16 @@
+name: Fine Tune Story Summariser
+on:
+  push:
+    branches:
+      - the-one
+    paths:
+    - beam-llm-training-storysummariser/*.py
+    - beam-llm-training-storysummariser/data/*.yml
+    - beam-llm-training-storysummariser/*.txt
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Run Docker-Image
+      run: docker build --build-arg BEAM_TOKEN=${secrets.BEAM_TOKEN} --name=totrain beam-llm-training-storysummariser/Dockerfile && docker run totrain
