@@ -14,6 +14,12 @@ RUN cat /public/styles.css | minify --css > /tmp/styles.css && \
 RUN cat /public/index.html | minify --html > /tmp/index.html && \
     [ -s /tmp/index.html ] && cp /tmp/index.html /public/index.html || echo "HTML minification failed, keeping original"
 
+RUN cat /public/imprint.html | minify --html > /tmp/imprint.html && \
+    [ -s /tmp/imprint.html ] && cp /tmp/imprint.html /public/imprint.html || echo "HTML minification failed, keeping original"
+
+RUN cat /public/chat.html | minify --html > /tmp/chat.html && \
+    [ -s /tmp/chat.html ] && cp /tmp/chat.html /public/chat.html || echo "HTML minification failed, keeping original"
+
 FROM nginx:alpine
 
 COPY --from=build /public /usr/share/nginx/html
