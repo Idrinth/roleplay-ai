@@ -103,7 +103,7 @@
   }
 
   const chat = await (async () => {
-    const pathId = location.pathname.split('/')[2].replace(/[^0-9a-f-]+/g, '');
+    const pathId = location.pathname.split('/')[2];
     if (pathId.match(uuidRegexp)) {
       if (user.chats.length > 0) {
         for (const chat of user.chats) {
