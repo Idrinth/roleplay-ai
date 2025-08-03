@@ -3,7 +3,7 @@ FROM python:3.11
 ARG BEAM_TOKEN
 
 WORKDIR /training
-COPY beam-llm-training/gamemaster/requirements.txt ./
+COPY beam-llm-training/storysummariser/requirements.txt ./
 RUN mkdir /training/raw-data
 
 RUN pip install --no-cache-dir -r requirements.txt
@@ -14,9 +14,9 @@ COPY beam-llm-training/shared/*.py ./
 
 WORKDIR /training
 
-COPY beam-llm-training/gamemaster/requirements.remote.txt ./
-COPY beam-llm-training/gamemaster/__init__.py ./
-COPY beam-llm-training/gamemaster/main.py ./
-COPY beam-llm-training/gamemaster/data/*.yml ./raw-data/
+COPY beam-llm-training/storysummariser/requirements.remote.txt ./
+COPY beam-llm-training/storysummariser/__init__.py ./
+COPY beam-llm-training/storysummariser/main.py ./
+COPY beam-llm-training/storysummariser/data/*.yml ./raw-data/
 
 ENTRYPOINT ["python", "main.py"]
