@@ -21,8 +21,10 @@ We are always looking for contributors:
 
 ## Writers
 
-- expand training data in [the easy to use yaml files](/beam-llm-training/data)
-- add new training scenarios
+- expand training data in by adding either new examples or improving existing ones
+  - [Game-mastering](/beam-llm-training-gamemaster/data)
+  - [Story summarising](/beam-llm-training-gamemaster/data)
+  - [Character building](/beam-llm-training-gamemaster/data)
 
 ## Others
 
