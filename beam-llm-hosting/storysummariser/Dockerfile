@@ -5,7 +5,11 @@ ARG BEAM_TOKEN
 WORKDIR /beam
 RUN pip install beam-client
 RUN beam configure default --token ${BEAM_TOKEN} || true
+
+WORKDIR /beam/shared
 COPY beam-llm-hosting/shared/*.py ./
+
+WORKDIR /beam
 COPY beam-llm-hosting/storysummariser/requirements.remote.txt ./
 COPY beam-llm-hosting/storysummariser/main.py ./
 

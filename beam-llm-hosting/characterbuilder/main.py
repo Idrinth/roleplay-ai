@@ -1,10 +1,10 @@
 from beam import endpoint, Image, QueueDepthAutoscaler, Volume
-from .download_models import CACHE_PATH
+from shared.download_models import CACHE_PATH
 
 NAME = 'characterbuilder'
 
 def download_models():
-    from .download_models import download_model
+    from shared.download_models import download_model
     return download_model(f"Idrinth/{NAME}ai")
 
 @endpoint(
@@ -24,7 +24,7 @@ def download_models():
     image=Image(python_version="python3.11", python_packages="requirements.remote.txt", env_vars="HF_HUB_ENABLE_HF_TRANSFER=1"),
 )
 def answer(context, **params):
-    from .answer_from_model import answer_from_model
+    from shared.answer_from_model import answer_from_model
     model, tokenizer = context.on_start_value
     return {
         "answer": answer_from_model(model, tokenizer, params["messages"], -1)
