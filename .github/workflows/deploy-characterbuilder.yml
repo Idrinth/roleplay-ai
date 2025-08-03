@@ -1,15 +1,16 @@
-name: Fine Tune Character Builder
+name: Character Builder Deployment
 on:
   push:
     branches:
       - the-one
     paths:
-    - beam-llm-hosting-characterbuilder/*.py
-    - beam-llm-hosting-characterbuilder/*.txt
+    - beam-llm-hosting/shared/*.py
+    - beam-llm-hosting/characterbuilder/*.py
+    - beam-llm-hosting/characterbuilder/*.txt
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Run Docker-Image
-      run: docker buildx build --build-arg BEAM_TOKEN=${{secrets.BEAM_TOKEN}} --tag=todeploy -f ./beam-llm-hosting-characterbuilder/Dockerfile . && docker run todeploy
+      run: docker buildx build --build-arg BEAM_TOKEN=${{secrets.BEAM_TOKEN}} --tag=todeploy -f ./beam-llm-hosting/characterbuilder/Dockerfile . && docker run todeploy

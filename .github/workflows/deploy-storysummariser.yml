@@ -1,15 +1,16 @@
-name: Fine Tune Story Summariser
+name: Story Summariser Deployment
 on:
   push:
     branches:
       - the-one
     paths:
-    - beam-llm-hosting-storysummariser/*.py
-    - beam-llm-hosting-storysummariser/*.txt
+    - beam-llm-hosting/shared/*.py
+    - beam-llm-hosting/storysummariser/*.py
+    - beam-llm-hosting/storysummariser/*.txt
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Run Docker-Image
-      run: docker buildx build --build-arg BEAM_TOKEN=${{secrets.BEAM_TOKEN}} --tag=todeploy -f ./beam-llm-hosting-storysummariser/Dockerfile . && docker run todeploy
+      run: docker buildx build --build-arg BEAM_TOKEN=${{secrets.BEAM_TOKEN}} --tag=todeploy -f ./beam-llm-hosting/storysummariser/Dockerfile . && docker run todeploy

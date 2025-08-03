@@ -4,13 +4,14 @@ on:
     branches:
       - the-one
     paths:
-    - beam-llm-training-gamemaster/*.py
-    - beam-llm-training-gamemaster/data/*.yml
-    - beam-llm-training-gamemaster/*.txt
+    - beam-llm-training/shared/*.py
+    - beam-llm-training/gamemaster/*.py
+    - beam-llm-training/gamemaster/data/*.yml
+    - beam-llm-training/gamemaster/*.txt
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Run Docker-Image
-      run: docker buildx build --build-arg BEAM_TOKEN=${{secrets.BEAM_TOKEN}} --tag=totrain -f ./beam-llm-training-gamemaster/Dockerfile . && docker run totrain
+      run: docker buildx build --build-arg BEAM_TOKEN=${{secrets.BEAM_TOKEN}} --tag=totrain -f ./beam-llm-training/gamemaster/Dockerfile . && docker run totrain
