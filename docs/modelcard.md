@@ -1,5 +1,5 @@
 ---
-library_name: transformers
+library_name: adapter-transformers
 tags:
 - unsloth
 license: mit
