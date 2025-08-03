@@ -15,7 +15,7 @@
       }
       prmt.appendChild(document.createElement('button'));
       prmt.lastElementChild.appendChild(document.createTextNode('Send'));
-      prmt.lastElementChild.onchange = () => {
+      prmt.lastElementChild.onclick = () => {
         document.body.removeChild(prmt);
         resolve(prmt.lastElementChild.previousElementSibling.value);
       }
