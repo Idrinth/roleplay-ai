@@ -1,5 +1,6 @@
 name: Character Builder Deployment
 on:
+  workflow_dispatch: {}
   push:
     branches:
       - the-one

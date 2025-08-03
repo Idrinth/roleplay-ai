@@ -1,5 +1,6 @@
 name: Story Summariser Deployment
 on:
+  workflow_dispatch: {}
   push:
     branches:
       - the-one

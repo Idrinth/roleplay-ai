@@ -1,5 +1,6 @@
 name: Fine Tune Story Summariser
 on:
+  workflow_dispatch: {}
   push:
     branches:
       - the-one

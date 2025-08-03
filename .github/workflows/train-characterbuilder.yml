@@ -1,5 +1,6 @@
 name: Fine Tune Character Builder
 on:
+  workflow_dispatch: {}
   push:
     branches:
       - the-one
