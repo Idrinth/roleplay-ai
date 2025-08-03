@@ -1,14 +1,14 @@
 name: Idrinth
 location: Ulthuan
 purpose: find a cult of chaos
-weather: text
-mood: text
-wear: text
-gender: text
-race: text
-profession: text
-world: text
-genre: text
+weather: sunny with a few clouds
+mood: dark
+wear: scaled armor of a swordmaster
+gender: male
+race: elf
+profession: Swordmaster of Hoeth
+world: high magic, corrupting magic, desperate people
+genre: horror
 introductions:
-  - text1
-  - text2
+  - Despite the sunny weather, Idrinth's mind is more clouded than the sky in this part of Ulthuan. His hunt for servants of chaos was not successful and the elf thought about giving up. "I'm a Swordmaster of Hoeth" he reminded himself, trying to suppress his dark mood with pride in his elven heritage and notable position.
+
