@@ -21,7 +21,7 @@ def callback(data):
                     "content": response,
                 }
             ],
-            "text": ">>> User: " + data["prompt"] + "\n>>> Assistant: " + response + "\n"
+            "text": ">>> User: " + "\n\n".join(data["messages"]) + "\n>>> Assistant: " + response + "\n"
         })
     return dataset_list
 
