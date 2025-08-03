@@ -1,5 +1,6 @@
 name: Fine Tune Game Master
 on:
+  workflow_dispatch: {}
   push:
     branches:
       - the-one

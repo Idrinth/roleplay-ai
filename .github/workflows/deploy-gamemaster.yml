@@ -1,5 +1,6 @@
 name: Game Master Deployment
 on:
+  workflow_dispatch: {}
   push:
     branches:
       - the-one
