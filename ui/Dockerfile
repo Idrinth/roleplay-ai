@@ -17,3 +17,5 @@ RUN cat /public/index.html | minify --html > /tmp/index.html && \
 FROM nginx:alpine
 
 COPY --from=build /public /usr/share/nginx/html
+
+COPY ui/nginx.conf /etc/nginx/conf.d/default.conf
