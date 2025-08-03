@@ -200,9 +200,10 @@ nav > ul {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  padding: calc(50% - 150px);
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: calc(50vh - 50px) calc(50vw - 300px);
   background: var(--main-shadow);
   color: var(--main-striking);
   display: grid;
