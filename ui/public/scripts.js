@@ -11,8 +11,13 @@
       prmt.appendChild(document.createElement('input'));
       prmt.lastElementChild.value = defaultText;
       prmt.lastElementChild.onchange = () => {
+        prmt.lastElementChild.disabled = ! prmt.lastElementChild.previousElementSibling.value;
+      }
+      prmt.appendChild(document.createElement('button'));
+      prmt.lastElementChild.appendChild(document.createTextNode('Send'));
+      prmt.lastElementChild.onchange = () => {
         document.body.removeChild(prmt);
-        resolve(prmt.lastElementChild.value);
+        resolve(prmt.lastElementChild.previousElementSibling.value);
       }
       document.body.appendChild(prmt);
     });
