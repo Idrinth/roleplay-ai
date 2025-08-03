@@ -393,6 +393,7 @@
             body: JSON.stringify({
               character: prompt("What is your character's name?"),
               location: prompt("Where is your character?"),
+              purpose: prompt("What is their purpose there?"),
               mood: prompt("What is your character's mood?"),
               weather: prompt("What is your weather like?"),
             }),
