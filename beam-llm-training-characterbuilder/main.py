@@ -70,17 +70,7 @@ def train():
             if fname.endswith(".yml"):
                 with open(f"./raw-data/{fname}", "r") as file:
                     data = yaml.load(file, yaml.SafeLoader)
-                    prompt = f"Name: {data["name"]}\n" + \
-                        f"Gender: {data["gender"]}\n" + \
-                        f"Race: {data["race"]}\n" + \
-                        f"Wear/Clothing: {data["wear"]}\n" + \
-                        f"Profession: {data["profession"]}\n" + \
-                        f"location: {data["location"]}\n" + \
-                        f"Purpose/Goal: {data["purpose"]}\n" + \
-                        f"Mood/Feeling: {data["mood"]}\n" + \
-                        f"Genre: {data["genre"]}\n" + \
-                        f"World: {data["world"]}\n" + \
-                        f"Weather: {data["weather"]}\n"
+                    prompt = f"Name: {data['name']}\nGender: {data['gender']}\nRace: {data['race']}\nWear/Clothing: {data['wear']}\nProfession: {data['profession']}\nlocation: {data['location']}\nPurpose/Goal: {data['purpose']}\nMood/Feeling: {data['mood']}\nGenre: {data['genre']}\nWorld: {data['world']}\nWeather: {data['weather']}\n"
                     for response in data["introductions"]:
                         dataset_list.append({
                             "messages": [
