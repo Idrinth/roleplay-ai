@@ -114,9 +114,9 @@ def train():
 
     trainer.train()
 
-    dataset.push_to_hub("Idrinth/gamemasterai", token=os.environ["HUGGINGFACE_TOKEN"])
-    model.push_to_hub("Idrinth/gamemasterai", tokenizer, quantization_method="q4_k_m", token=os.environ["HUGGINGFACE_TOKEN"])
-    print(f"Saved Model at Idrinth/gamemasterai")
+    dataset.push_to_hub("Idrinth/storysummariserai", token=os.environ["HUGGINGFACE_TOKEN"])
+    model.push_to_hub("Idrinth/storysummariserai", tokenizer, quantization_method="q4_k_m", token=os.environ["HUGGINGFACE_TOKEN"])
+    print(f"Saved Model at Idrinth/storysummariserai")
 
 if __name__ == "__main__":
     train.remote()

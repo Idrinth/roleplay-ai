@@ -27,23 +27,17 @@ dataset_info:
     num_examples: 5
   download_size: 10965
   dataset_size: 8900
-pretty_name: Gamemaster AI
+pretty_name: StorySummariserAI
 ---
-# Dataset Card for Gamemaster AI
+# Dataset Card for StorySummariserAI
 
-This is a human written training set of prompts and responses to finetune a model to be a better game master.
+This is a human written training set of prompts and responses to finetune a model to be a better summariser for single person rpg sessions.
 
 ## Dataset Details
 
 ### Dataset Description
 
-This is a human-curated training dataset designed to fine-tune language models for tabletop role-playing game (RPG) game master scenarios. The dataset contains carefully crafted prompt-response pairs that demonstrate how an AI should respond as a game master in single-player role-playing scenarios.
-The dataset focuses on training models to:
-
-Act as a narrative game master rather than playing as the player character
-Provide engaging story progression and world-building
-Respond appropriately to player actions and decisions
-Maintain consistent storytelling and character interactions
+This is a human-curated training dataset designed to fine-tune language models for tabletop role-playing game (RPG) single player scenarios. The dataset contains carefully crafted prompt-response pairs that demonstrate how an AI should respond to summarise older parts of the story in single-player role-playing scenarios.
 
 ### Dataset Summary
 
@@ -83,7 +77,7 @@ from datasets import load_dataset
 
 ### Load the dataset
 ```py
-dataset = load_dataset("Idrinth/gamemasterai")
+dataset = load_dataset("Idrinth/storysummariserai")
 ```
 
 #### Access training examples
@@ -110,7 +104,7 @@ for message in sample["messages"]:
 ## Contributing
 The dataset is actively being expanded. Contributors can help by:
   - Adding new RPG scenario examples
-  - Improving existing conversatin quality
+  - Improving existing conversation quality
   - Suggesting additional use cases
 
 For contributions, visit the [GitHub Repository](https://github.com/bjoern-buettner/roleplay-ai) or join the [Discord community](https://discord.gg/idrinth).
@@ -118,10 +112,10 @@ For contributions, visit the [GitHub Repository](https://github.com/bjoern-buett
 ## Citation
 If you use this dataset in your research or applications, please cite
 ```
-@dataset{gamemaster_ai,
-  title={Gamemaster AI Training Dataset},
+@dataset{storysummariserai,
+  title={Story Summariser AI Training Dataset},
   author={Björn Büttner},
   year={2025},
-  url={https://huggingface.co/datasets/Idrinth/gamemasterai}
+  url={https://huggingface.co/datasets/Idrinth/storysummariserai}
 }
 ```
