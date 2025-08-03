@@ -72,7 +72,6 @@
       method: "GET",
     })).json();
   })();
-  console.log(user);
 
   document.getElementById('playername').innerText = (user.name ?? user.id);
   document.getElementById('playername').onclick = async () => {
@@ -104,17 +103,17 @@
   }
 
   const chat = await (async () => {
-    if (location.hash.replace(/[^0-9a-f-]+/g, '').match(uuidRegexp)) {
-      const likely = location.hash.replace(/[^0-9a-f-]+/g, '');
+    const pathId = location.pathname.split('/')[1].replace(/[^0-9a-f-]+/g, '');
+    if (pathId.match(uuidRegexp)) {
       if (user.chats.length > 0) {
         for (const chat of user.chats) {
-          if (chat.id === likely) {
+          if (chat.id === pathId) {
             return chat;
           }
         }
       }
     }
-    if (user.chats.length > 0 && location.hash !== '#new') {
+    if (user.chats.length > 0 && pathId !== 'new') {
       for (const chat of user.chats) {
         if (confirm(`Do you want to continue chat '${chat.name}'?`)) {
           return chat;
@@ -132,10 +131,10 @@
   })();
 
   if (!chat.id || !chat.id.match(uuidRegexp)) {
-    window.location = location.protocol + '//' + location.host;
+    window.location = location.protocol + '//' + location.host + '/chat/new';
     return;
   }
-  location.hash = `#${chat.id}`;
+  window.location = location.protocol + '//' + location.host + '/chat/' + chat.id
   while (chat.id === chat.name) {
     chat.name = prompt("Enter a new name for your chat.", chat.name) || chat.id;
     await fetch(`${apiHost}/chat/${chat.id}/name`, {
@@ -488,29 +487,5 @@
       }),
       credentials: "include",
     })
-  }
-  if (window.matchMedia && !window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.getElementsByTagName('html')[0]?.classList.toggle('inverted-colors');
-  }
-  if (window.localStorage) {
-    const preferedColorScheme = window.localStorage.getItem('prefered-color-scheme');
-    if (preferedColorScheme === 'dark') {
-      document.getElementsByTagName('html')[0]?.classList.remove('inverted-colors');
-    } else if (preferedColorScheme === 'light') {
-      document.getElementsByTagName('html')[0]?.classList.add('inverted-colors');
-    }
-    window.localStorage.setItem('prefered-color-scheme', document.getElementsByTagName('html')[0]?.classList.contains('inverted-colors') ? 'light' : 'dark');
-  }
-  document.getElementById('logo').onclick = () => {
-    document.getElementsByTagName('html')[0]?.classList.toggle('inverted-colors');
-    window.localStorage && window.localStorage.setItem(
-      'prefered-color-scheme',
-      document.getElementsByTagName('html')[0]?.classList.contains('inverted-colors') ? 'light' : 'dark',
-    );
-  }
-  document.getElementById('imprint-open').onclick = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    document.getElementById('imprint').removeAttribute('style');
   }
 })();
