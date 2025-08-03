@@ -384,7 +384,7 @@
           document.getElementById('chat').lastElementChild.classList.add(message.role);
         }
         if (json.messages.length === 0 && !document.getElementById('chat-entry').value) {
-          const value = await fetch(`/starting-point-proposal`, {
+          const value = await fetch(`${apiHost}/starting-point-proposal`, {
             method: 'POST',
             headers: {
               'Accept': 'application/json',
