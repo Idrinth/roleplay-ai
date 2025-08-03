@@ -33,7 +33,7 @@ body {
   padding: 1em 5%;
   display: grid;
   grid-template-columns: 7fr 1fr;
-  grid-template-rows: 7% 20% 30% 30% 10% 3%;
+  grid-template-rows: 3% 5% 21% 28.5% 28.5% 10% 3%;
   background-image: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0)),
     linear-gradient(to right, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0));
 }
