@@ -103,7 +103,7 @@
   }
 
   const chat = await (async () => {
-    const pathId = location.pathname.split('/')[2];
+    const pathId = location.pathname.split('/')[2] ?? '';
     if (pathId.match(uuidRegexp)) {
       if (user.chats.length > 0) {
         for (const chat of user.chats) {
@@ -133,8 +133,9 @@
   if (!chat.id || !chat.id.match(uuidRegexp)) {
     window.location = location.protocol + '//' + location.host + '/chat/new';
     return;
+  } else if(chat.id !== location.pathname.split('/')[2] ?? '') {
+    window.location = location.protocol + '//' + location.host + '/chat/' + chat.id
   }
-  window.location = location.protocol + '//' + location.host + '/chat/' + chat.id
   while (chat.id === chat.name) {
     chat.name = prompt("Enter a new name for your chat.", chat.name) || chat.id;
     await fetch(`${apiHost}/chat/${chat.id}/name`, {
