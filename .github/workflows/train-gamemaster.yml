@@ -13,4 +13,4 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Run Docker-Image
-      run: docker buildx build --build-arg BEAM_TOKEN=${{secrets.BEAM_TOKEN}} --name=totrain beam-llm-training-gamemaster/Dockerfile && docker run totrain
+      run: docker buildx build --build-arg BEAM_TOKEN=${{secrets.BEAM_TOKEN}} --tag=totrain beam-llm-training-gamemaster/Dockerfile && docker run totrain
