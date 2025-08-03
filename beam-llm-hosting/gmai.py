@@ -1,29 +1,43 @@
-import os
-
 from beam import endpoint, Image, QueueDepthAutoscaler, Volume, env
 
 CACHE_PATH = "./weights"
 
 def download_models():
-    from transformers import AutoTokenizer, AutoModelForCausalLM
+    from transformers import AutoModelForCausalLM, AutoTokenizer
     from huggingface_hub import login
+    from peft import PeftModel
     import torch
     import os
+
     login(
         token=os.getenv("HUGGINGFACE_TOKEN", "") or "",
         new_session=False,
     )
-    model = AutoModelForCausalLM.from_pretrained(
-        "Idrinth/gamemasterai",
+
+    model_name = "Idrinth/gamemasterai"
+    base_model_name = "mistralai/Mistral-7B-Instruct-v0.3"
+
+    base_model = AutoModelForCausalLM.from_pretrained(
+        base_model_name,
+        torch_dtype=torch.float16,
         cache_dir=CACHE_PATH,
-        torch_dtype=torch.bfloat16,
+        device_map="auto"
+    )
+
+    model = PeftModel.from_pretrained(
+        base_model,
+        model_name,
+        cache_dir=CACHE_PATH,
+        torch_dtype=torch.float16,
         device_map="auto",
+        trust_remote_code=True
     )
     tokenizer = AutoTokenizer.from_pretrained(
-        "Idrinth/gamemasterai",
+        base_model_name,
         cache_dir=CACHE_PATH,
-        torch_dtype=torch.bfloat16,
+        torch_dtype=torch.float16,
         device_map="auto",
+        trust_remote_code=True
     )
 
     return model, tokenizer
@@ -34,8 +48,8 @@ def download_models():
     on_start=download_models,
     volumes=[Volume(name="gamemaster-ai-cache", mount_path=CACHE_PATH)],
     cpu=1,
-    gpu=["A100-40", "H100"],
-    memory="8Gi",
+    gpu=["T4", "A10G", "RTX4090", "A100-40", "H100"],
+    memory="4Gi",
     autoscaler=QueueDepthAutoscaler(
         max_containers=5,
         tasks_per_container=1,
@@ -78,5 +92,7 @@ def answer(context, **params):
     )[0]
 
     outputs = result.split("\n assistant\n")
+    output = outputs[len(outputs) - 1]
+    outputs = output.split(params["messages"][len(params["messages"]) - 1]["content"])
     output = outputs[len(outputs) - 1]
     return {"answer": output}
