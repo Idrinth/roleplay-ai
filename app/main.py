@@ -344,8 +344,9 @@ async def chat_delete(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = 
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
+    sql_connection.ping()
     sql_connection.cursor().execute(f"DROP DATABASE `{mariadb_name(user_id, chat_id)}`;")
-    sql_connection.cursor().execute(f"DELETE FROM chat_users.mapping WHERE user_id='{user_id}' and chat_id='{chat_id}';")
+    sql_connection.cursor().execute("DELETE FROM chat_users.mapping WHERE user_id=? and chat_id=?;", [user_id, chat_id])
     redis.delete(f"{user_id}-{chat_id}.active")
     redis.delete(f"{user_id}-{chat_id}.short_summary")
     redis.delete(f"{user_id}-{chat_id}.medium_summary")
