@@ -8,6 +8,9 @@ COPY ui/public /public
 RUN cat /public/scripts.js | minify --js > /tmp/scripts.js && \
     [ -s /tmp/scripts.js ] && cp /tmp/scripts.js /public/scripts.js || echo "JS minification failed, keeping original"
 
+RUN cat /public/dark-light-switch.js | minify --js > /tmp/dark-light-switch.js && \
+    [ -s /tmp/dark-light-switch.js ] && cp /tmp/dark-light-switch.js /public/dark-light-switch.js || echo "JS minification failed, keeping original"
+
 RUN cat /public/styles.css | minify --css > /tmp/styles.css && \
     [ -s /tmp/styles.css ] && cp /tmp/styles.css /public/styles.css || echo "CSS minification failed, keeping original"
 
