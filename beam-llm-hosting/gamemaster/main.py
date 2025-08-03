@@ -27,5 +27,5 @@ def answer(context, **params):
     from shared.answer_from_model import answer_from_model
     model, tokenizer = context.on_start_value
     return {
-        "answer": answer_from_model(model, tokenizer, params["messages"], -1)
+        "answer": answer_from_model(model, tokenizer, params["messages"], 550)
     }
