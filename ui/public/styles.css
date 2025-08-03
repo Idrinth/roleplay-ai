@@ -44,7 +44,7 @@ a, a:visited, a:active, a:hover, a:focus {
 #playername {
   cursor: pointer;
 }
-#chat {
+#chat, article {
   grid-row-start: 2;
   grid-row-end: 5;
   padding: 0.2em;
@@ -187,6 +187,9 @@ a[target="_blank"]:after {
   overflow-y: auto;
   border-radius: 0.25em;
   box-shadow: 1em 1em 1em var(--main-shadow);
+}
+nav > ul {
+  display: flex;
 }
 @media screen and (max-width: 1000px) {
   body {
