@@ -8,6 +8,8 @@ language:
 base_model:
 - unsloth/mistral-7b-instruct-v0.3-bnb-4bit
 pipeline_tag: text-generation
+datasets:
+- Idrinth/gamemasterai
 ---
 
 # Model Card for Idrinth/GameMasterAI
