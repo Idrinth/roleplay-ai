@@ -12,4 +12,4 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Run Docker-Image
-      run: docker buildx build --build-arg BEAM_TOKEN=${{secrets.BEAM_TOKEN}} --tag=todeploy ./beam-llm-hosting-characterbuilder/Dockerfile && docker run todeploy
+      run: docker buildx build --build-arg BEAM_TOKEN=${{secrets.BEAM_TOKEN}} --tag=todeploy -f ./beam-llm-hosting-characterbuilder/Dockerfile . && docker run todeploy
