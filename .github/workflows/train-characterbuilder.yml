@@ -8,7 +8,7 @@ on:
     - beam-llm-training/characterbuilder/*.py
     - beam-llm-training/characterbuilder/data/*.yml
     - beam-llm-training/characterbuilder/*.txt
-    - beam-llm-training/characterbuilder/Duckerfile
+    - beam-llm-training/characterbuilder/Dockerfile
 jobs:
   build:
     runs-on: ubuntu-latest
