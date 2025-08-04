@@ -417,27 +417,31 @@ async def post_proposals(starting_point: ChatStartingPoint, chat_id: str, user_j
         return {"error": "Chat is already active."}
     set_chat_in_use(redis, user_id, chat_id)
 
-    response = await ask_characterbuilder([
-        {
-           "role": "system",
-           "content": "You are a PLAYER in a ROLE PLAYING GAME. Give a brief introduction for the character and world given by the user input."
-        },
-        {
-            "role": "user",
-            "content": f"Name: {starting_point.name}\n"
-                f"Gender: {starting_point.gender}\n"
-                f"Race: {starting_point.race}\n"
-                f"Wear/Clothing: {starting_point.wear}\n"
-                f"Profession: {starting_point.profession}\n"
-                f"location: {starting_point.location}\n"
-                f"Purpose/Goal: {starting_point.purpose}\n"
-                f"Mood/Feeling: {starting_point.mood}\n"
-                f"Genre: {starting_point.genre}\n"
-                f"World: {starting_point.world}\n"
-                f"Weather: {starting_point.weather}\n",
-        },
-    ],)
+    try:
+        response = await ask_characterbuilder([
+            {
+               "role": "system",
+               "content": "You are a PLAYER in a ROLE PLAYING GAME. Give a brief introduction for the character and world given by the user input."
+            },
+            {
+                "role": "user",
+                "content": f"Name: {starting_point.name}\n"
+                    f"Gender: {starting_point.gender}\n"
+                    f"Race: {starting_point.race}\n"
+                    f"Wear/Clothing: {starting_point.wear}\n"
+                    f"Profession: {starting_point.profession}\n"
+                    f"location: {starting_point.location}\n"
+                    f"Purpose/Goal: {starting_point.purpose}\n"
+                    f"Mood/Feeling: {starting_point.mood}\n"
+                    f"Genre: {starting_point.genre}\n"
+                    f"World: {starting_point.world}\n"
+                    f"Weather: {starting_point.weather}\n",
+            },
+        ],)
 
-    set_chat_unused(redis, user_id, chat_id)
+        set_chat_unused(redis, user_id, chat_id)
 
-    return {"message": response}
+        return {"message": response}
+    except Exception as e:
+        set_chat_unused(redis, user_id, chat_id)
+        raise
