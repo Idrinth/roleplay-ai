@@ -209,6 +209,7 @@ nav > ul {
   display: grid;
   grid-template-rows: 1fr 1fr;
   grid-template-columns: 1fr 1fr;
+  z-index: 11112;
 }
 #prompt > label, #prompt > p {
   grid-column-start: 1;
