@@ -214,6 +214,11 @@ nav > ul {
   grid-column-start: 1;
   grid-column-end: 3;
 }
+img {
+  max-width: 100%;
+  width: auto;
+  height: auto;
+}
 @media screen and (max-width: 1000px) {
   body {
     grid-template-columns: 3fr 1fr;
