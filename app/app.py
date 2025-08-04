@@ -14,7 +14,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.mount("/metrics/", make_asgi_app())
 
 REQUEST_COUNT = Counter('app_http_request_total', 'Total HTTP Requests', ['method', 'status', 'path'])
 REQUEST_LATENCY = Histogram('app_http_request_duration_seconds', 'HTTP Request Duration', ['method', 'status', 'path'])
@@ -23,6 +22,8 @@ registry = CollectorRegistry()
 registry.register(REQUEST_COUNT)
 registry.register(REQUEST_LATENCY)
 registry.register(REQUEST_IN_PROGRESS)
+
+app.mount("/metrics/", make_asgi_app(registry))
 
 @app.middleware("http")
 async def monitor_requests(request: Request, call_next):
