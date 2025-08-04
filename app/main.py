@@ -20,8 +20,9 @@ from argon2.exceptions import VerifyMismatchError
 
 from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint, User
 from .functions import is_uuid_like, simplify_result, mariadb_name, mongodb_name, to_mongo_compatible, \
-    get_system_prompt, get_rules, user_id_from_jwt, user_id_to_jwt
+    get_system_prompt, get_rules, user_id_from_jwt, set_login_cookie
 from .llm_wrapper import ask_storysummarizer, ask_gamemaster, ask_characterbuilder
+from .chat_active import chat_is_in_use, set_chat_unused, set_chat_in_use
 
 llm_model = os.getenv('LLM_MODEL')
 
@@ -134,16 +135,7 @@ async def login(response: Response, login_data: Login):
         PasswordHasher().verify(chatuser[1], login_data.password)
     except VerifyMismatchError as e:
         return {"error": "Login failed"}
-    response.set_cookie(
-        key="user_jwt",
-        value=user_id_to_jwt(login_data.user_id),
-        samesite="strict",
-        secure=True,
-        path="/",
-        expires=60*60*24*30*12,
-        domain=os.getenv("UI_HOST", "http://localhost").replace("http://", "").replace("https://", ""),
-        httponly=True
-    )
+    set_login_cookie(response, login_data.user_id)
     return True
 
 @app.post('/me')
@@ -180,16 +172,7 @@ async def register(response: Response, register_data: Register):
     encrypted_password = PasswordHasher().hash(register_data.password)
     sql_connection.ping()
     sql_connection.cursor().execute("INSERT INTO `chat_users`.`users` (user_id, password, active) VALUES (?, ?, ?)", [user_id, encrypted_password, 1])
-    response.set_cookie(
-        key="user_jwt",
-        value=user_id_to_jwt(user_id),
-        samesite="strict",
-        secure=True,
-        path="/",
-        expires=60*60*24*30*12,
-        domain=os.getenv("UI_HOST", "http://localhost").replace("http://", "").replace("https://", ""),
-        httponly=True
-    )
+    set_login_cookie(response, user_id)
     return user_id
 
 @app.get('/new')
@@ -341,7 +324,7 @@ async def chat_active(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = 
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
-    return {"active": redis.get(f"{user_id}-{chat_id}.active") == "true"}
+    return {"active": chat_is_in_use(redis, user_id, chat_id)}
 
 @app.post("/chat/{chat_id}/delete")
 async def chat_delete(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
@@ -432,9 +415,9 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
         return {"error": "Not a valid Chat"}
     if not action.description:
         return {"error": "A description is required."}
-    if redis.get(f"{user_id}-{chat_id}.chat_is_active") == "true":
+    if chat_is_in_use(redis, user_id, chat_id):
         return {"error": "Chat is already active."}
-    redis.set(f"{user_id}-{chat_id}.chat_is_active", "true")
+    set_chat_in_use(redis, user_id, chat_id)
     long_term_summary = redis.get(f"{user_id}-{chat_id}.long_text_summary") or ""
     medium_term_summary = redis.get(f"{user_id}-{chat_id}.medium_text_summary") or ""
     short_term_summary = redis.get(f"{user_id}-{chat_id}.short_text_summary") or ""
@@ -484,14 +467,14 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
         background_tasks.add_task(update_summary, chat_id, user_id, 20, 40, f"{user_id}-{chat_id}.short_text_summary")
         background_tasks.add_task(update_summary, chat_id, user_id, 40, 80, f"{user_id}-{chat_id}.medium_text_summary")
         background_tasks.add_task(update_summary, chat_id, user_id, 80, 160, f"{user_id}-{chat_id}.long_text_summary")
-        background_tasks.add_task(redis.set, f"{user_id}-{chat_id}.is-active", "false")
+        background_tasks.add_task(set_chat_unused, redis, user_id, chat_id)
         return {"message": response}
     except mariadb.Error as e:
-        background_tasks.add_task(redis.set, f"{user_id}-{chat_id}.chat_is-active", "false")
+        background_tasks.add_task(set_chat_unused, redis, user_id, chat_id)
         print(e)
         return {"error": f"{e}"}
     except Exception as e:
-        background_tasks.add_task(redis.set, f"{user_id}-{chat_id}.chat_is_active", "false")
+        background_tasks.add_task(set_chat_unused, redis, user_id, chat_id)
         raise
 
 @app.post("/starting-point-proposal")
