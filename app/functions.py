@@ -94,3 +94,15 @@ def user_id_to_jwt(user_id: str):
         signing_key,
         algorithm='RS256'
     )
+
+def set_login_cookie(response, user_id: str):
+    response.set_cookie(
+        key="user_jwt",
+        value=user_id_to_jwt(user_id),
+        samesite="strict",
+        secure=True,
+        path="/",
+        expires=60*60*24*30*12,
+        domain=os.getenv("UI_HOST", "http://localhost").replace("http://", "").replace("https://", ""),
+        httponly=True
+    )
