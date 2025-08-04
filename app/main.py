@@ -1,94 +1,23 @@
 import json
-import re
-import time
-
-from qdrant_client import QdrantClient
-from fastapi import FastAPI, Cookie, BackgroundTasks, Response
-import mariadb
-from redis import Redis
-from pymongo import MongoClient
 import os
-from fastapi.middleware.cors import CORSMiddleware
 from bson import json_util
 from bson.objectid import ObjectId
 from typing import Annotated
 import uuid
-from prometheus_client import Counter, Histogram, Gauge, make_asgi_app, CollectorRegistry
-from starlette.requests import Request
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
+import mariadb
+from fastapi import Cookie, BackgroundTasks, Response
 
 from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint, User
 from .functions import is_uuid_like, simplify_result, mariadb_name, mongodb_name, to_mongo_compatible, \
     get_system_prompt, get_rules, user_id_from_jwt, set_login_cookie
 from .llm_wrapper import ask_storysummarizer, ask_gamemaster, ask_characterbuilder
 from .chat_active import chat_is_in_use, set_chat_unused, set_chat_in_use
+from .databases import sql_connection, mongo, qdrant, redis
+from .app import app
 
 llm_model = os.getenv('LLM_MODEL')
-
-app = FastAPI(root_path="/api/v1", title="Gamemaster AI")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[os.getenv("UI_HOST", "http://localhost")],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-app.mount("/metrics/", make_asgi_app())
-qdrant = QdrantClient("http://qdrant:6333")
-qdrant.set_model(qdrant.DEFAULT_EMBEDDING_MODEL, providers=["CPUExecutionProvider"])
-redis = Redis(host="redis", port=6379, db=0)
-mongo = MongoClient("mongodb://root:example@mongo:27017/")
-sql_connection = mariadb.connect(
-    user="root",
-    password="example",
-    host="mariadb",
-    port=3306
-)
-sql_connection.autocommit = True
-sql_connection.auto_reconnect = True
-sql_connection.cursor().execute("CREATE DATABASE IF NOT EXISTS `chat_users`;")
-sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.mapping"
-                         " (user_id char(36),chat_id char(36), chat_name varchar(255), PRIMARY KEY(user_id, chat_id))"
-                         " charset=utf8;")
-sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.users"
-                         " (aid BIGINT AUTO_INCREMENT NOT NULL, user_id char(36), user_name varchar(255), password varchar(255), active tinyint(1), PRIMARY KEY(aid), UNIQUE (user_id))"
-                         " charset=utf8;")
-
-REQUEST_COUNT = Counter('app_http_request_total', 'Total HTTP Requests', ['method', 'status', 'path'])
-REQUEST_LATENCY = Histogram('app_http_request_duration_seconds', 'HTTP Request Duration', ['method', 'status', 'path'])
-REQUEST_IN_PROGRESS = Gauge('app_http_requests_in_progress', 'HTTP Requests in progress', ['method', 'path'])
-registry = CollectorRegistry()
-registry.register(REQUEST_COUNT)
-registry.register(REQUEST_LATENCY)
-registry.register(REQUEST_IN_PROGRESS)
-
-@app.middleware("http")
-async def monitor_requests(request: Request, call_next):
-    method = request.method
-    path = re.sub(
-        r"/[a-f0-9]{24}$",
-        "/{id}",
-        re.sub(
-            r"/[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}(/|$)",
-            r"/{uuid}\1",
-            request.url.path,
-            flags=re.IGNORECASE
-        ),
-        flags=re.IGNORECASE
-    )
-    REQUEST_IN_PROGRESS.labels(method=method, path=path).inc()
-    start_time = time.time()
-
-    response = await call_next(request)
-
-    duration = time.time() - start_time
-    status = response.status_code
-    REQUEST_COUNT.labels(method=method, status=status, path=path).inc()
-    REQUEST_LATENCY.labels(method=method, status=status, path=path).observe(duration)
-    REQUEST_IN_PROGRESS.labels(method=method, path=path).dec()
-
-    return response
 
 async def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_key: str):
     cursor = sql_connection.cursor()
@@ -477,8 +406,17 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
         background_tasks.add_task(set_chat_unused, redis, user_id, chat_id)
         raise
 
-@app.post("/starting-point-proposal")
-async def post_proposals(starting_point: ChatStartingPoint):
+@app.post("/chat/{chat_id}/starting-point-proposal")
+async def post_proposals(starting_point: ChatStartingPoint, chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
+    if not is_uuid_like(user_id):
+        return {"error": "Not a valid User"}
+    if not is_uuid_like(chat_id):
+        return {"error": "Not a valid Chat"}
+    if chat_is_in_use(redis, user_id, chat_id):
+        return {"error": "Chat is already active."}
+    set_chat_in_use(redis, user_id, chat_id)
+
     response = await ask_characterbuilder([
         {
            "role": "system",
@@ -499,5 +437,7 @@ async def post_proposals(starting_point: ChatStartingPoint):
                 f"Weather: {starting_point.weather}\n",
         },
     ],)
+
+    set_chat_unused(redis, user_id, chat_id)
 
     return {"message": response}
