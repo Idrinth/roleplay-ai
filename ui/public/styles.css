@@ -8,6 +8,8 @@
   --main-striking: #eee;
   --light-shadow: rgba(255,255,255,0.05);
   --medium-shadow: rgba(255,255,255,0.1);
+  --overlay-z-index: 111111;
+  --modal-z-index: 111112;
 }
 :root.inverted-colors {
   --main-color: #333;
@@ -103,7 +105,7 @@ textarea {
 #charactersheet, #document {
   display: block;
   position: absolute;
-  z-index: 11111;
+  z-index: var(--overlay-z-index);
   top: 10%;
   right: 10%;
   bottom: 10%;
@@ -209,6 +211,7 @@ nav > ul {
   display: grid;
   grid-template-rows: 1fr 1fr;
   grid-template-columns: 1fr 1fr;
+  z-index: var(--modal-z-index);
 }
 #prompt > label, #prompt > p {
   grid-column-start: 1;
