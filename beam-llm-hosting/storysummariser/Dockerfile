@@ -15,4 +15,4 @@ COPY beam-llm-hosting/storysummariser/main.py ./
 
 RUN beam deploy main.py:answer
 
-ENTRYPOINT ["echo", "ready"]
+ENTRYPOINT ["python", "shared/shutdown.py", "--name=roleplay-ai-storysummariser"]
