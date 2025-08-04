@@ -341,7 +341,7 @@ async def chat_active(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = 
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
-    return {"active": redis.get(f"{user_id}-{chat_id}.active") == "true"}
+    return {"active": redis.get(f"{user_id}-{chat_id}.chat_is_active") == "true"}
 
 @app.post("/chat/{chat_id}/delete")
 async def chat_delete(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
