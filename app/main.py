@@ -482,7 +482,7 @@ async def post_proposals(starting_point: ChatStartingPoint):
     response = await ask_characterbuilder([
         {
            "role": "system",
-           "content": "You are a player in a role play game. Give a brief introduction for the character and world given by the user input."
+           "content": "You are a PLAYER in a ROLE PLAYING GAME. Give a brief introduction for the character and world given by the user input."
         },
         {
             "role": "user",
