@@ -1,0 +1,19 @@
+name: ESLint (UI)
+on:
+  push:
+    paths:
+    - ui/*.json
+    - ui/**/*.js
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.13
+      uses: actions/setup-node@v3
+      with:
+        node-version: "22"
+    - name: Install dependencies
+      run: cd ui && npm ci
+    - name: Analysing the code
+      run: cd ui && npm run lint

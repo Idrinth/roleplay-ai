@@ -2,29 +2,18 @@ FROM node:24-alpine AS build
 
 RUN npm install minify -g
 
+WORKDIR /build
+
 COPY ui/.minify.json ./
+COPY ui/package.json ./
+COPY ui/package-lock.json ./
+COPY ui/tools ./tools
 COPY ui/public /public
 
-RUN cat /public/scripts.js | minify --js > /tmp/scripts.js && \
-    [ -s /tmp/scripts.js ] && cp /tmp/scripts.js /public/scripts.js || echo "JS minification failed, keeping original"
-
-RUN cat /public/dark-light-switch.js | minify --js > /tmp/dark-light-switch.js && \
-    [ -s /tmp/dark-light-switch.js ] && cp /tmp/dark-light-switch.js /public/dark-light-switch.js || echo "JS minification failed, keeping original"
-
-RUN cat /public/styles.css | minify --css > /tmp/styles.css && \
-    [ -s /tmp/styles.css ] && cp /tmp/styles.css /public/styles.css || echo "CSS minification failed, keeping original"
-
-RUN cat /public/index.html | minify --html > /tmp/index.html && \
-    [ -s /tmp/index.html ] && cp /tmp/index.html /public/index.html || echo "HTML minification failed, keeping original"
-
-RUN cat /public/imprint.html | minify --html > /tmp/imprint.html && \
-    [ -s /tmp/imprint.html ] && cp /tmp/imprint.html /public/imprint.html || echo "HTML minification failed, keeping original"
-
-RUN cat /public/chat.html | minify --html > /tmp/chat.html && \
-    [ -s /tmp/chat.html ] && cp /tmp/chat.html /public/chat.html || echo "HTML minification failed, keeping original"
+RUN npm ci && npm run build
 
 FROM nginx:alpine
 
-COPY --from=build /public /usr/share/nginx/html
+COPY --from=build /build/dist /usr/share/nginx/html
 
 COPY ui/nginx.conf /etc/nginx/conf.d/default.conf

@@ -192,7 +192,7 @@
   if (!chat.id || !chat.id.match(uuidRegexp)) {
     window.location = location.protocol + '//' + location.host + '/chat/new';
     return;
-  } else if(chat.id !== location.pathname.split('/')[2] ?? '') {
+  } else if(chat.id !== (location.pathname.split('/')[2] ?? '')) {
     window.location = location.protocol + '//' + location.host + '/chat/' + chat.id
   }
   while (chat.id === chat.name || !chat.name) {
@@ -263,6 +263,7 @@
       }
     } catch (e) {
       //this is expected
+      console.debug(e);
     }
     document.getElementById('send').disabled = true;
     document.getElementById('loader').setAttribute('style', '');

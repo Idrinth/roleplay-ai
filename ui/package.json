@@ -1,0 +1,26 @@
+{
+  "name": "@idrinth/roleplay-ai/ui",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "node tools/builder.js",
+    "lint": "eslint public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Idrinth/roleplay-ai.git"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "showdown": "^2.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.32.0",
+    "eslint": "^9.32.0",
+    "globals": "^16.3.0",
+    "minify": "^14.0.0"
+  },
+  "private": true
+}
