@@ -1,5 +1,7 @@
 # Wolfgang 'Storyteller' AI
 
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/bjoern-buettner/roleplay-ai?utm_source=oss&utm_medium=github&utm_campaign=bjoern-buettner%2Froleplay-ai&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+
 This small repository is meant to create a better AI for role playing by providing a game master style assistant.
 
 Everything is open source, but the project is also hosted at [roleplay-ai.bjoern-buettner.me](https://roleplay-ai.bjoern-buettner.me) and the AI is available at huggingface:
