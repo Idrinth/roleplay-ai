@@ -9,7 +9,7 @@ bjoernbuettner = bjoernbuettner ||{};
       prmt.appendChild(document.createElement('input'));
       prmt.lastElementChild.value = defaultText;
       prmt.lastElementChild.onchange = () => {
-        prmt.lastElementChild.disabled = !prmt.lastElementChild.previousElementSibling.value;
+        prmt.lastElementChild.previousElementSibling.disabled = !prmt.lastElementChild.value;
       }
       prmt.appendChild(document.createElement('button'));
       prmt.lastElementChild.appendChild(document.createTextNode('Send'));
