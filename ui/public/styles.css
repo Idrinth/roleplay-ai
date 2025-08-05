@@ -106,7 +106,7 @@ li.user, li.agent {
     linear-gradient(to right, rgba(255,255,255,0.01),rgba(255,255,255,0.025), rgba(0,0,0,0.01))
 }
 li.user {
-  background-color: rgba(200, 255, 200, 0.03125);
+  background-color: rgba(200, 250, 200, 0.03125);
 }
 li.agent {
   background-color: rgba(0, 50, 0, 0.03125);
