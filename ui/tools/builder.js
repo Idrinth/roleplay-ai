@@ -32,3 +32,5 @@ for (const library of [
 ]) {
   writeFileSync(process.cwd() + '/dist/'+library.replace(/\\/g, '/').split('/').pop(), readFileSync(library, 'utf8'), 'utf8');
 }
+
+writeFileSync(process.cwd() + '/dist/paypal-donate-sdk.min.js', await (await fetch('https://www.paypalobjects.com/donate/sdk/donate-sdk.js')).text(), 'utf8');

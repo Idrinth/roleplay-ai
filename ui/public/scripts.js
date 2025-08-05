@@ -1,5 +1,5 @@
 (async () => {
-  const apiHost = location.protocol + '//' + location.hostname + '/api/v1'
+  const apiHost = '/api/v1'
   const characterFiller = await (await fetch('/char-template.yaml')).text();
   const uuidRegexp = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
   const prompt = async (text, defaultText = '') => {

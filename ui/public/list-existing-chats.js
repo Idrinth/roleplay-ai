@@ -1,5 +1,5 @@
 (async() => {
-  const apiHost = location.protocol + '//' + location.hostname + '/api/v1';
+  const apiHost = '/api/v1';
 
   const confirm = async (text) => {
     return new Promise(resolve => {
