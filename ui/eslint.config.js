@@ -12,6 +12,7 @@ export default defineConfig([
         jsyaml: true,
         showdown: true,
         PayPal: true,
+        bjoernbuettner: true,
 			},
 		},
     plugins: {
