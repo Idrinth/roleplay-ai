@@ -97,17 +97,19 @@ li {
   padding: 0.5em 1em;
   display: block;
 }
+li.user, li.agent {
+  border-radius: 0.5em;
+  border: 1px solid var(--main-shadow);
+  box-shadow: 2px 2px 5px var(--main-shadow);
+  margin: 5px;
+  background-image: linear-gradient(to bottom, rgba(255,255,255,0.01),rgba(255,255,255,0.025), rgba(0,0,0,0.01)),
+    linear-gradient(to right, rgba(255,255,255,0.01),rgba(255,255,255,0.025), rgba(0,0,0,0.01))
+}
 li.user {
-  background-color: rgba(0, 125, 0, 0.0625);
-  border-radius: 3px;
-  box-shadow: 2px 2px rgba(0,255,0,0.125);
-  margin-bottom: 5px;
+  background-color: rgba(200, 255, 200, 0.03125);
 }
 li.agent {
-  background-color: rgba(0, 0, 125, 0.0625);
-  border-radius: 3px;
-  box-shadow: 2px 2px rgba(0,0,255,0.125);
-  margin-bottom: 5px;
+  background-color: rgba(0, 50, 0, 0.03125);
 }
 textarea {
   resize: none;
