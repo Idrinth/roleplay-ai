@@ -19,13 +19,17 @@ async def wrap(chat_id: str, user_jwt: str|None, success_callback: Callable, mod
     try:
         if lock:
             set_chat_in_use(user_id, chat_id)
+        result = None
         if model and background_tasks:
-            return await success_callback(chat_id, user_id, model, background_tasks)
+            result = await success_callback(chat_id, user_id, model, background_tasks)
         if background_tasks:
-            return await success_callback(chat_id, user_id, background_tasks)
+            result = await success_callback(chat_id, user_id, background_tasks)
         if model:
-            return await success_callback(chat_id, user_id, model)
-        return await success_callback(chat_id, user_id)
+            result = await success_callback(chat_id, user_id, model)
+        result = await success_callback(chat_id, user_id)
+        if lock:
+            set_chat_unused(chat_id, user_id)
+        return result
     except mariadb.Error as e:
         if lock:
             set_chat_unused(user_id, chat_id)
