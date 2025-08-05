@@ -7,7 +7,10 @@ wear: scaled armor of a swordmaster
 gender: male
 race: elf
 profession: Swordmaster of Hoeth
-world: high magic, corrupting magic, desperate people
+world:
+  - high magic
+  - corrupting magic
+  - desperate people
 genre: horror
 introductions:
   - A few dark clouds are in the sky above Idrinth while he travels Ulthuan. A constant reminder that he is under watch by cultists of chaos, cultists that are not afraid of a Swordmaster of Hoeth and intelligent enough to have avoided him so far. Falling back on his pride of being an elf and his long years of hunting, he keeps reminding himself, that these clouds and these cultists will eventually pass. If not by his blade, by anothers.
