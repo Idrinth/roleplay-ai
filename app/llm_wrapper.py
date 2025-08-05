@@ -54,7 +54,7 @@ async def ask_beam(messages: List[Dict[str, str]], endpoint: str) -> str:
 
 async def ask_gamemaster(messages: List[Dict[str, str]]):
     if llm_to_use == "beam":
-        returnawait  ask_beam(messages, beam_gamemaster_url)
+        return await ask_beam(messages, beam_gamemaster_url)
     elif llm_to_use == "local":
         return await ask_local(messages)
 
