@@ -54,24 +54,24 @@ async def ask_beam(messages: List[Dict[str, str]], endpoint: str) -> str:
 
 async def ask_gamemaster(messages: List[Dict[str, str]]):
     if llm_to_use == "beam":
-        return ask_beam(messages, beam_gamemaster_url)
+        returnawait  ask_beam(messages, beam_gamemaster_url)
     elif llm_to_use == "local":
-        return ask_local(messages)
+        return await ask_local(messages)
 
     raise ValueError("Could not get response from LLM")
 
 async def ask_characterbuilder(messages: List[Dict[str, str]]):
     if llm_to_use == "beam":
-        return ask_beam(messages, beam_characterbuilder_url)
+        return await ask_beam(messages, beam_characterbuilder_url)
     elif llm_to_use == "local":
-        return ask_local(messages)
+        return await ask_local(messages)
 
     raise ValueError("Could not get response from LLM")
 
 async def ask_storysummarizer(messages: List[Dict[str, str]]):
     if llm_to_use == "beam":
-        return ask_beam(messages, beam_storysummariser_url)
+        return await ask_beam(messages, beam_storysummariser_url)
     elif llm_to_use == "local":
-        return ask_local(messages)
+        return await ask_local(messages)
 
     raise ValueError("Could not get response from LLM")

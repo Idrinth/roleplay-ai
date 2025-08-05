@@ -462,7 +462,7 @@
               purpose: await prompt("What is their purpose there?"),
               mood: await prompt("What is your character's mood?"),
               weather: await prompt("What is your weather like?"),
-              genre: await prompt("What is genre does the world fall into?"),
+              genre: await prompt("What genre does the world fall into?"),
               world: await prompt("What is the world like? Please provide keywords separated by comma."),
             }),
             credentials: "include",
