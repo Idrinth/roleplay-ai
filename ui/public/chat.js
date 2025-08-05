@@ -1,66 +1,6 @@
 (async () => {
-  const apiHost = location.protocol + '//' + location.hostname + '/api/v1'
+  const apiHost = '/api/v1'
   const characterFiller = await (await fetch('/char-template.yaml')).text();
-  const uuidRegexp = /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
-  const prompt = async (text, defaultText = '') => {
-    return new Promise(resolve => {
-      const prmt = document.createElement('div');
-      prmt.setAttribute('id', 'prompt');
-      prmt.appendChild(document.createElement('label'));
-      prmt.firstElementChild.appendChild(document.createTextNode(text));
-      prmt.appendChild(document.createElement('input'));
-      prmt.lastElementChild.value = defaultText;
-      prmt.lastElementChild.onchange = () => {
-        prmt.lastElementChild.disabled = ! prmt.lastElementChild.previousElementSibling.value;
-      }
-      prmt.appendChild(document.createElement('button'));
-      prmt.lastElementChild.appendChild(document.createTextNode('Send'));
-      prmt.lastElementChild.onclick = () => {
-        if (! prmt.lastElementChild.previousElementSibling.value) {
-          return;
-        }
-        document.body.removeChild(prmt);
-        resolve(prmt.lastElementChild.previousElementSibling.value);
-      }
-      document.body.appendChild(prmt);
-    });
-  }
-  const confirm = async (text) => {
-    return new Promise(resolve => {
-      const prmt = document.createElement('div');
-      prmt.setAttribute('id', 'prompt');
-      prmt.appendChild(document.createElement('p'));
-      prmt.firstElementChild.appendChild(document.createTextNode(text));
-      prmt.appendChild(document.createElement('button'));
-      prmt.lastElementChild.appendChild(document.createTextNode('Yes'));
-      prmt.lastElementChild.onclick = () => {
-        document.body.removeChild(prmt);
-        resolve(true);
-      }
-      prmt.appendChild(document.createElement('button'));
-      prmt.lastElementChild.appendChild(document.createTextNode('No'));
-      prmt.lastElementChild.onclick = () => {
-        document.body.removeChild(prmt);
-        resolve(false);
-      }
-      document.body.appendChild(prmt);
-    });
-  }
-  const alert = async(text) => {
-    return new Promise(resolve => {
-      const prmt = document.createElement('div');
-      prmt.setAttribute('id', 'prompt');
-      prmt.appendChild(document.createElement('p'));
-      prmt.firstElementChild.appendChild(document.createTextNode(text));
-      prmt.appendChild(document.createElement('button'));
-      prmt.lastElementChild.appendChild(document.createTextNode('OK'));
-      prmt.lastElementChild.onclick = () => {
-        document.body.removeChild(prmt);
-        resolve();
-      }
-      document.body.appendChild(prmt);
-    });
-  }
   const user = await (async () => {
     const user = await (await fetch(`${apiHost}/whoami`, {
       credentials: "include",
@@ -69,14 +9,14 @@
     if (!user.error) {
       return user;
     }
-    if (await confirm("Do you already have an account?")) {
-      const userId = await prompt("Enter your User-ID.", "");
+    if (await bjoernbuettner.confirm("Do you already have an account?")) {
+      const userId = await bjoernbuettner.prompt("Enter your User-ID.", "");
       if ((await (await fetch(`${apiHost}/login`, {
         credentials: "include",
         method: "POST",
         body: JSON.stringify({
           user_id: userId,
-          password: await prompt("Enter your password.", "")
+          password: await bjoernbuettner.prompt("Enter your password.", "")
         }),
         headers: {
           'Accept': 'application/json',
@@ -117,7 +57,7 @@
         credentials: "include",
         method: "POST",
         body: JSON.stringify({
-          password: await prompt("Enter a password for your account.", password)
+          password: await bjoernbuettner.prompt("Enter a password for your account.", password)
         }),
         headers: {
           'Accept': 'application/json',
@@ -135,8 +75,8 @@
   document.getElementById('playername').innerText = (user.name ?? user.id);
   document.getElementById('playername').onclick = async () => {
     const previous = user.name ?? user.id;
-    const name = await prompt("Enter a new name for yourself.", previous);
-    const password = await prompt("Enter a new password for yourself.", "");
+    const name = await bjoernbuettner.prompt("Enter a new name for yourself.", previous);
+    const password = await bjoernbuettner.prompt("Enter a new password for yourself.", "");
     const data = {};
     let changed = false;
     if (name && name !== previous) {
@@ -163,18 +103,16 @@
 
   const chat = await (async () => {
     const pathId = location.pathname.split('/')[2] ?? '';
-    if (pathId.match(uuidRegexp)) {
-      if (user.chats.length > 0) {
-        for (const chat of user.chats) {
-          if (chat.id === pathId) {
-            return chat;
-          }
+    if (user.chats.length > 0) {
+      for (const chat of user.chats) {
+        if (chat.id === pathId) {
+          return chat;
         }
       }
     }
     if (user.chats.length > 0 && pathId !== 'new') {
       for (const chat of user.chats) {
-        if (await confirm(`Do you want to continue chat '${chat.name}'?`)) {
+        if (await bjoernbuettner.confirm(`Do you want to continue chat '${chat.name}'?`)) {
           return chat;
         }
       }
@@ -189,14 +127,11 @@
     }
   })();
 
-  if (!chat.id || !chat.id.match(uuidRegexp)) {
-    window.location = location.protocol + '//' + location.host + '/chat/new';
-    return;
-  } else if(chat.id !== (location.pathname.split('/')[2] ?? '')) {
+  if(chat.id !== (location.pathname.split('/')[2] ?? '')) {
     window.location = location.protocol + '//' + location.host + '/chat/' + chat.id
   }
   while (chat.id === chat.name || !chat.name) {
-    chat.name = (await prompt("Enter a new name for your chat.", chat.name)) || chat.id;
+    chat.name = (await bjoernbuettner.prompt("Enter a new name for your chat.", chat.name)) || chat.id;
     if (chat.name) {
       await fetch(`${apiHost}/chat/${chat.id}/name`, {
         method: 'POST',
@@ -225,7 +160,7 @@
     world.lastElementChild.classList.add('button');
     world.lastElementChild.setAttribute('title', 'Delete chat');
     world.lastElementChild.onclick = async() => {
-      if (await confirm(`Do you want to delete ${achat.name}?`)) {
+      if (await bjoernbuettner.confirm(`Do you want to delete ${achat.name}?`)) {
         await fetch(
           `${apiHost}/chat/${achat.id}/delete`,
           {
@@ -235,7 +170,7 @@
           }
         );
         if (chat.id === achat.id) {
-          window.location = location.protocol + '//' + location.hostname + '/chat';
+          window.location = location.protocol + '//' + location.host + '/chat';
           return;
         }
         document.getElementById('worlds').removeChild(world);
@@ -307,7 +242,7 @@
           el.setAttribute('data-id', md_document.id['$oid']);
           el.setAttribute('data-name', doc.name);
           el.value = doc.content;
-          el.setAttribute('data-raw', el.content);
+          el.setAttribute('data-raw', doc.content);
           document.body.appendChild(el);
         }
         document.getElementById('documents').lastElementChild.appendChild(document.createElement('span'));
@@ -316,7 +251,7 @@
         document.getElementById('documents').lastElementChild.lastElementChild.setAttribute('title', 'Delete document');
         document.getElementById('documents').lastElementChild.lastElementChild.onclick = async (event) => {
           event.stopPropagation();
-          if (await confirm("Do you want to delete this document?")) {
+          if (await bjoernbuettner.confirm("Do you want to delete this document?")) {
             await fetch(`${apiHost}/chat/${chat.id}/characters/${md_document._id['$oid']}/delete`, {
               method: 'POST',
               credentials: "include",
@@ -374,7 +309,7 @@
         document.getElementById('characters').lastElementChild.lastElementChild.setAttribute('title', 'Delete character');
         document.getElementById('characters').lastElementChild.lastElementChild.onclick = async (event) => {
           event.stopPropagation();
-          if (await confirm("Do you want to delete this character sheet?")) {
+          if (await bjoernbuettner.confirm("Do you want to delete this character sheet?")) {
             await fetch(`${apiHost}/chat/${chat.id}/characters/${character._id['$oid']}/delete`, {
               method: 'POST',
               credentials: "include",
@@ -445,7 +380,7 @@
           document.getElementById('chat').lastElementChild.innerHTML = (message.role === 'agent' ? '<span class="gamemaster"></span>' : '') + converter.makeHtml(message.content);
           document.getElementById('chat').lastElementChild.classList.add(message.role);
         }
-        if (json.messages.length === 0 && !document.getElementById('chat-entry').value && await confirm('Do you want help with your beginning scene?')) {
+        if (json.messages.length === 0 && !document.getElementById('chat-entry').value && await bjoernbuettner.confirm('Do you want help with your beginning scene?')) {
           const value = await fetch(`${apiHost}/chat/${chat.id}/starting-point-proposal`, {
             method: 'POST',
             headers: {
@@ -453,21 +388,21 @@
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              name: await prompt("What is your character's name?"),
-              race: await prompt("What is your character's race?"),
-              gender: await prompt("What is your character's gender?"),
-              wear: await prompt("What does your character wear?"),
-              profession: await prompt("What is your character's profession?"),
-              location: await prompt("Where is your character?"),
-              purpose: await prompt("What is their purpose there?"),
-              mood: await prompt("What is your character's mood?"),
-              weather: await prompt("What is your weather like?"),
-              genre: await prompt("What genre does the world fall into?"),
-              world: await prompt("What is the world like? Please provide keywords separated by comma."),
+              name: await bjoernbuettner.prompt("What is your character's name?"),
+              race: await bjoernbuettner.prompt("What is your character's race?"),
+              gender: await bjoernbuettner.prompt("What is your character's gender?"),
+              wear: await bjoernbuettner.prompt("What does your character wear?"),
+              profession: await bjoernbuettner.prompt("What is your character's profession?"),
+              location: await bjoernbuettner.prompt("Where is your character?"),
+              purpose: await bjoernbuettner.prompt("What is their purpose there?"),
+              mood: await bjoernbuettner.prompt("What is your character's mood?"),
+              weather: await bjoernbuettner.prompt("What is your weather like?"),
+              genre: await bjoernbuettner.prompt("What genre does the world fall into?"),
+              world: await bjoernbuettner.prompt("What is the world like? Please provide keywords separated by comma."),
             }),
             credentials: "include",
           });
-          document.getElementById('chat-entry').value = document.getElementById('chat-entry').value || (await value.json()).message;
+          document.getElementById('chat-entry').value = (await value.json()).message;
         }
       }
     }
@@ -479,7 +414,7 @@
       if (event.target !== charactersheetElement) {
         if (charactersheetElement.hasAttribute('data-id')) {
           if (charactersheetElement.value && charactersheetElement.getAttribute('data-raw') !== charactersheetElement.value) {
-            if (await confirm("Do you want to save this modified character sheet?")) {
+            if (await bjoernbuettner.confirm("Do you want to save this modified character sheet?")) {
               const id = charactersheetElement.getAttribute('data-id');
               await fetch(`${apiHost}/chat/${chat.id}/characters/${id}`, {
                 method: 'POST',
@@ -493,7 +428,7 @@
             }
           }
         } else if (charactersheetElement.value) {
-          if (await confirm("Do you want to save this new character sheet?")) {
+          if (await bjoernbuettner.confirm("Do you want to save this new character sheet?")) {
             await fetch(`${apiHost}/chat/${chat.id}/characters`, {
               method: 'POST',
               headers: {
@@ -513,7 +448,7 @@
       if (event.target !== documentElement) {
         if (documentElement.hasAttribute('data-id')) {
           if (documentElement.value && documentElement.getAttribute('data-raw') !== documentElement.value) {
-            if (await confirm("Do you want to save this modified document?")) {
+            if (await bjoernbuettner.confirm("Do you want to save this modified document?")) {
               const id = documentElement.getAttribute('data-id');
               await fetch(`${apiHost}/chat/${chat.id}/documents/${id}`, {
                 method: 'POST',
@@ -527,7 +462,7 @@
             }
           }
         } else if (documentElement.value) {
-          if (await confirm("Do you want to save this new document?")) {
+          if (await bjoernbuettner.confirm("Do you want to save this new document?")) {
             await fetch(`${apiHost}/chat/${chat.id}/documents`, {
               method: 'POST',
               headers: {
@@ -581,7 +516,7 @@
   })();
   document.getElementById("world").onchange = () => {
     const keywords = document.getElementById('world').value.split(",").map((keyword) => {
-      return keyword.replace(/^\s+|\s+$/g, '').replace(/\s{2,}/g, ' ')
+      return keyword.trim()
     }).filter((keyword) => {
       return !!keyword;
     });

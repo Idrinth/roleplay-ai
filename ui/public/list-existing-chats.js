@@ -1,27 +1,5 @@
 (async() => {
-  const apiHost = location.protocol + '//' + location.hostname + '/api/v1';
-
-  const confirm = async (text) => {
-    return new Promise(resolve => {
-      const prmt = document.createElement('div');
-      prmt.setAttribute('id', 'prompt');
-      prmt.appendChild(document.createElement('p'));
-      prmt.firstElementChild.appendChild(document.createTextNode(text));
-      prmt.appendChild(document.createElement('button'));
-      prmt.lastElementChild.appendChild(document.createTextNode('Yes'));
-      prmt.lastElementChild.onclick = () => {
-        document.body.removeChild(prmt);
-        resolve(true);
-      }
-      prmt.appendChild(document.createElement('button'));
-      prmt.lastElementChild.appendChild(document.createTextNode('No'));
-      prmt.lastElementChild.onclick = () => {
-        document.body.removeChild(prmt);
-        resolve(false);
-      }
-      document.body.appendChild(prmt);
-    });
-  }
+  const apiHost = '/api/v1';
 
   const user = await (async () => {
     const user = await (await fetch(`${apiHost}/whoami`, {
@@ -48,7 +26,7 @@
     world.lastElementChild.classList.add('button');
     world.lastElementChild.setAttribute('title', 'Delete chat');
     world.lastElementChild.onclick = async () => {
-      if (await confirm(`Do you want to delete ${achat.name}?`)) {
+      if (await bjoernbuettner.confirm(`Do you want to delete ${achat.name}?`)) {
         await fetch(
           `${apiHost}/chat/${achat.id}/delete`,
           {

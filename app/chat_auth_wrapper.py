@@ -19,7 +19,6 @@ async def wrap(chat_id: str, user_jwt: str|None, success_callback: Callable, mod
     try:
         if lock:
             set_chat_in_use(user_id, chat_id)
-        result = None
         if model and background_tasks:
             result = await success_callback(chat_id, user_id, model, background_tasks)
         elif background_tasks:
