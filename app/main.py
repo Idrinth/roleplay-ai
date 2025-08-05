@@ -5,7 +5,6 @@ from typing import Annotated
 import uuid
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
-import mariadb
 from fastapi import Cookie, BackgroundTasks, Response
 
 from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint, User
@@ -15,7 +14,7 @@ from .app import app
 from .chat_auth_wrapper import wrap
 from .chat_endpoint_handlers import chat_delete_success, chat_active_success, chat_history_success, \
     chat_characters_success, chat_character_add_success, chat_document_add_success, chat_document_list_success, \
-    update_world_internal, get_world_internal, post_proposals_internal, chat_message_internal
+    update_world_internal, get_world_internal, post_proposals_internal, chat_message_internal, chat_name_success
 
 @app.get('/')
 async def root():
@@ -35,7 +34,7 @@ async def login(response: Response, login_data: Login):
     except VerifyMismatchError as e:
         return {"error": "Login failed"}
     set_login_cookie(response, login_data.user_id)
-    return True
+    return {"success": True}
 
 @app.post('/me')
 async def me(user: User, user_jwt: Annotated[str | None, Cookie()] = None):
@@ -198,12 +197,6 @@ async def whoami(user_jwt: Annotated[str | None, Cookie()] = None):
 @app.get("/chat/{chat_id}")
 async def chat_history(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
     return await wrap(chat_id, user_jwt, chat_history_success)
-
-async def chat_name_success(chat_id: str, user_id: str, chat_data: Chat):
-    if not chat_data.name:
-        return {"error": "Chat name must be filled."}
-    sql_connection.cursor().execute("UPDATE chat_users.mapping SET chat_name=? WHERE user_id=? AND chat_id=?;", [chat_data.name, user_id, chat_id])
-    return {"success": True}
 
 @app.post("/chat/{chat_id}/name")
 async def chat_name(chat_id: str, chat_data: Chat, user_jwt: Annotated[str | None, Cookie()] = None):

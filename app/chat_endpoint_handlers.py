@@ -6,7 +6,7 @@ from fastapi import BackgroundTasks
 
 from .logger import log_exception
 from .llm_wrapper import ask_characterbuilder, ask_storysummarizer, ask_gamemaster
-from .models import World, Character, Document, ChatStartingPoint, Action
+from .models import World, Character, Document, ChatStartingPoint, Action, Chat
 from .databases import sql_connection, mongo, qdrant, redis
 from .functions import mariadb_name, mongodb_name, to_mongo_compatible, get_rules, get_system_prompt, simplify_result
 from .chat_active import chat_is_in_use
@@ -189,3 +189,9 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
     background_tasks.add_task(update_summary, chat_id, user_id, 40, 80, f"{user_id}-{chat_id}.medium_text_summary")
     background_tasks.add_task(update_summary, chat_id, user_id, 80, 160, f"{user_id}-{chat_id}.long_text_summary")
     return {"message": response}
+
+async def chat_name_success(chat_id: str, user_id: str, chat_data: Chat):
+    if not chat_data.name:
+        return {"error": "Chat name must be filled."}
+    sql_connection.cursor().execute("UPDATE chat_users.mapping SET chat_name=? WHERE user_id=? AND chat_id=?;", [chat_data.name, user_id, chat_id])
+    return {"success": True}
