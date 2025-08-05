@@ -11,6 +11,7 @@ export default defineConfig([
 				...globals.browser,
         jsyaml: true,
         showdown: true,
+        PayPal: true,
 			},
 		},
     plugins: {
