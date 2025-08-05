@@ -10,131 +10,68 @@ beam_storysummariser_url = os.getenv('BEAM_SUMMARISER_DEPLOYMENT_URL')
 beam_key = os.getenv('BEAM_API_KEY')
 llm_to_use = os.getenv('LLM_TO_USE')
 
+async def ask_local(messages: List[Dict[str, str]]) -> str:
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            "http://llama:8000/v1/chat/completions",
+            headers={
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": llm_model,
+                "messages": messages,
+            }
+        ) as response:
+
+            if response.status == 200:
+                response_content = (await response.json())["choices"][0]["message"]["content"]
+                response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
+
+                return response_content
+            else:
+                raise ValueError("Could not get successful response from LLM")
+
+async def ask_beam(messages: List[Dict[str, str]], endpoint: str) -> str:
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            endpoint,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {beam_key}",
+            },
+            json={
+                "messages": messages,
+            }
+        ) as response:
+
+            if response.status == 200:
+                response_content = (await response.json())["answer"]
+                response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
+
+                return response_content
+            else:
+                raise ValueError("Could not get successful response from LLM")
+
 async def ask_gamemaster(messages: List[Dict[str, str]]):
     if llm_to_use == "beam":
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                beam_gamemaster_url,
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {beam_key}",
-                },
-                json={
-                    "messages": messages,
-                }
-            ) as response:
-
-                if response.status == 200:
-                    response_content = (await response.json())["answer"]
-                    response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
-
-                    return response_content
-                else:
-                    raise ValueError("Could not get successful response from LLM")
+        return ask_beam(messages, beam_gamemaster_url)
     elif llm_to_use == "local":
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "http://llama:8000/v1/chat/completions",
-                headers={
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": llm_model,
-                    "messages": messages,
-                }
-            ) as response:
+        return ask_local(messages)
 
-                if response.status == 200:
-                    response_content = (await response.json())["choices"][0]["message"]["content"]
-                    response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
-
-                    return response_content
-                else:
-                    raise ValueError("Could not get successful response from LLM")
     raise ValueError("Could not get response from LLM")
 
 async def ask_characterbuilder(messages: List[Dict[str, str]]):
     if llm_to_use == "beam":
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                beam_characterbuilder_url,
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {beam_key}",
-                },
-                json={
-                    "messages": messages,
-                }
-            ) as response:
-
-                if response.status == 200:
-                    response_content = (await response.json())["answer"]
-                    response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
-
-                    return response_content
-                else:
-                    raise ValueError("Could not get successful response from LLM")
+        return ask_beam(messages, beam_characterbuilder_url)
     elif llm_to_use == "local":
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "http://llama:8000/v1/chat/completions",
-                headers={
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": llm_model,
-                    "messages": messages,
-                }
-            ) as response:
+        return ask_local(messages)
 
-                if response.status == 200:
-                    response_content = (await response.json())["choices"][0]["message"]["content"]
-                    response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
-
-                    return response_content
-                else:
-                    raise ValueError("Could not get successful response from LLM")
     raise ValueError("Could not get response from LLM")
 
 async def ask_storysummarizer(messages: List[Dict[str, str]]):
     if llm_to_use == "beam":
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                beam_storysummariser_url,
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {beam_key}",
-                },
-                json={
-                    "messages": messages,
-                }
-            ) as response:
-
-                if response.status == 200:
-                    response_content = (await response.json())["answer"]
-                    response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
-
-                    return response_content
-                else:
-                    raise ValueError("Could not get successful response from LLM")
+        return ask_beam(messages, beam_storysummariser_url)
     elif llm_to_use == "local":
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "http://llama:8000/v1/chat/completions",
-                headers={
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": llm_model,
-                    "messages": messages,
-                }
-            ) as response:
+        return ask_local(messages)
 
-                if response.status == 200:
-                    response_content = (await response.json())["choices"][0]["message"]["content"]
-                    response_content = re.sub("^(\n|.)*</think>\\s*", "", response_content).strip()
-
-                    return response_content
-                else:
-                    raise ValueError("Could not get successful response from LLM")
     raise ValueError("Could not get response from LLM")

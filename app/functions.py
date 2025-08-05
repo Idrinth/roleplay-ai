@@ -9,6 +9,8 @@ from bson import json_util
 from datetime import datetime, UTC, timedelta
 from jwt import encode, decode
 
+from logger import log_exception
+
 with open('./app/character-sheet.schema.json', 'r') as schema_file:
     schema = json.dumps(json.load(schema_file))
 with open('./app/rsa_private_key.pem', 'rb') as rsa_private_key_file:
@@ -80,7 +82,7 @@ def user_id_from_jwt(encoded_jwt: str):
             return None
         return payload["sub"]
     except Exception as e:
-        print(f"jwt unpacking: {e}")
+        log_exception(e, "functions.user_id_from_jwt")
         return None
 
 def user_id_to_jwt(user_id: str):
