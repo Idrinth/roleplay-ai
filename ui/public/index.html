@@ -6,7 +6,7 @@
         <link rel="stylesheet" href="/styles.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
-    <body>
+    <body class="index">
         <nav>
             <ul>
                 <li><a href="/home">Home</a></li>
@@ -20,46 +20,49 @@
             <span id="logo" title="click to switch color mode" class="gamemaster"></span>
             <span>Wolfgang 'Storyteller' AI</span>
         </h1>
-        <article>
-            <h2>Welcome in!</h2>
-            <p>Wolfgang is a small open source AI Storyteller, that will be a Game Master for you if you desire. Start a new chat if desired or return to an old one.</p>  
-            <a id="peerlist" href="https://peerlist.io/idrinth/project/roleplay-ai-v10" target="_blank" rel="noreferrer">
-                <img
-                    src="https://peerlist.io/api/v1/projects/embed/PRJHGNQ86JOPGEP7RF8E6QDP769BEN?showUpvote=true&theme=dark"
-                    alt="Roleplay AI v1.0"
-                    style="width: auto; height: 72px;"
-                />
-            </a>
-            <h2>Why build yet another chatbot?</h2>
-            <p>We believe there to be a need for self-hostable solutions as well as a gap in actual game master AIs. Most so-called game masters AIs take over player characters on a regular basis or lose important information.</p>
-            <p>If you are interested in how we plan to solve the issue, head over to our <a rel="noopener noreferrer" href="https://github.com/bjoern-buettner/roleplay-ai/blob/the-one/docs/plans.md" target="_blank">docs on GitHub</a>.</p>
-            <h2>How is this financed?</h2>
-            <p>Right now, in its early test phase, the whole project is paid for by <a rel="noopener noreferrer" href="https://github.com/idrinth" target="_blank">Björn 'Idrinth' Büttner</a>. Donations are highly encouraged to cover hosting costs and paid tiers will likely be added to the hosted version.</p>
-            <p>The locally hosted, private instance will ALWAYS be free.</p>
-        </article>
-        <ul id="worlds">
-            <li>
-                <a href="/chat/new" class="button">NEW CHAT</a>
-            </li>
-            <li>
-                <div id="donate-button-container">
-                <div id="donate-button"></div>
-                <script src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js" charset="UTF-8"></script>
-                <script>
-                    PayPal.Donation.Button({
-                        env:'production',
-                        hosted_button_id:'AENZ9E63F85G8',
-                        image: {
-                            src:'https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif',
-                            alt:'Donate with PayPal button',
-                            title:'PayPal - The safer, easier way to pay online!',
-                        }
-                    }).render('#donate-button');
-                </script>
-                </div>
-            </li>
-        </ul>
+        <div class="content">
+            <article>
+                <h2>Welcome in!</h2>
+                <p>Wolfgang is a small open source AI Storyteller, that will be a Game Master for you if you desire. Start a new chat if desired or return to an old one.</p>
+                <a id="peerlist" href="https://peerlist.io/idrinth/project/roleplay-ai-v10" target="_blank" rel="noreferrer">
+                    <img
+                        src="https://peerlist.io/api/v1/projects/embed/PRJHGNQ86JOPGEP7RF8E6QDP769BEN?showUpvote=true&theme=dark"
+                        alt="Roleplay AI v1.0"
+                        style="width: auto; height: 72px;"
+                    />
+                </a>
+                <h2>Why build yet another chatbot?</h2>
+                <p>We believe there to be a need for self-hostable solutions as well as a gap in actual game master AIs. Most so-called game masters AIs take over player characters on a regular basis or lose important information.</p>
+                <p>If you are interested in how we plan to solve the issue, head over to our <a rel="noopener noreferrer" href="https://github.com/bjoern-buettner/roleplay-ai/blob/the-one/docs/plans.md" target="_blank">docs on GitHub</a>.</p>
+                <h2>How is this financed?</h2>
+                <p>Right now, in its early test phase, the whole project is paid for by <a rel="noopener noreferrer" href="https://github.com/idrinth" target="_blank">Björn 'Idrinth' Büttner</a>. Donations are highly encouraged to cover hosting costs and paid tiers will likely be added to the hosted version.</p>
+                <p>The locally hosted, private instance will ALWAYS be free.</p>
+            </article>
+            <ul id="worlds">
+                <li>
+                    <a href="/chat/new" class="button">NEW CHAT</a>
+                </li>
+                <li>
+                    <div id="donate-button-container">
+                    <div id="donate-button"></div>
+                    <script src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js" charset="UTF-8"></script>
+                    <script>
+                        PayPal.Donation.Button({
+                            env:'production',
+                            hosted_button_id:'AENZ9E63F85G8',
+                            image: {
+                                src:'https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif',
+                                alt:'Donate with PayPal button',
+                                title:'PayPal - The safer, easier way to pay online!',
+                            }
+                        }).render('#donate-button');
+                    </script>
+                    </div>
+                </li>
+            </ul>
+        </div>
         <footer>&copy;2025 Björn 'Idrinth' Büttner. The chatbot may make mistakes, please do not abuse it.</footer>
         <script type="text/javascript"  src="/dark-light-switch.js"></script>
+        <script type="text/javascript"  src="/list-existing-chats.js"></script>
     </body>
 </html>
