@@ -207,7 +207,7 @@ async def chat_name_success(chat_id: str, user_id: str, chat_data: Chat):
 
 @app.post("/chat/{chat_id}/name")
 async def chat_name(chat_id: str, chat_data: Chat, user_jwt: Annotated[str | None, Cookie()] = None):
-    return await wrap(chat_id, user_jwt, chat_data)
+    return await wrap(chat_id, user_jwt, chat_name_success, chat_data)
 
 @app.post("/chat/{chat_id}")
 async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, user_jwt: Annotated[str | None, Cookie()] = None):

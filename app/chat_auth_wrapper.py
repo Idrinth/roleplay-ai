@@ -3,7 +3,7 @@ import mariadb
 from fastapi import BackgroundTasks
 
 from .chat_active import chat_is_in_use, set_chat_unused, set_chat_in_use
-
+from .logger import log_exception
 from .functions import user_id_from_jwt, is_uuid_like
 
 async def wrap(chat_id: str, user_jwt: str|None, success_callback: Callable, model = None, lock = False, background_tasks: BackgroundTasks = None):
@@ -29,10 +29,10 @@ async def wrap(chat_id: str, user_jwt: str|None, success_callback: Callable, mod
     except mariadb.Error as e:
         if lock:
             set_chat_unused(user_id, chat_id)
-        print(f"{e}")
+        log_exception(e, "chat_auth_wrapper.wrap")
         return {"error": "An error occurred, please try again later"}
     except Exception as e:
         if lock:
             set_chat_unused(user_id, chat_id)
-        print(f"{e}")
+        log_exception(e, "chat_auth_wrapper.wrap")
         return {"error": "An error occurred, please try again later"}

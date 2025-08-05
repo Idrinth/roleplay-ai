@@ -4,6 +4,7 @@ import uuid
 from bson import json_util
 from fastapi import BackgroundTasks
 
+from .logger import log_exception
 from .llm_wrapper import ask_characterbuilder, ask_storysummarizer, ask_gamemaster
 from .models import World, Character, Document, ChatStartingPoint, Action
 from .databases import sql_connection, mongo, qdrant, redis
@@ -146,7 +147,7 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
     try:
         characters = list(mongo[mongodb_name(user_id, chat_id)]["characters"].find())
     except Exception as e:
-        logger.error(f"Failed to retrieve characters from MongoDB: {e}")
+        log_exception(e, "chat_endpoint_handlers.chat_message_internal")
     messages = [{
         "role": "system",
         "content": get_rules()
