@@ -85,7 +85,7 @@ async def chat_characters_success(chat_id, user_id):
     )
 
 async def chat_active_success(chat_id: str, user_id: str):
-    return {"active": chat_is_in_use(redis, user_id, chat_id)}
+    return {"active": chat_is_in_use(chat_id, user_id)}
 
 async def chat_delete_success(chat_id, user_id):
     sql_connection.ping()
@@ -146,7 +146,7 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
     try:
         characters = list(mongo[mongodb_name(user_id, chat_id)]["characters"].find())
     except Exception as e:
-        print(f"{e}")
+        logger.error(f"Failed to retrieve characters from MongoDB: {e}")
     messages = [{
         "role": "system",
         "content": get_rules()
