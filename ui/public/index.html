@@ -40,23 +40,11 @@
             </article>
             <ul id="worlds">
                 <li>
-                    <a href="/chat/new" class="button">NEW CHAT</a>
+                    <a href="/chat/new" class="button">START NEW CHAT</a>
                 </li>
                 <li>
                     <div id="donate-button-container">
-                    <div id="donate-button"></div>
-                    <script src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js" charset="UTF-8"></script>
-                    <script>
-                        PayPal.Donation.Button({
-                            env:'production',
-                            hosted_button_id:'AENZ9E63F85G8',
-                            image: {
-                                src:'https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif',
-                                alt:'Donate with PayPal button',
-                                title:'PayPal - The safer, easier way to pay online!',
-                            }
-                        }).render('#donate-button');
-                    </script>
+                        <div id="donate-button"></div>
                     </div>
                 </li>
             </ul>
@@ -64,5 +52,7 @@
         <footer>&copy;2025 Björn 'Idrinth' Büttner. The chatbot may make mistakes, please do not abuse it.</footer>
         <script type="text/javascript"  src="/dark-light-switch.js"></script>
         <script type="text/javascript"  src="/list-existing-chats.js"></script>
+        <script src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js" charset="UTF-8"></script>
+        <script type="text/javascript"  src="/paypal.js"></script>
     </body>
 </html>

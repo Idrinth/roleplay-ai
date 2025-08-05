@@ -156,6 +156,9 @@ textarea {
   background-image: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0)),
     linear-gradient(to right, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0));
 }
+#send {
+  background-color: var(--bar-background-color);
+}
 .button:hover, button:hover, .button:focus, button:focus {
   box-shadow: inset 2px 2px 5px #000;
 }
