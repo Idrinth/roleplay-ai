@@ -68,7 +68,7 @@ async def chat_document_add_success(chat_id: str, user_id: str, document: Docume
         documents=[document.content],
     )[0]
     document_uuid = str(uuid.UUID(document_id))
-    sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.documents (id, document_name, content) VALUES (?, ?, ?);)", [document_uuid, document.name, document.content])
+    sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.documents (id, document_name, content) VALUES (?, ?, ?);", [document_uuid, document.name, document.content])
     return {"success": True}
 
 async def chat_character_add_success(chat_id: str, user_id: str, character: Character):
