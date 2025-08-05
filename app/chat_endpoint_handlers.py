@@ -169,9 +169,12 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
         old_message_count += 1
         previous_response = message[1]
     vectordb_results = []
-    if qdrant.collection_exists(chat_id):
+    # verify the correct collection name is used
+-   if qdrant.collection_exists(chat_id):
++   if qdrant.collection_exists(f"{user_id}-{chat_id}"):
         search_result = qdrant.query(
             collection_name=f"{user_id}-{chat_id}",
+            # …
             query_text=previous_response + "\n" + action.description,
             limit=10
         )
