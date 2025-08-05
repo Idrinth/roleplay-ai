@@ -69,8 +69,8 @@
     if (!user.error) {
       return user;
     }
-    if (!await confirm("Do you already have an account?")) {
-      const userId = await prompt("Enter your User-ID if you already have one.", "");
+    if (await confirm("Do you already have an account?")) {
+      const userId = await prompt("Enter your User-ID.", "");
       if ((await (await fetch(`${apiHost}/login`, {
         credentials: "include",
         method: "POST",
