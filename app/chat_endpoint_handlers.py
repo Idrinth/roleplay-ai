@@ -64,7 +64,9 @@ async def chat_document_list_success(chat_id: str, user_id: str) -> dict[str, li
 
 async def chat_document_add_success(chat_id: str, user_id: str, document: Document):
     document_id = qdrant.add(
-        collection_name=chat_id,
+        collection_name=f"{user_id}-{chat_id}",
+        documents=[document.content],
+    )[0]
         documents=[document.content],
     )[0]
     document_uuid = str(uuid.UUID(document_id))
