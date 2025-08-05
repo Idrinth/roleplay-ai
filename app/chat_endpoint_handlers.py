@@ -67,8 +67,6 @@ async def chat_document_add_success(chat_id: str, user_id: str, document: Docume
         collection_name=f"{user_id}-{chat_id}",
         documents=[document.content],
     )[0]
-        documents=[document.content],
-    )[0]
     document_uuid = str(uuid.UUID(document_id))
     sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.documents (id, document_name, content) VALUES (?, ?, ?);", [document_uuid, document.name, document.content])
     return {"success": True}
@@ -169,12 +167,9 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
         old_message_count += 1
         previous_response = message[1]
     vectordb_results = []
-    # verify the correct collection name is used
--   if qdrant.collection_exists(chat_id):
-+   if qdrant.collection_exists(f"{user_id}-{chat_id}"):
+    if qdrant.collection_exists(f"{user_id}-{chat_id}"):
         search_result = qdrant.query(
             collection_name=f"{user_id}-{chat_id}",
-            # …
             query_text=previous_response + "\n" + action.description,
             limit=10
         )
