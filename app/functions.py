@@ -9,7 +9,7 @@ from bson import json_util
 from datetime import datetime, UTC, timedelta
 from jwt import encode, decode
 
-from logger import log_exception
+from .logger import log_exception
 
 with open('./app/character-sheet.schema.json', 'r') as schema_file:
     schema = json.dumps(json.load(schema_file))
