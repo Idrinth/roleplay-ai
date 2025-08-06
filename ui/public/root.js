@@ -1,0 +1,1 @@
+window.bjoernbuettner = window.bjoernbuettner || {};
