@@ -218,9 +218,9 @@
     }
   });
   await (async () => {
-    const json = root.getFromAPI(`chat/${chat.id}`, 'GET');
+    const json = await root.getFromAPI(`chat/${chat.id}`, 'GET');
     const converter = new showdown.Converter();
-    if (!json.error && !json.exception) {
+    if (!json.error && !json.exception && json.messages) {
       for (const message of json.messages) {
         document.getElementById('chat').appendChild(document.createElement('li'));
         document.getElementById('chat').lastElementChild.innerHTML = (message.role === 'agent' ? '<span class="gamemaster"></span>' : '') + converter.makeHtml(message.content);
