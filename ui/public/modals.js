@@ -8,15 +8,13 @@ window.bjoernbuettner = window.bjoernbuettner ||{};
       prmt.firstElementChild.appendChild(document.createTextNode(text));
       prmt.appendChild(document.createElement('input'));
       prmt.lastElementChild.value = defaultText;
-      prmt.appendChild(document.createElement('button'));
-      prmt.lastElementChild.appendChild(document.createTextNode('Send'));
-      prmt.lastElementChild.onclick = () => {
+      prmt.appendChild(bjoernbuettner.button('Send', 'Send changes', () => {
         if (!prmt.lastElementChild.previousElementSibling.value) {
           return;
         }
         document.body.removeChild(prmt);
         resolve(prmt.lastElementChild.previousElementSibling.value);
-      }
+      }, true));
       document.body.appendChild(prmt);
     });
   }
@@ -26,18 +24,14 @@ window.bjoernbuettner = window.bjoernbuettner ||{};
       prmt.setAttribute('id', 'prompt');
       prmt.appendChild(document.createElement('p'));
       prmt.firstElementChild.appendChild(document.createTextNode(text));
-      prmt.appendChild(document.createElement('button'));
-      prmt.lastElementChild.appendChild(document.createTextNode('Yes'));
-      prmt.lastElementChild.onclick = () => {
+      prmt.appendChild(bjoernbuettner.button('Yes', 'Confirm', () => {
         document.body.removeChild(prmt);
         resolve(true);
-      }
-      prmt.appendChild(document.createElement('button'));
-      prmt.lastElementChild.appendChild(document.createTextNode('No'));
-      prmt.lastElementChild.onclick = () => {
+      }, true));
+      prmt.appendChild(bjoernbuettner.button('No', 'Deny', () => {
         document.body.removeChild(prmt);
-        resolve(false);
-      }
+        resolve(true);
+      }, true));
       document.body.appendChild(prmt);
     });
   }
@@ -47,12 +41,10 @@ window.bjoernbuettner = window.bjoernbuettner ||{};
       prmt.setAttribute('id', 'prompt');
       prmt.appendChild(document.createElement('p'));
       prmt.firstElementChild.appendChild(document.createTextNode(text));
-      prmt.appendChild(document.createElement('button'));
-      prmt.lastElementChild.appendChild(document.createTextNode('OK'));
-      prmt.lastElementChild.onclick = () => {
+      prmt.appendChild(bjoernbuettner.button('OK', 'Confirm message', () => {
         document.body.removeChild(prmt);
         resolve();
-      }
+      }, true));
       document.body.appendChild(prmt);
     });
   }

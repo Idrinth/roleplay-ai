@@ -1,8 +1,7 @@
 (async () => {
-  const apiHost = '/api/v1'
   const characterFiller = await (await fetch('/char-template.yaml')).text();
   const user = await (async () => {
-    const user = await (await fetch(`${apiHost}/whoami`, {
+    const user = await (await fetch(`${bjoernbuettner.apiEndpoint}/whoami`, {
       credentials: "include",
       method: "GET",
     })).json();
@@ -11,7 +10,7 @@
     }
     if (await bjoernbuettner.confirm("Do you already have an account?")) {
       const userId = await bjoernbuettner.prompt("Enter your User-ID.", "");
-      if ((await (await fetch(`${apiHost}/login`, {
+      if ((await (await fetch(`${bjoernbuettner.apiEndpoint}/login`, {
         credentials: "include",
         method: "POST",
         body: JSON.stringify({
@@ -53,7 +52,7 @@
         + chars[Math.floor(Math.random() * chars.length)]
         + chars[Math.floor(Math.random() * chars.length)]
         + chars[Math.floor(Math.random() * chars.length)];
-      const uuid = await (await fetch(`${apiHost}/register`, {
+      const uuid = await (await fetch(`${bjoernbuettner.apiEndpoint}/register`, {
         credentials: "include",
         method: "POST",
         body: JSON.stringify({
@@ -66,7 +65,7 @@
       })).text();
       await alert(`Your user-id is ${uuid} - please save that for logging in.`)
     }
-    return await (await fetch(`${apiHost}/whoami`, {
+    return await (await fetch(`${bjoernbuettner.apiEndpoint}/whoami`, {
       credentials: "include",
       method: "GET",
     })).json();
@@ -88,7 +87,7 @@
       data.password = password;
     }
     if (changed) {
-      await (await fetch(`${apiHost}/me`, {
+      await (await fetch(`${bjoernbuettner.apiEndpoint}/me`, {
         credentials: "include",
         method: "POST",
         body: JSON.stringify(data),
@@ -117,7 +116,7 @@
         }
       }
     }
-    const chatId = (await (await fetch(`${apiHost}/new`, {
+    const chatId = (await (await fetch(`${bjoernbuettner.apiEndpoint}/new`, {
       credentials: "include",
       method: "GET",
     })).json()).chat ?? "";
@@ -133,7 +132,7 @@
   while (chat.id === chat.name || !chat.name) {
     chat.name = (await bjoernbuettner.prompt("Enter a new name for your chat.", chat.name)) || chat.id;
     if (chat.name) {
-      await fetch(`${apiHost}/chat/${chat.id}/name`, {
+      await fetch(`${bjoernbuettner.apiEndpoint}/chat/${chat.id}/name`, {
         method: 'POST',
         body: JSON.stringify({
           name: chat.name,
@@ -148,40 +147,12 @@
   }
   document.title = chat.name + ' | ' + document.title;
   
-  for (const achat of user.chats) {
-    document.getElementById('worlds').appendChild(document.createElement('li'));
-    const world = document.getElementById('worlds').lastElementChild;
-    world.appendChild(document.createElement('a'));
-    world.lastElementChild.innerHTML = achat.name;
-    world.lastElementChild.setAttribute('href', '/chat/' + achat.id);
-    world.lastElementChild.setAttribute('data-id', achat.id);
-    world.appendChild(document.createElement('span'));
-    world.lastElementChild.appendChild(document.createTextNode('[D]'));
-    world.lastElementChild.classList.add('button');
-    world.lastElementChild.setAttribute('title', 'Delete chat');
-    world.lastElementChild.onclick = async() => {
-      if (await bjoernbuettner.confirm(`Do you want to delete ${achat.name}?`)) {
-        await fetch(
-          `${apiHost}/chat/${achat.id}/delete`,
-          {
-            credentials: "include",
-            method: "POST",
-            signal: AbortSignal.timeout(10000),
-          }
-        );
-        if (chat.id === achat.id) {
-          window.location = location.protocol + '//' + location.host + '/chat';
-          return;
-        }
-        document.getElementById('worlds').removeChild(world);
-      }
-    }
-  }
+  bjoernbuettner.listExistingChats(user.chats, chat.id)
 
   window.setInterval(async () => {
     try {
       const response = await fetch(
-        `${apiHost}/chat/${chat.id}/active?${Date.now()}`,
+        `${bjoernbuettner.apiEndpoint}/chat/${chat.id}/active?${Date.now()}`,
         {
           credentials: "include",
           method: "GET",
@@ -204,7 +175,7 @@
     document.getElementById('loader').setAttribute('style', '');
   }, 2500);
   const updateDocuments = await (async () => {
-    const response = await fetch(`${apiHost}/chat/${chat.id}/documents`, {
+    const response = await fetch(`${bjoernbuettner.apiEndpoint}/chat/${chat.id}/documents`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -252,7 +223,7 @@
         document.getElementById('documents').lastElementChild.lastElementChild.onclick = async (event) => {
           event.stopPropagation();
           if (await bjoernbuettner.confirm("Do you want to delete this document?")) {
-            await fetch(`${apiHost}/chat/${chat.id}/characters/${md_document._id['$oid']}/delete`, {
+            await fetch(`${bjoernbuettner.apiEndpoint}/chat/${chat.id}/characters/${md_document._id['$oid']}/delete`, {
               method: 'POST',
               credentials: "include",
             });
@@ -263,7 +234,7 @@
     }
   })
   const updateCharacters = async () => {
-    const response = await fetch(`${apiHost}/chat/${chat.id}/characters`, {
+    const response = await fetch(`${bjoernbuettner.apiEndpoint}/chat/${chat.id}/characters`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -310,7 +281,7 @@
         document.getElementById('characters').lastElementChild.lastElementChild.onclick = async (event) => {
           event.stopPropagation();
           if (await bjoernbuettner.confirm("Do you want to delete this character sheet?")) {
-            await fetch(`${apiHost}/chat/${chat.id}/characters/${character._id['$oid']}/delete`, {
+            await fetch(`${bjoernbuettner.apiEndpoint}/chat/${chat.id}/characters/${character._id['$oid']}/delete`, {
               method: 'POST',
               credentials: "include",
             });
@@ -333,7 +304,7 @@
     document.getElementById('chat').lastElementChild.innerHTML = converter.makeHtml(value);
     document.getElementById('chat').lastElementChild.classList.add('user');
     try {
-      const response = await fetch(`${apiHost}/chat/${chat.id}`, {
+      const response = await fetch(`${bjoernbuettner.apiEndpoint}/chat/${chat.id}`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -359,7 +330,7 @@
     }
   });
   await (async () => {
-    const response = await fetch(`${apiHost}/chat/${chat.id}`, {
+    const response = await fetch(`${bjoernbuettner.apiEndpoint}/chat/${chat.id}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -381,7 +352,7 @@
           document.getElementById('chat').lastElementChild.classList.add(message.role);
         }
         if (json.messages.length === 0 && !document.getElementById('chat-entry').value && await bjoernbuettner.confirm('Do you want help with your beginning scene?')) {
-          const value = await fetch(`${apiHost}/chat/${chat.id}/starting-point-proposal`, {
+          const value = await fetch(`${bjoernbuettner.apiEndpoint}/chat/${chat.id}/starting-point-proposal`, {
             method: 'POST',
             headers: {
               'Accept': 'application/json',
@@ -416,7 +387,7 @@
           if (charactersheetElement.value && charactersheetElement.getAttribute('data-raw') !== charactersheetElement.value) {
             if (await bjoernbuettner.confirm("Do you want to save this modified character sheet?")) {
               const id = charactersheetElement.getAttribute('data-id');
-              await fetch(`${apiHost}/chat/${chat.id}/characters/${id}`, {
+              await fetch(`${bjoernbuettner.apiEndpoint}/chat/${chat.id}/characters/${id}`, {
                 method: 'POST',
                 headers: {
                   'Accept': 'application/json',
@@ -429,7 +400,7 @@
           }
         } else if (charactersheetElement.value) {
           if (await bjoernbuettner.confirm("Do you want to save this new character sheet?")) {
-            await fetch(`${apiHost}/chat/${chat.id}/characters`, {
+            await fetch(`${bjoernbuettner.apiEndpoint}/chat/${chat.id}/characters`, {
               method: 'POST',
               headers: {
                 'Accept': 'application/json',
@@ -450,7 +421,7 @@
           if (documentElement.value && documentElement.getAttribute('data-raw') !== documentElement.value) {
             if (await bjoernbuettner.confirm("Do you want to save this modified document?")) {
               const id = documentElement.getAttribute('data-id');
-              await fetch(`${apiHost}/chat/${chat.id}/documents/${id}`, {
+              await fetch(`${bjoernbuettner.apiEndpoint}/chat/${chat.id}/documents/${id}`, {
                 method: 'POST',
                 headers: {
                   'Accept': 'application/json',
@@ -463,7 +434,7 @@
           }
         } else if (documentElement.value) {
           if (await bjoernbuettner.confirm("Do you want to save this new document?")) {
-            await fetch(`${apiHost}/chat/${chat.id}/documents`, {
+            await fetch(`${bjoernbuettner.apiEndpoint}/chat/${chat.id}/documents`, {
               method: 'POST',
               headers: {
                 'Accept': 'application/json',
@@ -499,7 +470,7 @@
     document.body.appendChild(el);
   }
   await (async () => {
-    const response = await fetch(`${apiHost}/chat/${chat.id}/world`, {
+    const response = await fetch(`${bjoernbuettner.apiEndpoint}/chat/${chat.id}/world`, {
       method: "GET",
       headers: {
         'Accept': 'application/json',
@@ -527,7 +498,7 @@
     }
     document.getElementById('world').setAttribute('data-original', JSON.stringify(keywords))
     document.getElementById('world').previousElementSibling.setAttribute('title', keywords.join("\n"))
-    fetch(`${apiHost}/chat/${chat.id}/world`, {
+    fetch(`${bjoernbuettner.apiEndpoint}/chat/${chat.id}/world`, {
       method: "PUT",
       headers: {
         'Accept': 'application/json',
