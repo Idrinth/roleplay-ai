@@ -4,7 +4,15 @@ ACTIVE_KEY="chat_is_active"
 
 def chat_is_in_use(user_id: str, chat_id: str):
     value = redis.get(f"{user_id}-{chat_id}.{ACTIVE_KEY}")
-    return value and (value == b"true" or value.decode() == "true")
+    if value is None:
+        return False
+    if value == b"true":
+        return True
+    if value == "true":
+        return True
+    if value.decode() == "true":
+        return True
+    return False
 
 def set_chat_unused(user_id: str, chat_id: str):
     redis.set(f"{user_id}-{chat_id}.{ACTIVE_KEY}", "false")
