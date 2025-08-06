@@ -1,0 +1,21 @@
+name: Pylint (APP)
+on:
+  push:
+    paths:
+    - app/*.py
+    - app/requirements.txt
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.13"
+    - name: Install pylint
+      run: pip install pylint
+    - name: Install dependencies
+      run: cd app && python -m pip install
+    - name: Analysing the code
+      run: pylint $(git ls-files 'app/*.py')

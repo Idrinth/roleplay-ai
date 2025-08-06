@@ -7,4 +7,6 @@ COPY app/*.schema.json ./app/
 COPY app/rules.md ./app/
 COPY app/*.py ./app/
 
+RUN rm ./app/test_*.py
+
 CMD ["fastapi", "run", "app/main.py", "--port", "80"]

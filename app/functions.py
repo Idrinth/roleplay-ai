@@ -24,10 +24,18 @@ def get_rules():
     return rules
 
 def mariadb_name(user_id: str, chat_id: str):
+    if not is_uuid_like(user_id):
+        raise TypeError('user_id is not a uuid')
+    if not is_uuid_like(chat_id):
+        raise TypeError('chat_id is not a uuid')
     # max length 64
     return f"{user_id}{chat_id}".replace("-", "")
 
 def mongodb_name(user_id: str, chat_id: str):
+    if not is_uuid_like(user_id):
+        raise TypeError('user_id is not a uuid')
+    if not is_uuid_like(chat_id):
+        raise TypeError('chat_id is not a uuid')
     # max length 63
     return f"{user_id}{chat_id}".replace("-", "")[:-1]
 
