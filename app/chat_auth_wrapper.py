@@ -32,11 +32,11 @@ async def wrap(chat_id: str, user_jwt: str|None, success_callback: Callable, mod
         return result
     except mariadb.Error as e:
         if lock:
-            set_chat_unused(user_id, chat_id)
+            await set_chat_unused(user_id, chat_id)
         log_exception(e, "chat_auth_wrapper.wrap")
         return {"error": "An error occurred, please try again later"}
     except Exception as e:
         if lock:
-            set_chat_unused(user_id, chat_id)
+            await set_chat_unused(user_id, chat_id)
         log_exception(e, "chat_auth_wrapper.wrap")
         return {"error": "An error occurred, please try again later"}
