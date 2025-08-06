@@ -14,6 +14,6 @@ jobs:
       with:
         python-version: "3.13"
     - name: Install dependencies
-      run: cd app && python -m pip install
+      run: cd app && python -m pip install -r requirements.txt
     - name: Test the code
       run: cd app && python -m unittest
