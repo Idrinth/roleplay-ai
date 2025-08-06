@@ -152,18 +152,18 @@ textarea {
   border-radius: 0.25em;
   padding: 0.35em;
   border: 1px solid var(--main-color);
-  box-shadow: inset 2px 2px 5px #fff;
+  box-shadow: inset 2px 2px 5px rgba(255,255,255,0.2);
   margin: 1px;
   text-decoration: none;
   background-image: linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
     linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
 }
-.call-to-action {
+.button.call-to-action, .button.call-to-action:active, .button.call-to-action:visited, button.call-to-action, button.call-to-action:active, button.call-to-action:visited {
   background-color: var(--bar-background-color);
   color: var(--main-striking);
 }
 .button:hover, button:hover, .button:focus, button:focus {
-  box-shadow: inset 2px 2px 5px #000;
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
 }
 input, textarea {
   border-radius: 3px;
