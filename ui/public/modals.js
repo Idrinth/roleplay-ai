@@ -8,9 +8,6 @@ window.bjoernbuettner = window.bjoernbuettner ||{};
       prmt.firstElementChild.appendChild(document.createTextNode(text));
       prmt.appendChild(document.createElement('input'));
       prmt.lastElementChild.value = defaultText;
-      prmt.lastElementChild.onchange = () => {
-        prmt.lastElementChild.previousElementSibling.disabled = !prmt.lastElementChild.value;
-      }
       prmt.appendChild(document.createElement('button'));
       prmt.lastElementChild.appendChild(document.createTextNode('Send'));
       prmt.lastElementChild.onclick = () => {
