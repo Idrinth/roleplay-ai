@@ -86,7 +86,7 @@ async def chat_characters_success(chat_id, user_id):
     )
 
 async def chat_active_success(chat_id: str, user_id: str):
-    return {"active": chat_is_in_use(chat_id, user_id)}
+    return {"active": chat_is_in_use(user_id, chat_id)}
 
 async def chat_delete_success(chat_id, user_id):
     sql_connection.ping()
