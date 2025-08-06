@@ -10,15 +10,18 @@ const config = JSON.parse(readFileSync(process.cwd() + '/.minify.json', 'utf8'))
 
 const TO_MERGE = {
   'shared-##.min.js': [
+    'constants.js',
+    'button.js',
     'dark-light-switch.js',
     'modals.js',
     'paypal-donate-sdk.min.js',
     'paypal.js',
+    'list-existing-chats-handler.js',
   ],
   'chat-##.min.js': [
     'showdown.min.js',
     'js-yaml.min.js',
-    'chat.js'
+    'chat.js',
   ]
 }
 
