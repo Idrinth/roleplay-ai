@@ -160,6 +160,7 @@ textarea {
 }
 #send {
   background-color: var(--bar-background-color);
+  color: var(--main-striking);
 }
 .button:hover, button:hover, .button:focus, button:focus {
   box-shadow: inset 2px 2px 5px #000;
