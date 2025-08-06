@@ -47,7 +47,7 @@
         }, 10000, false);
       await alert(`Your user-id is ${uuid} - please save that for logging in.`)
     }
-    return root.getFromAPI(`whoami`, 'GET');
+    return await root.getFromAPI(`whoami`, 'GET');
   })();
 
   document.getElementById('playername').innerText = (user.name ?? user.id);
@@ -316,7 +316,7 @@
     document.getElementById('world').setAttribute('data-original', JSON.stringify(keywords))
     document.getElementById('world').value = keywords.join(", ")
   })();
-  document.getElementById("world").onchange = () => {
+  document.getElementById("world").onchange = async() => {
     const keywords = document.getElementById('world').value.split(",").map((keyword) => {
       return keyword.trim()
     }).filter((keyword) => {
@@ -329,7 +329,7 @@
     }
     document.getElementById('world').setAttribute('data-original', JSON.stringify(keywords))
     document.getElementById('world').previousElementSibling.setAttribute('title', keywords.join("\n"))
-    root.getFromAPI(`chat/${chat.id}/world`, 'PUT', {
+    await root.getFromAPI(`chat/${chat.id}/world`, 'PUT', {
       keywords,
     });
   }
