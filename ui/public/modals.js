@@ -31,7 +31,7 @@ window.bjoernbuettner = window.bjoernbuettner ||{};
       }, true));
       prmt.appendChild(bjoernbuettner.button('No', 'Deny', () => {
         document.body.removeChild(prmt);
-        resolve(true);
+        resolve(false);
       }, true));
       document.body.appendChild(prmt);
     });

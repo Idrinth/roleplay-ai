@@ -1,8 +1,9 @@
 window.bjoernbuettner = window.bjoernbuettner || {};
 ((addTo) => {
   addTo.listExistingChats = (chats, chatId = null) => {
+    const worlds = document.getElementById('worlds');
     for (const achat of chats) {
-      document.getElementById('worlds').appendChild(document.createElement('li'));
+      worlds.appendChild(document.createElement('li'));
       const world = document.getElementById('worlds').lastElementChild;
       world.appendChild(document.createElement('a'));
       world.lastElementChild.innerHTML = achat.name;
