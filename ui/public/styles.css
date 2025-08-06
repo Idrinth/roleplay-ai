@@ -161,6 +161,7 @@ textarea {
 .button.call-to-action, .button.call-to-action:active, .button.call-to-action:visited, button.call-to-action, button.call-to-action:active, button.call-to-action:visited {
   background-color: var(--bar-background-color);
   color: var(--main-striking);
+  border-color: var(--bar-background-color);
 }
 .button:hover, button:hover, .button:focus, button:focus {
   box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
@@ -196,8 +197,15 @@ input, textarea {
 .inverted-colors .gamemaster {
   background-image: url('/logo.dark.svg');
 }
-a[target="_blank"]:after {
-  content: "\0029F4";
+a[target="_blank"] {
+  padding-right:1em;
+  background-image:url('/external-link.light.svg');
+  background-repeat: no-repeat;
+  background-size: auto 100%;
+  background-position-x: right;
+}
+.inverted-colors a[target="_blank"] {
+  background-image:url('/external-link.dark.svg')
 }
 nav > ul {
   display: flex;
@@ -229,7 +237,4 @@ img {
 nav, footer {
   background-color: var(--bar-background-color);
   background-image: linear-gradient(to bottom, rgba(255,255, 255, 0.05), rgba(255,255, 255, 0.1), rgba(255,255, 255, 0));
-}
-nav a, nav a:visited, nav a:active, nav a:hover, nav a:focus {
-  background: var(--light-shadow);
 }
