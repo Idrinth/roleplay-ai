@@ -8,10 +8,10 @@
       title: 'PayPal - The safer, easier way to pay online!',
     }
   }).render('#donate-button');
-  setImmediate(() => {
+  setTimeout(() => {
     const paypal = document.getElementById('donate-button');
     paypal.setAttribute('tabindex', '0');
     paypal.setAttribute('role', 'button');
     paypal.setAttribute('aria-label', 'opens in a new window');
-  });
+  }, 0);
 })();
