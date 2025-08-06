@@ -18,7 +18,7 @@ async def wrap(chat_id: str, user_jwt: str|None, success_callback: Callable, mod
         return {"error": "Chat already busy"}
     try:
         if lock:
-            set_chat_in_use(user_id, chat_id)
+            await set_chat_in_use(user_id, chat_id)
         if model and background_tasks:
             result = await success_callback(chat_id, user_id, model, background_tasks)
         elif background_tasks:
@@ -28,7 +28,7 @@ async def wrap(chat_id: str, user_jwt: str|None, success_callback: Callable, mod
         else:
             result = await success_callback(chat_id, user_id)
         if lock:
-            set_chat_unused(chat_id, user_id)
+            await set_chat_unused(chat_id, user_id)
         return result
     except mariadb.Error as e:
         if lock:
