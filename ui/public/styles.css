@@ -155,10 +155,10 @@ textarea {
   box-shadow: inset 2px 2px 5px #fff;
   margin: 1px;
   text-decoration: none;
-  background-image: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0)),
-    linear-gradient(to right, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0));
+  background-image: linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
+    linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
 }
-#send {
+.call-to-action {
   background-color: var(--bar-background-color);
   color: var(--main-striking);
 }
