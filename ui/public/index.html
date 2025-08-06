@@ -7,7 +7,13 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body class="index">
-        <nav>
+        <nav class="skiplinks">
+            <ul>
+                <li><a href="#mainnav">Skip to main navigation</a></li>
+                <li><a href="#content">Skip to content</a></li>
+            </ul>
+        </nav>
+        <nav id="mainnav">
             <ul>
                 <li><a href="/">Home</a></li>
                 <li><a href="/chat">Chats</a></li>
@@ -17,14 +23,14 @@
             </ul>
         </nav>
         <h1>
-            <span id="logo" aria-label="changes the color mode on click" tabindex="0" title="click to switch color mode" class="gamemaster"></span>
-            <span>Wolfgang 'Storyteller' AI</span>
+            <span id="logo" role="button" aria-label="changes the color mode on click" tabindex="0" title="click to switch color mode" class="gamemaster"></span>
+            <span>Wolfgang AI</span>
         </h1>
-        <div class="content">
+        <div class="content" id="content">
             <article>
                 <h2>Welcome in!</h2>
                 <p>Wolfgang is a small open source AI Storyteller, that will be a Game Master for you if you desire. Start a new chat if desired or return to an old one.</p>
-                <a id="peerlist" href="https://peerlist.io/idrinth/project/roleplay-ai-v10" target="_blank" rel="noreferrer">
+                <a id="peerlist" aria-label="link opens in new tab" href="https://peerlist.io/idrinth/project/roleplay-ai-v10" target="_blank" rel="noreferrer">
                     <img
                         src="https://peerlist.io/api/v1/projects/embed/PRJHGNQ86JOPGEP7RF8E6QDP769BEN?showUpvote=true&theme=dark"
                         alt="Roleplay AI v1.0"
