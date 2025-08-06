@@ -110,24 +110,16 @@
   root.listExistingChats(user.chats, chat.id)
 
   window.setInterval(async () => {
-    try {
-      const response = await root.getFromAPI(
-        `chat/${chat.id}/active?${Date.now()}`,
-        'GET',
-        null,
-        2400,
-      );
-      if (response.ok) {
-        const active = (await response.json()).active;
-        if (!active) {
-          document.getElementById('send').disabled = false;
-          document.getElementById('loader').setAttribute('style', 'display: none');
-          return;
-        }
-      }
-    } catch (e) {
-      //this is expected
-      console.debug(e);
+    const response = await root.getFromAPI(
+      `chat/${chat.id}/active?${Date.now()}`,
+      'GET',
+      null,
+      2400,
+    );
+    if (!response.active) {
+      document.getElementById('send').disabled = false;
+      document.getElementById('loader').setAttribute('style', 'display: none');
+      return;
     }
     document.getElementById('send').disabled = true;
     document.getElementById('loader').setAttribute('style', '');
