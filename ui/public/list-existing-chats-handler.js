@@ -16,7 +16,7 @@
           'POST',
           {name}
         );
-        world.lastElementChild.innerText = name;
+        world.firstElementChild.innerText = name;
       }));
       world.appendChild(root.button('[D]', 'Delete chat', async () => {
         if (await root.confirm(`Do you want to delete ${achat.name}?`)) {
