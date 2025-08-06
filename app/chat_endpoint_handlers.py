@@ -9,7 +9,7 @@ from .llm_wrapper import ask_characterbuilder, ask_storysummarizer, ask_gamemast
 from .models import World, Character, Document, ChatStartingPoint, Action, Chat
 from .databases import sql_connection, mongo, qdrant, redis
 from .functions import mariadb_name, mongodb_name, to_mongo_compatible, get_rules, get_system_prompt, simplify_result
-from .chat_active import chat_is_in_use
+from .chat_active import chat_is_in_use,remove_chat_from_use
 
 async def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_key: str):
     cursor = sql_connection.cursor()
@@ -92,7 +92,7 @@ async def chat_delete_success(chat_id, user_id):
     sql_connection.ping()
     sql_connection.cursor().execute("DELETE FROM chat_users.mapping WHERE user_id=? and chat_id=?;", [user_id, chat_id])
     sql_connection.cursor().execute(f"DROP DATABASE IF EXISTS  `{mariadb_name(user_id, chat_id)}`;")
-    redis.delete(f"{user_id}-{chat_id}.active")
+    remove_chat_from_use(user_id, chat_id)
     redis.delete(f"{user_id}-{chat_id}.short_summary")
     redis.delete(f"{user_id}-{chat_id}.medium_summary")
     redis.delete(f"{user_id}-{chat_id}.long_summary")
