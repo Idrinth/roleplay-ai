@@ -124,105 +124,82 @@
     document.getElementById('send').disabled = true;
     document.getElementById('loader').setAttribute('style', '');
   }, 2500);
-  const updateDocuments = await (async () => {
-    const response = await root.getFromAPI(`chat/${chat.id}/documents`, 'GET');
-    if (response.ok) {
-      const json = await response.json();
-      if (json.error) {
-        console.error(json.error);
-        return;
+  const updateDocuments = async () => {
+    const json = await root.getFromAPI(`chat/${chat.id}/documents`, 'GET');
+    while (document.getElementById('documents').children.length > 2) {
+      document.getElementById('documents').removeChild(document.getElementById('characters').lastElementChild);
+    }
+    for (const md_document of json.documents ?? []) {
+      document.getElementById('documents').appendChild(document.createElement('li'));
+      document.getElementById('documents').lastElementChild.appendChild(document.createElement('span'));
+      document.getElementById('documents').lastElementChild.lastElementChild.appendChild(document.createTextNode(md_document.name));
+      document.getElementById('documents').lastElementChild.appendChild(document.createElement('span'));
+      document.getElementById('documents').lastElementChild.lastElementChild.appendChild(document.createTextNode('[E]'));
+      document.getElementById('documents').lastElementChild.lastElementChild.classList.add('button');
+      document.getElementById('documents').lastElementChild.lastElementChild.setAttribute('title', 'Edit document');
+      document.getElementById('documents').lastElementChild.lastElementChild.onclick = (event) => {
+        event.stopPropagation();
+        const el = document.createElement('textarea');
+        el.setAttribute('id', 'document')
+        const doc = {...md_document};
+        doc._id = undefined;
+        el.setAttribute('data-id', md_document.id['$oid']);
+        el.setAttribute('data-name', doc.name);
+        el.value = doc.content;
+        el.setAttribute('data-raw', doc.content);
+        document.body.appendChild(el);
       }
-      if (json.exception) {
-        console.error(json.exception);
-        return;
-      }
-      while (document.getElementById('documents').children.length > 2) {
-        document.getElementById('documents').removeChild(document.getElementById('characters').lastElementChild);
-      }
-      for (const md_document of json.documents) {
-        document.getElementById('documents').appendChild(document.createElement('li'));
-        document.getElementById('documents').lastElementChild.appendChild(document.createElement('span'));
-        document.getElementById('documents').lastElementChild.lastElementChild.appendChild(document.createTextNode(md_document.name));
-        document.getElementById('documents').lastElementChild.appendChild(document.createElement('span'));
-        document.getElementById('documents').lastElementChild.lastElementChild.appendChild(document.createTextNode('[E]'));
-        document.getElementById('documents').lastElementChild.lastElementChild.classList.add('button');
-        document.getElementById('documents').lastElementChild.lastElementChild.setAttribute('title', 'Edit document');
-        document.getElementById('documents').lastElementChild.lastElementChild.onclick = (event) => {
-          event.stopPropagation();
-          const el = document.createElement('textarea');
-          el.setAttribute('id', 'document')
-          const doc = {...md_document};
-          doc._id = undefined;
-          el.setAttribute('data-id', md_document.id['$oid']);
-          el.setAttribute('data-name', doc.name);
-          el.value = doc.content;
-          el.setAttribute('data-raw', doc.content);
-          document.body.appendChild(el);
-        }
-        document.getElementById('documents').lastElementChild.appendChild(document.createElement('span'));
-        document.getElementById('documents').lastElementChild.lastElementChild.appendChild(document.createTextNode('[D]'));
-        document.getElementById('documents').lastElementChild.lastElementChild.classList.add('button');
-        document.getElementById('documents').lastElementChild.lastElementChild.setAttribute('title', 'Delete document');
-        document.getElementById('documents').lastElementChild.lastElementChild.onclick = async (event) => {
-          event.stopPropagation();
-          if (await root.confirm("Do you want to delete this document?")) {
-            await root.getFromAPI(`chat/${chat.id}/characters/${md_document._id['$oid']}/delete`, 'POST');
-            await updateDocuments();
-          }
+      document.getElementById('documents').lastElementChild.appendChild(document.createElement('span'));
+      document.getElementById('documents').lastElementChild.lastElementChild.appendChild(document.createTextNode('[D]'));
+      document.getElementById('documents').lastElementChild.lastElementChild.classList.add('button');
+      document.getElementById('documents').lastElementChild.lastElementChild.setAttribute('title', 'Delete document');
+      document.getElementById('documents').lastElementChild.lastElementChild.onclick = async (event) => {
+        event.stopPropagation();
+        if (await root.confirm("Do you want to delete this document?")) {
+          await root.getFromAPI(`chat/${chat.id}/characters/${md_document._id['$oid']}/delete`, 'POST');
+          await updateDocuments();
         }
       }
     }
-  })
+  }
   const updateCharacters = async () => {
-    const response = await root.getFromAPI(`chat/${chat.id}/characters`, 'GET');
-    if (response.ok) {
-      const json = await response.json();
-      if (json.error) {
-        console.error(json.error);
-        return;
+    const json = await root.getFromAPI(`chat/${chat.id}/characters`, 'GET');
+    while (document.getElementById('characters').children.length > 1) {
+      document.getElementById('characters').removeChild(document.getElementById('characters').lastElementChild);
+    }
+    for (const character of json.characters) {
+      document.getElementById('characters').appendChild(document.createElement('li'));
+      document.getElementById('characters').lastElementChild.appendChild(document.createElement('span'));
+      document.getElementById('characters').lastElementChild.lastElementChild.appendChild(document.createTextNode(character.name.taken));
+      document.getElementById('characters').lastElementChild.appendChild(document.createElement('span'));
+      document.getElementById('characters').lastElementChild.lastElementChild.appendChild(document.createTextNode('[E]'));
+      document.getElementById('characters').lastElementChild.lastElementChild.classList.add('button');
+      document.getElementById('characters').lastElementChild.lastElementChild.setAttribute('title', 'Edit character');
+      document.getElementById('characters').lastElementChild.lastElementChild.onclick = (event) => {
+        event.stopPropagation();
+        const el = document.createElement('textarea');
+        el.setAttribute('id', 'charactersheet')
+        const char = {...character};
+        char._id = undefined;
+        el.setAttribute('data-id', character._id['$oid']);
+        el.value = jsyaml.dump(char);
+        el.setAttribute('data-raw', el.value);
+        document.body.appendChild(el);
       }
-      if (json.exception) {
-        console.error(json.exception);
-        return;
-      }
-      while (document.getElementById('characters').children.length > 1) {
-        document.getElementById('characters').removeChild(document.getElementById('characters').lastElementChild);
-      }
-      for (const character of json.characters) {
-        document.getElementById('characters').appendChild(document.createElement('li'));
-        document.getElementById('characters').lastElementChild.appendChild(document.createElement('span'));
-        document.getElementById('characters').lastElementChild.lastElementChild.appendChild(document.createTextNode(character.name.taken));
-        document.getElementById('characters').lastElementChild.appendChild(document.createElement('span'));
-        document.getElementById('characters').lastElementChild.lastElementChild.appendChild(document.createTextNode('[E]'));
-        document.getElementById('characters').lastElementChild.lastElementChild.classList.add('button');
-        document.getElementById('characters').lastElementChild.lastElementChild.setAttribute('title', 'Edit character');
-        document.getElementById('characters').lastElementChild.lastElementChild.onclick = (event) => {
-          event.stopPropagation();
-          const el = document.createElement('textarea');
-          el.setAttribute('id', 'charactersheet')
-          const char = {...character};
-          char._id = undefined;
-          el.setAttribute('data-id', character._id['$oid']);
-          el.value = jsyaml.dump(char);
-          el.setAttribute('data-raw', el.value);
-          document.body.appendChild(el);
-        }
-        document.getElementById('characters').lastElementChild.appendChild(document.createElement('span'));
-        document.getElementById('characters').lastElementChild.lastElementChild.appendChild(document.createTextNode('[D]'));
-        document.getElementById('characters').lastElementChild.lastElementChild.classList.add('button');
-        document.getElementById('characters').lastElementChild.lastElementChild.setAttribute('title', 'Delete character');
-        document.getElementById('characters').lastElementChild.lastElementChild.onclick = async (event) => {
-          event.stopPropagation();
-          if (await root.confirm("Do you want to delete this character sheet?")) {
-            await root.getFromAPI(`chat/${chat.id}/characters/${character._id['$oid']}/delete`, 'POST');
-            await updateCharacters();
-          }
+      document.getElementById('characters').lastElementChild.appendChild(document.createElement('span'));
+      document.getElementById('characters').lastElementChild.lastElementChild.appendChild(document.createTextNode('[D]'));
+      document.getElementById('characters').lastElementChild.lastElementChild.classList.add('button');
+      document.getElementById('characters').lastElementChild.lastElementChild.setAttribute('title', 'Delete character');
+      document.getElementById('characters').lastElementChild.lastElementChild.onclick = async (event) => {
+        event.stopPropagation();
+        if (await root.confirm("Do you want to delete this character sheet?")) {
+          await root.getFromAPI(`chat/${chat.id}/characters/${character._id['$oid']}/delete`, 'POST');
+          await updateCharacters();
         }
       }
     }
   }
   document.getElementById('send').addEventListener('click', async function () {
-    const now = Date.now();
     const value = document.getElementById('chat-entry').value;
     if (!value) {
       return;
@@ -233,32 +210,17 @@
     document.getElementById('chat').appendChild(document.createElement('li'));
     document.getElementById('chat').lastElementChild.innerHTML = converter.makeHtml(value);
     document.getElementById('chat').lastElementChild.classList.add('user');
-    try {
-      const response = await root.getFromAPI(`chat/${chat.id}`, 'POST', {description: value});
-      if (response.ok) {
-        const json = await response.json();
-        if (json.error) {
-          console.error(json.error);
-        } else if (json.exception) {
-          console.error(json.exception);
-        } else {
-          document.getElementById('chat').appendChild(document.createElement('li'));
-          document.getElementById('chat').lastElementChild.innerHTML = '<span class="gamemaster"></span>' + converter.makeHtml(json.message) + `<span class="duration">${Math.ceil(Date.now() / 1000 - now / 1000)}s</span>`;
-          document.getElementById('chat').lastElementChild.classList.add('agent');
-        }
-      }
-    } catch (e) {
-      console.error(e);
+    const json = await root.getFromAPI(`chat/${chat.id}`, 'POST', {description: value});
+    if (!json.error && !json.exception) {
+      document.getElementById('chat').appendChild(document.createElement('li'));
+      document.getElementById('chat').lastElementChild.innerHTML = '<span class="gamemaster"></span>' + converter.makeHtml(json.message) ;
+      document.getElementById('chat').lastElementChild.classList.add('agent');
     }
   });
   await (async () => {
     const json = root.getFromAPI(`chat/${chat.id}`, 'GET');
     const converter = new showdown.Converter();
-    if (json.error) {
-      console.error(json.error);
-    } else if (json.exception) {
-      console.error(json.exception);
-    } else {
+    if (!json.error && !json.exception) {
       for (const message of json.messages) {
         document.getElementById('chat').appendChild(document.createElement('li'));
         document.getElementById('chat').lastElementChild.innerHTML = (message.role === 'agent' ? '<span class="gamemaster"></span>' : '') + converter.makeHtml(message.content);
