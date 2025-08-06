@@ -1,4 +1,4 @@
-bjoernbuettner = bjoernbuettner ||{};
+window.bjoernbuettner = window.bjoernbuettner ||{};
 ((attachTo) => {
   attachTo.prompt = async (text, defaultText = '') => {
     return new Promise(resolve => {
@@ -59,4 +59,4 @@ bjoernbuettner = bjoernbuettner ||{};
       document.body.appendChild(prmt);
     });
   }
-})(bjoernbuettner);
+})(window.bjoernbuettner);
