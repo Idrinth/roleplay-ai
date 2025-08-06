@@ -218,7 +218,7 @@
     }
   });
   await (async () => {
-    const json = root.getFromAPI(`chat/${chat.id}`, 'GET');
+    const json = await root.getFromAPI(`chat/${chat.id}`, 'GET');
     const converter = new showdown.Converter();
     if (!json.error && !json.exception) {
       for (const message of json.messages) {
