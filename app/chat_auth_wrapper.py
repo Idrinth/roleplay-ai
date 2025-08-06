@@ -14,7 +14,7 @@ async def wrap(chat_id: str, user_jwt: str|None, success_callback: Callable, mod
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
         return {"error": "Not a valid Chat"}
-    if lock and chat_is_in_use(chat_id, user_id):
+    if lock and chat_is_in_use(user_id, chat_id):
         return {"error": "Chat already busy"}
     try:
         if lock:
@@ -28,7 +28,7 @@ async def wrap(chat_id: str, user_jwt: str|None, success_callback: Callable, mod
         else:
             result = await success_callback(chat_id, user_id)
         if lock:
-            set_chat_unused(chat_id, user_id)
+            set_chat_unused(user_id, chat_id)
         return result
     except mariadb.Error as e:
         if lock:
