@@ -16,7 +16,6 @@ jobs:
     - name: Install pylint
       run: pip install pylint
     - name: Install dependencies
-      run: cd app && python -m pip install
+      run: cd app && python -m pip install -r requirements.txt
     - name: Analysing the code
-      run: |
-        pylint $(git ls-files 'app/*.py')
+      run: pylint $(git ls-files 'app/*.py')

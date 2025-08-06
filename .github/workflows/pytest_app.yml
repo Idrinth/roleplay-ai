@@ -1,0 +1,19 @@
+name: Pytest (APP)
+on:
+  push:
+    paths:
+    - app/*.py
+    - app/requirements.txt
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.13"
+    - name: Install dependencies
+      run: cd app && python -m pip install -r requirements.txt
+    - name: Test the code
+      run: cd app && python -m unittest
