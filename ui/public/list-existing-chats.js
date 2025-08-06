@@ -1,9 +1,6 @@
-(async() => {
+(async(root) => {
   const user = await (async () => {
-    const user = await (await fetch(`${bjoernbuettner.apiEndpoint}/whoami`, {
-      credentials: "include",
-      method: "GET",
-    })).json();
+    const user = root.getFromAPI(`whoami`, 'GET');
     if (!user.error && !user.exception) {
       return user;
     }
@@ -12,5 +9,5 @@
   if (!user) {
     return;
   }
-  bjoernbuettner.listExistingChats(user.chats)
-})();
+  root.listExistingChats(user.chats)
+})(window.bjoernbuettner);
