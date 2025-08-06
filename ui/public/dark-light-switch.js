@@ -12,12 +12,12 @@
       'src',
       'https://peerlist.io/api/v1/projects/embed/PRJHGNQ86JOPGEP7RF8E6QDP769BEN?showUpvote=true&theme=' + colorMode
     );
-    window?.localStorage?.setItem('prefered-color-scheme', colorMode);
+    window?.localStorage?.setItem('preferred-color-scheme', colorMode);
     return colorMode;
   }
   let prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
   if (window.localStorage) {
-    prefersLight = setMode(window.localStorage.getItem('prefered-color-scheme') ?? (prefersLight ? 'light' : 'dark')) === 'light';
+    prefersLight = setMode(window.localStorage.getItem('preferred-color-scheme') ?? (prefersLight ? 'light' : 'dark')) === 'light';
   } else if(prefersLight) {
     setMode('light');
   }
