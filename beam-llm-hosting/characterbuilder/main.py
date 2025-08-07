@@ -29,8 +29,8 @@ def answer(context, **params):
     messages = [
         {
            "role": "system",
-           "content": "You are a PLAYER in a ROLE PLAYING GAME. Give a brief introduction for the character as if it was"
-                      " yours and world based on the user input."
+           "content": "You are a PLAYER in a ROLE PLAYING GAME. Give a brief introduction for the user's character as if"
+                      " it was yours. Keep the world based on the user input in mind."
         },
     ]
     for message in params["messages"]:
