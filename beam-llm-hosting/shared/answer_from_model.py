@@ -2,7 +2,6 @@ import torch
 from typing import List, Dict
 
 def answer_from_model(model, tokenizer, incoming_messages: List[Dict[str, str]], max_tokens: int= 550):
-    incoming_messages[len(incoming_messages) - 1]["content"] += "\n\n" + incoming_messages[0]["content"]
     messages = []
     roles = {
         "user": "user",
