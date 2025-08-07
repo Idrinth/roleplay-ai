@@ -8,7 +8,7 @@ from .logger import log_exception
 from .llm_wrapper import ask_characterbuilder, ask_storysummarizer, ask_gamemaster, prewarm_gamemaster, prewarm_storysummarizer
 from .models import World, Character, Document, ChatStartingPoint, Action, Chat
 from .databases import sql_connection, mongo, qdrant, redis
-from .functions import mariadb_name, mongodb_name, to_mongo_compatible, get_rules, get_system_prompt, simplify_result
+from .functions import mariadb_name, mongodb_name, to_mongo_compatible, get_system_prompt, simplify_result
 from .chat_active import chat_is_in_use,remove_chat_from_use
 
 async def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_key: str):
