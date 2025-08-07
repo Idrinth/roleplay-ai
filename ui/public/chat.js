@@ -224,7 +224,12 @@
       }
     }
   })();
+  let handlingClick = false;
   document.body.onclick = async (event) => {
+    if (handlingClick) {
+      return;
+    }
+    handlingClick = true;
     await root.uploadDocument(event, chat.id, 'character', async(element) => jsyaml.load(element.value), updateCharacters);
     await root.uploadDocument(event, chat.id, 'document', async(element) => {
       return {
@@ -232,6 +237,7 @@
         name: element.getAttribute('data-name') ?? await root.prompt("What is your document named?"),
       };
     }, updateDocuments);
+    handlingClick = false;
   }
   await updateCharacters();
   document.getElementById('add-character').onclick = async (event) => {
