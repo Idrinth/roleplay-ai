@@ -21,10 +21,6 @@ async def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_k
     if summary:
         response = await ask_storysummarizer([
             {
-                "role": "system",
-                "content": "You are reading a role playing session. SUMMARISE the most important points of the following message.",
-            },
-            {
                 "role": "user",
                 "content": "\n\n".join(summary),
             }
@@ -118,10 +114,6 @@ async def chat_history_success(chat_id, user_id):
 async def post_proposals_internal(chat_id: str, user_id: str, starting_point: ChatStartingPoint):
     response = await ask_characterbuilder([
         {
-           "role": "system",
-           "content": "You are a PLAYER in a ROLE PLAYING GAME. Give a brief introduction for the character and world given by the user input."
-        },
-        {
             "role": "user",
             "content": f"Name: {starting_point.name}\n"
                 f"Gender: {starting_point.gender}\n"
@@ -152,7 +144,7 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
         log_exception(e, "chat_endpoint_handlers.chat_message_internal")
     messages = [{
         "role": "system",
-        "content": get_rules()
+        "content": ""
     }]
     sql_connection.ping()
     cursor = sql_connection.cursor()

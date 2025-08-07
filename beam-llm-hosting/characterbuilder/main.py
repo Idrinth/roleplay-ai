@@ -26,6 +26,15 @@ def download_models():
 def answer(context, **params):
     from shared.answer_from_model import answer_from_model
     model, tokenizer = context.on_start_value
+    messages = [
+        {
+           "role": "system",
+           "content": "You are a PLAYER in a ROLE PLAYING GAME. Give a brief introduction for the character as if it was"
+                      " yours and world based on the user input."
+        },
+    ]
+    for message in params["messages"]:
+        messages.append(message)
     return {
-        "answer": answer_from_model(model, tokenizer, params["messages"], 1100)
+        "answer": answer_from_model(model, tokenizer, messages, 1100)
     }

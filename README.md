@@ -1,4 +1,4 @@
-# Wolfgang 'Storyteller' AI
+# Wolfgang AI
 
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/bjoern-buettner/roleplay-ai?utm_source=oss&utm_medium=github&utm_campaign=bjoern-buettner%2Froleplay-ai&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
@@ -31,7 +31,7 @@ We are always looking for contributors:
   - [Story summarising](/beam-llm-training/storysummariser/data)
   - [Character building](/beam-llm-training/characterbuilder/data)
 
-## Others
+## Everyone
 
 - testing
 - reporting issues
