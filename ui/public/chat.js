@@ -225,7 +225,7 @@
     }
   })();
   document.body.onclick = async (event) => {
-    await root.uploadDocument(event, chat.id, 'charactersheet', async(element) => jsyaml.load(element.value), updateCharacters);
+    await root.uploadDocument(event, chat.id, 'character', async(element) => jsyaml.load(element.value), updateCharacters);
     await root.uploadDocument(event, chat.id, 'document', async(element) => {
       return {
         content: element.value,
@@ -237,7 +237,7 @@
   document.getElementById('add-character').onclick = async (event) => {
     event.stopPropagation();
     const el = document.createElement('textarea');
-    el.setAttribute('id', 'charactersheet');
+    el.setAttribute('id', 'character');
     el.value = characterFiller;
     document.body.appendChild(el);
   }
