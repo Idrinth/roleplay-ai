@@ -18,30 +18,10 @@
     } else {
       const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".split("")
       const randChar = () => chars[Math.floor(Math.random() * chars.length)];
-      const password = randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar()
-        + randChar();
+      const password = randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar()
+        + randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar()
+        + randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar()
+        + randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar();
       const uuid = await root.getFromAPI(`register`, 'POST', {
           password: await root.prompt("Enter a password for your account.", password)
         }, 10000, false);
@@ -245,50 +225,13 @@
     }
   })();
   document.body.onclick = async (event) => {
-    const charactersheetElement = document.getElementById('charactersheet');
-    const documentElement = document.getElementById('document');
-    if (charactersheetElement) {
-      if (event.target !== charactersheetElement) {
-        if (charactersheetElement.hasAttribute('data-id')) {
-          if (charactersheetElement.value && charactersheetElement.getAttribute('data-raw') !== charactersheetElement.value) {
-            if (await root.confirm("Do you want to save this modified character sheet?")) {
-              const id = charactersheetElement.getAttribute('data-id');
-              await root.getFromAPI(`chat/${chat.id}/characters/${id}`, JSON.stringify(jsyaml.load(charactersheetElement.value)));
-            }
-          }
-        } else if (charactersheetElement.value) {
-          if (await root.confirm("Do you want to save this new character sheet?")) {
-            await root.getFromAPI(`chat/${chat.id}/characters`, 'POST', JSON.stringify(jsyaml.load(charactersheetElement.value)))
-          }
-        }
-        document.body.removeChild(charactersheetElement);
-        await updateCharacters();
-      }
-    }
-    if (documentElement) {
-      if (event.target !== documentElement) {
-        if (documentElement.hasAttribute('data-id')) {
-          if (documentElement.value && documentElement.getAttribute('data-raw') !== documentElement.value) {
-            if (await root.confirm("Do you want to save this modified document?")) {
-              const id = documentElement.getAttribute('data-id');
-              await root.getFromAPI(`chat/${chat.id}/documents/${id}`, 'POST', {
-                content: documentElement.value,
-                name: documentElement.getAttribute('data-name'),
-              });
-            }
-          }
-        } else if (documentElement.value) {
-          if (await root.confirm("Do you want to save this new document?")) {
-            await root.getFromAPI(`chat/${chat.id}/documents`, 'POST', {
-              content: documentElement.value,
-              name: prompt("What is your document named?")
-            })
-          }
-        }
-        document.body.removeChild(documentElement);
-        await updateCharacters();
-      }
-    }
+    await root.uploadDocument(event, chat.id, 'charactersheet', async(element) => jsyaml.load(element.value), updateCharacters);
+    await root.uploadDocument(event, chat.id, 'document', async(element) => {
+      return {
+        content: element.value,
+        name: element.getAttribute('data-name') ?? await root.prompt("What is your document named?"),
+      };
+    }, updateDocuments);
   }
   await updateCharacters();
   document.getElementById('add-character').onclick = async (event) => {
