@@ -17,7 +17,7 @@
       }
     }
     await upload();
-    document.body.removeChild(element);
+    element.parentElement?.removeChild(element);
     await updateFunction();
   }
 })(window.bjoernbuettner);
