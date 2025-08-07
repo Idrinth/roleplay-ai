@@ -7,6 +7,7 @@ from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from fastapi import Cookie, BackgroundTasks, Response
 
+from .llm_wrapper import prewarm_characterbuilder
 from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint, User
 from .functions import is_uuid_like, mariadb_name, mongodb_name, to_mongo_compatible, user_id_from_jwt, set_login_cookie
 from .databases import sql_connection, mongo, qdrant, redis
@@ -96,6 +97,7 @@ async def new_chat(user_jwt: Annotated[str | None, Cookie()] = None):
         [chat_id, user_id, chat_id]
     )
     redis.set(f"{user_id}-{chat_id}.world", json.dumps(["fantasy", "high magic"]))
+    await prewarm_characterbuilder()
     return {"chat": chat_id}
 
 @app.get("/chat/{chat_id}/world")
