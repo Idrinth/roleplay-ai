@@ -10,11 +10,10 @@
     const upload = async() => {
       const id = element.getAttribute('data-id');
       if (id && element.value && element.getAttribute('data-raw') !== element.value && await root.confirm("Do you want to save this modified character sheet?")) {
-        await root.getFromAPI(`chat/${chatId}/${resource}/${id}`, JSON.stringify(getBody(element)));
-        return;
+        return await root.getFromAPI(`chat/${chatId}/${resource}/${id}`, 'POST', getBody(element));
       }
       if (element.value && await root.confirm("Do you want to save this new character sheet?")) {
-        await root.getFromAPI(`chat/${chatId}/${resource}`, 'POST', JSON.stringify(getBody(element)));
+        return await root.getFromAPI(`chat/${chatId}/${resource}`, 'POST', getBody(element));
       }
     }
     await upload();
