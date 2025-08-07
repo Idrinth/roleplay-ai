@@ -220,7 +220,7 @@
           genre: await root.prompt("What genre does the world fall into?"),
           world: await root.prompt("What is the world like? Please provide keywords separated by comma."),
         });
-        document.getElementById('chat-entry').value = (await value.json()).message;
+        document.getElementById('chat-entry').value = value.message;
       }
     }
   })();
