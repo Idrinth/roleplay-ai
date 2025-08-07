@@ -2,6 +2,7 @@ import os
 import re
 from typing import Dict, List
 import aiohttp
+import asyncio
 
 llm_model = os.getenv('LLM_MODEL')
 beam_gamemaster_url = os.getenv('BEAM_GAMEMASTER_DEPLOYMENT_URL')
@@ -90,10 +91,12 @@ async def ask_storysummarizer(messages: List[Dict[str, str]]):
 
 async def prewarm_gamemaster():
     if llm_to_use == "beam":
-        await prewarm_beam(beam_gamemaster_url)
+        asyncio.create_task(prewarm_beam(beam_gamemaster_url))
+
 async def prewarm_characterbuilder():
     if llm_to_use == "beam":
-        await prewarm_beam(beam_characterbuilder_url)
+        asyncio.create_task(prewarm_beam(beam_characterbuilder_url))
+
 async def prewarm_storysummarizer():
     if llm_to_use == "beam":
-        await prewarm_beam(beam_storysummariser_url)
+        asyncio.create_task(prewarm_beam(beam_storysummariser_url))
