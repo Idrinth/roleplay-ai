@@ -52,6 +52,18 @@ async def ask_beam(messages: List[Dict[str, str]], endpoint: str) -> str:
             else:
                 raise ValueError("Could not get successful response from LLM")
 
+async def prewarm_beam(endpoint: str):
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            endpoint + "warmup/",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {beam_key}",
+            }
+        ) as response:
+            return response
+
+
 async def ask_gamemaster(messages: List[Dict[str, str]]):
     if llm_to_use == "beam":
         return await ask_beam(messages, beam_gamemaster_url)
@@ -75,3 +87,13 @@ async def ask_storysummarizer(messages: List[Dict[str, str]]):
         return await ask_local(messages)
 
     raise ValueError("Could not get response from LLM")
+
+async def prewarm_gamemaster():
+    if llm_to_use == "beam":
+        await prewarm_beam(beam_gamemaster_url)
+async def prewarm_characterbuilder():
+    if llm_to_use == "beam":
+        await prewarm_beam(beam_characterbuilder_url)
+async def prewarm_storysummarizer():
+    if llm_to_use == "beam":
+        await prewarm_beam(beam_storysummariser_url)

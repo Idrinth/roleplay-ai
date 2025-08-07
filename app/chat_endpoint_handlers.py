@@ -5,7 +5,7 @@ from bson import json_util
 from fastapi import BackgroundTasks
 
 from .logger import log_exception
-from .llm_wrapper import ask_characterbuilder, ask_storysummarizer, ask_gamemaster
+from .llm_wrapper import ask_characterbuilder, ask_storysummarizer, ask_gamemaster, prewarm_gamemaster, prewarm_storysummarizer
 from .models import World, Character, Document, ChatStartingPoint, Action, Chat
 from .databases import sql_connection, mongo, qdrant, redis
 from .functions import mariadb_name, mongodb_name, to_mongo_compatible, get_rules, get_system_prompt, simplify_result
@@ -112,6 +112,7 @@ async def chat_history_success(chat_id, user_id):
             "role": message[0],
             "content": message[1],
         })
+    await prewarm_gamemaster()
     return {"messages": messages}
 
 async def post_proposals_internal(chat_id: str, user_id: str, starting_point: ChatStartingPoint):
@@ -135,10 +136,11 @@ async def post_proposals_internal(chat_id: str, user_id: str, starting_point: Ch
                 f"Weather: {starting_point.weather}\n",
         },
     ],)
-
+    await prewarm_gamemaster()
     return {"message": response}
 
 async def chat_message_internal(chat_id: str, user_id: str, action: Action, background_tasks: BackgroundTasks):
+    await prewarm_gamemaster()
     long_term_summary = redis.get(f"{user_id}-{chat_id}.long_text_summary") or ""
     medium_term_summary = redis.get(f"{user_id}-{chat_id}.medium_text_summary") or ""
     short_term_summary = redis.get(f"{user_id}-{chat_id}.short_text_summary") or ""
@@ -183,7 +185,8 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
         "role": "user",
         "content": action.description,
     })
-    response = await ask_gamemaster(messages, )
+    response = await ask_gamemaster(messages)
+    await prewarm_storysummarizer()
     background_tasks.add_task(update_history_dbs, chat_id, user_id, action.description, response, previous_response)
     background_tasks.add_task(update_summary, chat_id, user_id, 20, 40, f"{user_id}-{chat_id}.short_text_summary")
     background_tasks.add_task(update_summary, chat_id, user_id, 40, 80, f"{user_id}-{chat_id}.medium_text_summary")
