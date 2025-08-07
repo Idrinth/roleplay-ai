@@ -13,11 +13,6 @@ from .logger import log_exception
 
 with open('./app/character-sheet.schema.json', 'r') as schema_file:
     schema = json.dumps(json.load(schema_file))
-with open('./app/rules.md', 'r') as md_file:
-    rules = md_file.read()
-
-def get_rules():
-    return rules
 
 def mariadb_name(user_id: str, chat_id: str):
     if not is_uuid_like(user_id):

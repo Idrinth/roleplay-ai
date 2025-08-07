@@ -12,6 +12,7 @@ COPY beam-llm-hosting/shared/*.py ./
 WORKDIR /beam
 COPY beam-llm-hosting/gamemaster/requirements.remote.txt ./
 COPY beam-llm-hosting/gamemaster/main.py ./
+COPY beam-llm-hosting/gamemaster/rules.md ./
 
 RUN beam deploy main.py:answer
 
