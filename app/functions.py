@@ -13,10 +13,6 @@ from .logger import log_exception
 
 with open('./app/character-sheet.schema.json', 'r') as schema_file:
     schema = json.dumps(json.load(schema_file))
-with open('./app/rsa_private_key.pem', 'rb') as rsa_private_key_file:
-    signing_key = rsa_private_key_file.read()
-with open('./app/rsa_public_key.pem', 'rb') as rsa_public_key_file:
-    verifying_key = rsa_public_key_file.read()
 with open('./app/rules.md', 'r') as md_file:
     rules = md_file.read()
 
@@ -66,7 +62,7 @@ def to_mongo_compatible(obj: BaseModel, object_id: str | None = None):
 
 def get_system_prompt(characters, world: str, short_term_summary: str, medium_term_summary: str, long_term_summary: str, vectordb_results):
     out = ""
-    if len(characters) >= 1:
+    if len(characters) > 0:
         out += "# Player Characters:\nThe following character sheets are for reference ONLY."\
             " Do not use these to infer motivations or write actions for player characters."\
             "\n```json\n" + json.dumps(characters, default=json_util.default) + "\n```\n"\
@@ -85,7 +81,7 @@ def get_system_prompt(characters, world: str, short_term_summary: str, medium_te
 
 def user_id_from_jwt(encoded_jwt: str):
     try:
-        payload = decode(encoded_jwt, verifying_key, algorithms=["RS256"])
+        payload = decode(encoded_jwt, os.getenv('PUBLIC_KEY_PEM'), algorithms=["RS256"])
         if payload['iss'] != os.getenv("UI_HOST", "http://localhost"):
             return None
         return payload["sub"]
@@ -101,7 +97,7 @@ def user_id_to_jwt(user_id: str):
             'exp': datetime.now(UTC) + timedelta(days=360),
             'nbf': datetime.now(UTC),
         },
-        signing_key,
+        os.getenv('PRIVATE_KEY_PEM'),
         algorithm='RS256'
     )
 
