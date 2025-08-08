@@ -5,6 +5,7 @@
     "module": "nodenext",
     "target": "esnext",
     "types": [],
+    "lib": ["DOM", "ESNext"],
     "sourceMap": false,
     "declaration": false,
     "declarationMap": false,
@@ -24,5 +25,5 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "include": ["src/*.ts"]
+  "include": ["src/**/*.ts"]
 }

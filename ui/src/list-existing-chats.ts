@@ -1,7 +1,10 @@
 (async(root) => {
   const user = await (async () => {
     const user = await root.getFromAPI(`whoami`, 'GET');
-    if (!user?.error && !user?.exception) {
+    if (typeof user !== 'object' || user === null) {
+      return undefined;
+    }
+    if (!Object.hasOwn(user, 'error') && !Object.hasOwn(user, 'exception')) {
       return user;
     }
     return undefined;

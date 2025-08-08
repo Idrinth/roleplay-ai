@@ -5,11 +5,8 @@
       return;
     }
     for (const achat of chats) {
-      worlds.appendChild(document.createElement('li'));
-      const world = document.getElementById('worlds')?.lastElementChild;
-      if (!world) {
-        continue;
-      }
+      const world = document.createElement('li');
+      worlds.appendChild(world);
       const link = document.createElement('a');
       world.appendChild(link);
       link.innerText = achat.name;

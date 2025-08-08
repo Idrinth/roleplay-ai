@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json && node tools/builder.js",
-    "lint": "eslint public"
+    "lint": "eslint src"
   },
   "repository": {
     "type": "git",
@@ -21,7 +21,9 @@
     "eslint": "^9.32.0",
     "globals": "^16.3.0",
     "minify": "^14.0.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "@typescript-eslint/parser": "^8.39.0",
+    "@typescript-eslint/eslint-plugin": "^8.39.0"
   },
   "private": true
 }

@@ -11,7 +11,6 @@ const config = JSON.parse(readFileSync(process.cwd() + '/.minify.json', 'utf8'))
 const TO_MERGE = {
   'shared-##.min.js': [
     'root.js',
-    'constants.js',
     'get-from-api.js',
     'button.js',
     'dark-light-switch.js',

@@ -1,7 +1,7 @@
 ((root) => {
-  root.getFromAPI = async(endpoint: string, method: 'POST'|'GET'|'PUT', body: any = undefined, timeout: number = 600000, decode: boolean = true): Promise<object> => {
+  root.getFromAPI = async(endpoint: string, method: 'POST'|'GET'|'PUT', body: any = undefined, timeout: number = 600000, decode: boolean = true): Promise<unknown> => {
     try {
-      const content = await fetch(`${root.apiEndpoint}/${endpoint}`, {
+      const content = await fetch(`/api/v1/${endpoint}`, {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
