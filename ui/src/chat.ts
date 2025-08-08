@@ -2,7 +2,7 @@
   const characterFiller = await (await fetch('/char-template.yaml')).text();
   const user = await (async () => {
     const user = await root.getFromAPI('whoami', 'GET');
-    if (!user.error) {
+    if (typeof user === 'object' && user !== null && !Object.hasOwn(user, 'error') && !Object.hasOwn(user, 'exception')) {
       return user;
     }
     if (await root.confirm("Do you already have an account?")) {
@@ -11,7 +11,7 @@
           user_id: userId,
           password: await root.prompt("Enter your password.", "")
         }, 10000, false) !== "true") {
-        await alert("Login failed!");
+        await root.alert("Login failed!");
         location.reload()
         return;
       }
@@ -28,26 +28,24 @@
       await root.alert(`Your user-id is ${uuid} - please save that for logging in.`)
     }
     return await root.getFromAPI(`whoami`, 'GET');
-  })();
+  })() as {name: string, id: string, chats: {id: string, name: string}[]};
 
-  document.getElementById('playername').innerText = (user.name ?? user.id);
-  document.getElementById('playername').onclick = async () => {
-    const previous = user.name ?? user.id;
-    const name = await root.prompt("Enter a new name for yourself.", previous);
-    const password = await root.prompt("Enter a new password for yourself.", "");
-    const data = {};
-    let changed = false;
-    if (name && name !== previous) {
-      data.username = name;
-      changed = true;
-    }
-    if (password) {
-      changed = true;
-      data.password = password;
-    }
-    if (changed) {
+  const playername = document.getElementById('playername');
+  if (playername) {
+    playername.innerText = (user.name ?? user.id);
+    playername.onclick = async () => {
+      const previous = user.name ?? user.id;
+      const name = await root.prompt("Enter a new name for yourself.", previous);
+      const password = await root.prompt("Enter a new password for yourself.", "");
+      const data : {
+        username?: string,
+        password: string,
+      } = {password};
+      if (name !== previous) {
+        data.username = name;
+      }
       await root.getFromAPI(`me`, 'POST', data);
-      document.getElementById('playername').innerText = name;
+      playername.innerText = name;
     }
   }
 
@@ -67,15 +65,23 @@
         }
       }
     }
-    const chatId = (await root.getFromAPI(`new`, 'GET')).chat ?? "";
+    const newChat = await root.getFromAPI(`new`, 'GET') as {chat: string}|{error: string}|{exception: string};
+    if (Object.hasOwn(newChat, 'chat')) {
+      const chatId = (newChat as {chat: string}).chat;
+      return {
+        id: chatId,
+        name: chatId,
+      }
+    }
     return {
-      id: chatId,
-      name: chatId,
+      id: 'new',
+      name: 'New Chat',
     }
   })();
 
   if(chat.id !== (location.pathname.split('/')[2] ?? '')) {
-    window.location = location.protocol + '//' + location.host + '/chat/' + chat.id
+    window.location.assign(location.protocol + '//' + location.host + '/chat/' + chat.id);
+    return;
   }
   while (chat.id === chat.name || !chat.name) {
     chat.name = (await root.prompt("Enter a new name for your chat.", chat.name)) || chat.id;
@@ -89,114 +95,126 @@
   
   root.listExistingChats(user.chats, chat.id)
 
-  window.setInterval(async () => {
-    const response = await root.getFromAPI(
-      `chat/${chat.id}/active?${Date.now()}`,
-      'GET',
-      null,
-      2400,
-    );
-    if (!response.active) {
-      document.getElementById('send').disabled = false;
-      document.getElementById('loader').setAttribute('style', 'display: none');
-      return;
-    }
-    document.getElementById('send').disabled = true;
-    document.getElementById('loader').setAttribute('style', '');
-  }, 2500);
-  const updateDocuments = async () => {
-    const json = await root.getFromAPI(`chat/${chat.id}/documents`, 'GET');
-    while (document.getElementById('documents').children.length > 2) {
-      document.getElementById('documents').removeChild(document.getElementById('characters').lastElementChild);
-    }
-    for (const md_document of json.documents ?? []) {
-      document.getElementById('documents').appendChild(document.createElement('li'));
-      document.getElementById('documents').lastElementChild.appendChild(document.createElement('span'));
-      document.getElementById('documents').lastElementChild.lastElementChild.appendChild(document.createTextNode(md_document.name));
-      document.getElementById('documents').lastElementChild.appendChild(document.createElement('span'));
-      document.getElementById('documents').lastElementChild.lastElementChild.appendChild(document.createTextNode('[E]'));
-      document.getElementById('documents').lastElementChild.lastElementChild.classList.add('button');
-      document.getElementById('documents').lastElementChild.lastElementChild.setAttribute('title', 'Edit document');
-      document.getElementById('documents').lastElementChild.lastElementChild.onclick = (event) => {
-        event.stopPropagation();
-        const el = document.createElement('textarea');
-        el.setAttribute('id', 'document')
-        const doc = {...md_document};
-        doc._id = undefined;
-        el.setAttribute('data-id', md_document.id['$oid']);
-        el.setAttribute('data-name', doc.name);
-        el.value = doc.content;
-        el.setAttribute('data-raw', doc.content);
-        document.body.appendChild(el);
+  const sendButton = document.getElementById('send') as  null|HTMLButtonElement;
+  const loader = document.getElementById('loader');
+  if (sendButton) {
+    window.setInterval(async () => {
+      const response = await root.getFromAPI(
+        `chat/${chat.id}/active?${Date.now()}`,
+        'GET',
+        null,
+        2400,
+      );
+      if (typeof response !== 'object' || response === null || !Object.hasOwn(response, 'active')) {
+        return;
       }
-      document.getElementById('documents').lastElementChild.appendChild(document.createElement('span'));
-      document.getElementById('documents').lastElementChild.lastElementChild.appendChild(document.createTextNode('[D]'));
-      document.getElementById('documents').lastElementChild.lastElementChild.classList.add('button');
-      document.getElementById('documents').lastElementChild.lastElementChild.setAttribute('title', 'Delete document');
-      document.getElementById('documents').lastElementChild.lastElementChild.onclick = async (event) => {
-        event.stopPropagation();
-        if (await root.confirm("Do you want to delete this document?")) {
-          await root.getFromAPI(`chat/${chat.id}/characters/${md_document._id['$oid']}/delete`, 'POST');
-          await updateDocuments();
+      sendButton.disabled = (response as {active: boolean}).active;
+      loader?.setAttribute('style', sendButton.disabled ? '' : 'display: none');
+    }, 2500);
+  }
+  const documents = document.getElementById('documents');
+  if (documents) {
+    const updateDocuments = async () => {
+      const json = await root.getFromAPI(`chat/${chat.id}/documents`, 'GET');
+      while (documents.children.length > 2) {
+        const lastElementChild = documents.lastElementChild;
+        if (lastElementChild) {
+          documents.removeChild(lastElementChild);
+        }
+      }
+      // @ts-ignore
+      if (!json || typeof json !== 'object' || Object.hasOwn(json, 'documents') || !Array.isArray(json.documents)) {
+        for (const md_document of (json as {documents: {name: string,content: string, id: string}[]}).documents) {
+          const doc = document.createElement('li');
+          documents.appendChild(doc);
+          const docName = document.createElement('span');
+          doc.appendChild(docName);
+          docName.appendChild(document.createTextNode(md_document.name));
+          doc.appendChild(root.button('[E]', 'Edit document', (event: MouseEvent) => {
+            event.stopPropagation();
+            const el = document.createElement('textarea');
+            el.setAttribute('id', 'document')
+            el.setAttribute('data-id', md_document.id);
+            el.setAttribute('data-name', md_document.name);
+            el.value = md_document.content;
+            el.setAttribute('data-raw', md_document.content);
+            document.body.appendChild(el);
+          }));
+          doc.appendChild(root.button('[D]', 'Delete document', async (event: MouseEvent) => {
+            event.stopPropagation();
+            if (await root.confirm("Do you want to delete this document?")) {
+              await root.getFromAPI(`chat/${chat.id}/characters/${md_document.id}/delete`, 'POST');
+              await updateDocuments();
+            }
+          }));
         }
       }
     }
   }
-  const updateCharacters = async () => {
-    const json = await root.getFromAPI(`chat/${chat.id}/characters`, 'GET');
-    while (document.getElementById('characters').children.length > 1) {
-      document.getElementById('characters').removeChild(document.getElementById('characters').lastElementChild);
-    }
-    for (const character of json.characters) {
-      document.getElementById('characters').appendChild(document.createElement('li'));
-      document.getElementById('characters').lastElementChild.appendChild(document.createElement('span'));
-      document.getElementById('characters').lastElementChild.lastElementChild.appendChild(document.createTextNode(character.name.taken));
-      document.getElementById('characters').lastElementChild.appendChild(document.createElement('span'));
-      document.getElementById('characters').lastElementChild.lastElementChild.appendChild(document.createTextNode('[E]'));
-      document.getElementById('characters').lastElementChild.lastElementChild.classList.add('button');
-      document.getElementById('characters').lastElementChild.lastElementChild.setAttribute('title', 'Edit character');
-      document.getElementById('characters').lastElementChild.lastElementChild.onclick = (event) => {
-        event.stopPropagation();
-        const el = document.createElement('textarea');
-        el.setAttribute('id', 'charactersheet')
-        const char = {...character};
-        char._id = undefined;
-        el.setAttribute('data-id', character._id['$oid']);
-        el.value = window.jsyaml.dump(char);
-        el.setAttribute('data-raw', el.value);
-        document.body.appendChild(el);
+  const characters = document.getElementById('characters');
+  if (characters) {
+    const updateCharacters = async () => {
+      const json = await root.getFromAPI(`chat/${chat.id}/characters`, 'GET');
+      while (characters.children.length > 1) {
+        const character = characters.lastElementChild;
+        if (character) {
+          characters.removeChild(character);
+        }
       }
-      document.getElementById('characters').lastElementChild.appendChild(document.createElement('span'));
-      document.getElementById('characters').lastElementChild.lastElementChild.appendChild(document.createTextNode('[D]'));
-      document.getElementById('characters').lastElementChild.lastElementChild.classList.add('button');
-      document.getElementById('characters').lastElementChild.lastElementChild.setAttribute('title', 'Delete character');
-      document.getElementById('characters').lastElementChild.lastElementChild.onclick = async (event) => {
-        event.stopPropagation();
-        if (await root.confirm("Do you want to delete this character sheet?")) {
-          await root.getFromAPI(`chat/${chat.id}/characters/${character._id['$oid']}/delete`, 'POST');
-          await updateCharacters();
+      // @ts-ignore
+      if (!json || typeof json !== 'object' || !Object.hasOwn(json, 'characters') || !Array.isArray(json.characters)) {
+        for (const character of (json as { characters: {id: string, name: {taken: string}}[] }).characters) {
+          const characterElement = document.createElement('li');
+          characters.appendChild(characterElement);
+          characterElement.appendChild(document.createElement('span'));
+          characterElement.lastElementChild?.appendChild(document.createTextNode(character.name.taken));
+          characterElement.appendChild(root.button('[E]', 'Edit character', async (event: MouseEvent) => {
+            event.stopPropagation();
+            const el = document.createElement('textarea');
+            el.setAttribute('id', 'charactersheet')
+            const char = {...character} as {id?: string, name: {taken: string}};
+            delete char['id'];
+            el.setAttribute('data-id', character.id);
+            el.value = window?.jsyaml?.dump(char) ?? '';
+            el.setAttribute('data-raw', el.value);
+            document.body.appendChild(el);
+          }));
+          characterElement.appendChild(root.button('[D]', 'Delete character', async (event: MouseEvent) => {
+            event.stopPropagation();
+            if (await root.confirm("Do you want to delete this character sheet?")) {
+              await root.getFromAPI(`chat/${chat.id}/characters/${character.id}/delete`, 'POST');
+              await updateCharacters();
+            }
+          }));
         }
       }
     }
   }
-  document.getElementById('send').addEventListener('click', async function () {
-    const value = document.getElementById('chat-entry').value;
-    if (!value) {
-      return;
-    }
-    const converter = new showdown.Converter();
-    document.getElementById('send').disabled = true;
-    document.getElementById('chat-entry').value = '';
-    document.getElementById('chat').appendChild(document.createElement('li'));
-    document.getElementById('chat').lastElementChild.innerHTML = converter.makeHtml(value);
-    document.getElementById('chat').lastElementChild.classList.add('user');
-    const json = await root.getFromAPI(`chat/${chat.id}`, 'POST', {description: value});
-    if (!json.error && !json.exception) {
-      document.getElementById('chat').appendChild(document.createElement('li'));
-      document.getElementById('chat').lastElementChild.innerHTML = '<span class="gamemaster"></span>' + converter.makeHtml(json.message) ;
-      document.getElementById('chat').lastElementChild.classList.add('agent');
-    }
-  });
+  const chatWrapper = document.getElementById('chat');
+  const chatEntry = document.getElementById('chat-entry') as HTMLTextAreaElement|null;
+  if (sendButton && chatWrapper && chatEntry && window?.showdown?.Converter) {
+    sendButton.addEventListener('click', async function () {
+      const value = chatEntry.value;
+      if (!value || !value.trim()) {
+        return;
+      }
+      // @ts-ignore
+      const converter = new window.showdown.Converter();
+      chatEntry.value = '';
+      const chatElement = document.createElement('li');
+      chatWrapper.appendChild(chatElement);
+      chatElement.innerHTML = converter.makeHtml(value);
+      chatElement.classList.add('user');
+      const json = await root.getFromAPI(`chat/${chat.id}`, 'POST', {description: value}) as Promise<{message?: string, error?: string, exception?: string}>;
+      if (typeof json === 'object' && Object.hasOwn(json, 'message')) {
+        const message = json.message as string;
+        const reply = document.createElement('li');
+        chatWrapper.appendChild(reply);
+        reply.innerHTML = '<span class="gamemaster"></span>' + converter.makeHtml(message);
+        reply.classList.add('agent');
+      }
+    });
+  }
   let handlingClick = false;
   document.body.onclick = async (event) => {
     if (handlingClick) {

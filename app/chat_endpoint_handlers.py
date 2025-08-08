@@ -72,14 +72,17 @@ async def chat_character_add_success(chat_id: str, user_id: str, character: Char
     return {"success": True}
 
 async def chat_characters_success(chat_id, user_id):
-    return json.loads(
+    data = json.loads(
         json.dumps(
-            {
-                "characters": list(mongo[mongodb_name(user_id, chat_id)]['characters'].find())
-            },
+            list(mongo[mongodb_name(user_id, chat_id)]['characters'].find()),
             default=json_util.default
         )
     )
+    fixed_data = []
+    for character in data:
+        character["id"] = character["_id"]["$oid"]
+        fixed_data.append(character)
+    return {"characters": fixed_data}
 
 async def chat_active_success(chat_id: str, user_id: str):
     return {"active": chat_is_in_use(user_id, chat_id)}
