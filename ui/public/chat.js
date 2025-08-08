@@ -207,6 +207,8 @@
         document.getElementById('chat').lastElementChild.classList.add(message.role);
       }
       if (json.messages.length === 0 && !document.getElementById('chat-entry').value && await root.confirm('Do you want help with your beginning scene?')) {
+        const world = await root.prompt("What is the world like? Please provide keywords separated by comma.");
+        document.getElementById('world').value = world;
         const value = await root.getFromAPI(`chat/${chat.id}/starting-point-proposal`, 'POST', {
           name: await root.prompt("What is your character's name?"),
           race: await root.prompt("What is your character's race?"),
@@ -218,7 +220,7 @@
           mood: await root.prompt("What is your character's mood?"),
           weather: await root.prompt("What is your weather like?"),
           genre: await root.prompt("What genre does the world fall into?"),
-          world: await root.prompt("What is the world like? Please provide keywords separated by comma."),
+          world,
         });
         document.getElementById('chat-entry').value = value.message;
       }
