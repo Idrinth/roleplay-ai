@@ -1,27 +1,29 @@
 ((root) => {
-  const createModal = (text, label=false) => {
+  const createModal = (text: string, useLabel: boolean = false) => {
     const prmt = document.createElement('div');
     prmt.setAttribute('id', 'prompt');
-    prmt.appendChild(document.createElement(label ? 'label' : 'p'));
-    prmt.firstElementChild.appendChild(document.createTextNode(text));
+    const label = document.createElement(useLabel ? 'label' : 'p');
+    prmt.appendChild(label);
+    label.appendChild(document.createTextNode(text));
     return prmt;
   }
-  root.prompt = async (text, defaultText = '') => {
+  root.prompt = async (text: string, defaultText: string = ''): Promise<string> => {
     return new Promise(resolve => {
       const prmt = createModal(text, true);
-      prmt.appendChild(document.createElement('input'));
-      prmt.lastElementChild.value = defaultText;
+      const input = document.createElement('input');
+      prmt.appendChild(input);
+      input.value = defaultText;
       prmt.appendChild(root.button('Send', 'Send changes', () => {
-        if (!prmt.lastElementChild.previousElementSibling.value) {
+        if (!input.value) {
           return;
         }
         document.body.removeChild(prmt);
-        resolve(prmt.lastElementChild.previousElementSibling.value);
+        resolve(input.value);
       }, true));
       document.body.appendChild(prmt);
     });
   }
-  root.confirm = async (text) => {
+  root.confirm = async (text: string): Promise<boolean> => {
     return new Promise(resolve => {
       const prmt = createModal(text);
       prmt.appendChild(root.button('Yes', 'Confirm', () => {
@@ -35,7 +37,7 @@
       document.body.appendChild(prmt);
     });
   }
-  root.alert = async (text) => {
+  root.alert = async (text: string): Promise<void> => {
     return new Promise(resolve => {
       const prmt = createModal(text);
       prmt.appendChild(root.button('OK', 'Confirm message', () => {
