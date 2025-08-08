@@ -1,7 +1,7 @@
 (async(root) => {
-  root.uploadDocument = async(event, chatId, resource, getBody, updateFunction) => {
-    const element = document.getElementById(resource);
-    if (!element) {
+  root.uploadDocument = async(event: Event, chatId: string, resource: string, getBody: (element: HTMLTextAreaElement) => any, updateFunction: Function): Promise<void> => {
+    const element = document.getElementById(resource) as HTMLTextAreaElement|null;
+    if (!element || element.tagName !== 'TEXTAREA') {
       return;
     }
     if (event.target === element) {
@@ -15,6 +15,7 @@
       if (element.value && await root.confirm(`Do you want to save this new ${resource}?`)) {
         return await root.getFromAPI(`chat/${chatId}/${resource}s`, 'POST', await getBody(element));
       }
+      return undefined;
     }
     await upload();
     element.parentElement?.removeChild(element);

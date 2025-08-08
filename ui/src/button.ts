@@ -1,5 +1,5 @@
 ((root) => {
-  root.button = (text, title, callback, useActualButton = false) => {
+  root.button = (text: string, title: string, callback: (ev: MouseEvent) => void, useActualButton: boolean = false): HTMLElement => {
     const button = document.createElement(useActualButton ? 'button' : 'span');
     button.appendChild(document.createTextNode(text));
     button.setAttribute('title', title);

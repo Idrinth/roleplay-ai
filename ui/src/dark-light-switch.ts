@@ -1,5 +1,5 @@
 (async() => {
-  const setMode = (colorMode) => {
+  const setMode = (colorMode: 'dark'|'light') => {
     if (!colorMode) {
       colorMode = 'dark';
     }
@@ -17,11 +17,15 @@
   }
   let prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
   if (window.localStorage) {
-    prefersLight = setMode(window.localStorage.getItem('preferred-color-scheme') ?? (prefersLight ? 'light' : 'dark')) === 'light';
+    prefersLight = setMode(window.localStorage.getItem('preferred-color-scheme') as 'dark'|'light' ?? (prefersLight ? 'light' : 'dark')) === 'light';
   } else if(prefersLight) {
     setMode('light');
   }
-  document.getElementById('logo').onclick = () => {
+  const logo = document.getElementById('logo');
+  if (!logo) {
+    return;
+  }
+  logo.onclick = () => {
     prefersLight = !prefersLight;
     setMode(prefersLight ? 'light' : 'dark');
   }

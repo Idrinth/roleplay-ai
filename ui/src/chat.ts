@@ -17,7 +17,7 @@
       }
     } else {
       const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".split("")
-      const randChar = () => chars[Math.floor(Math.random() * chars.length)];
+      const randChar = () => chars[Math.floor(Math.random() * chars.length)] as string;
       const password = randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar()
         + randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar()
         + randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar()
@@ -25,7 +25,7 @@
       const uuid = await root.getFromAPI(`register`, 'POST', {
           password: await root.prompt("Enter a password for your account.", password)
         }, 10000, false);
-      await alert(`Your user-id is ${uuid} - please save that for logging in.`)
+      await root.alert(`Your user-id is ${uuid} - please save that for logging in.`)
     }
     return await root.getFromAPI(`whoami`, 'GET');
   })();
@@ -162,7 +162,7 @@
         const char = {...character};
         char._id = undefined;
         el.setAttribute('data-id', character._id['$oid']);
-        el.value = jsyaml.dump(char);
+        el.value = window.jsyaml.dump(char);
         el.setAttribute('data-raw', el.value);
         document.body.appendChild(el);
       }
@@ -197,42 +197,13 @@
       document.getElementById('chat').lastElementChild.classList.add('agent');
     }
   });
-  await (async () => {
-    const json = await root.getFromAPI(`chat/${chat.id}`, 'GET');
-    const converter = new showdown.Converter();
-    if (!json.error && !json.exception) {
-      for (const message of json.messages) {
-        document.getElementById('chat').appendChild(document.createElement('li'));
-        document.getElementById('chat').lastElementChild.innerHTML = (message.role === 'agent' ? '<span class="gamemaster"></span>' : '') + converter.makeHtml(message.content);
-        document.getElementById('chat').lastElementChild.classList.add(message.role);
-      }
-      if (json.messages.length === 0 && !document.getElementById('chat-entry').value && await root.confirm('Do you want help with your beginning scene?')) {
-        const world = await root.prompt("What is the world like? Please provide keywords separated by comma.");
-        document.getElementById('world').value = world;
-        const value = await root.getFromAPI(`chat/${chat.id}/starting-point-proposal`, 'POST', {
-          name: await root.prompt("What is your character's name?"),
-          race: await root.prompt("What is your character's race?"),
-          gender: await root.prompt("What is your character's gender?"),
-          wear: await root.prompt("What does your character wear?"),
-          profession: await root.prompt("What is your character's profession?"),
-          location: await root.prompt("Where is your character?"),
-          purpose: await root.prompt("What is their purpose there?"),
-          mood: await root.prompt("What is your character's mood?"),
-          weather: await root.prompt("What is your weather like?"),
-          genre: await root.prompt("What genre does the world fall into?"),
-          world,
-        });
-        document.getElementById('chat-entry').value = value.message;
-      }
-    }
-  })();
   let handlingClick = false;
   document.body.onclick = async (event) => {
     if (handlingClick) {
       return;
     }
     handlingClick = true;
-    await root.uploadDocument(event, chat.id, 'character', async(element) => jsyaml.load(element.value), updateCharacters);
+    await root.uploadDocument(event, chat.id, 'character', async(element) => window.jsyaml.load(element.value), updateCharacters);
     await root.uploadDocument(event, chat.id, 'document', async(element) => {
       return {
         content: element.value,
@@ -284,4 +255,33 @@
       keywords,
     });
   }
+  await (async () => {
+    const json = await root.getFromAPI(`chat/${chat.id}`, 'GET');
+    const converter = new window.showdown.Converter();
+    if (json.messages) {
+      for (const message of json.messages) {
+        document.getElementById('chat').appendChild(document.createElement('li'));
+        document.getElementById('chat').lastElementChild.innerHTML = (message.role === 'agent' ? '<span class="gamemaster"></span>' : '') + converter.makeHtml(message.content);
+        document.getElementById('chat').lastElementChild.classList.add(message.role);
+      }
+      if (json.messages.length === 0 && !document.getElementById('chat-entry').value && await root.confirm('Do you want help with your beginning scene?')) {
+        const world = await root.prompt("What is the world like? Please provide keywords separated by comma.");
+        document.getElementById('world').value = world;
+        const value = await root.getFromAPI(`chat/${chat.id}/starting-point-proposal`, 'POST', {
+          name: await root.prompt("What is your character's name?"),
+          race: await root.prompt("What is your character's race?"),
+          gender: await root.prompt("What is your character's gender?"),
+          wear: await root.prompt("What does your character wear?"),
+          profession: await root.prompt("What is your character's profession?"),
+          location: await root.prompt("Where is your character?"),
+          purpose: await root.prompt("What is their purpose there?"),
+          mood: await root.prompt("What is your character's mood?"),
+          weather: await root.prompt("What is your weather like?"),
+          genre: await root.prompt("What genre does the world fall into?"),
+          world,
+        });
+        document.getElementById('chat-entry').value = value.message;
+      }
+    }
+  })();
 })(window.bjoernbuettner);

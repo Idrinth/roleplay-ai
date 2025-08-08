@@ -1,5 +1,5 @@
 (async() => {
-  PayPal.Donation.Button({
+  window.PayPal.Donation.Button({
     env: 'production',
     hosted_button_id: 'AENZ9E63F85G8',
     image: {
@@ -10,6 +10,9 @@
   }).render('#donate-button');
   setTimeout(() => {
     const paypal = document.getElementById('donate-button');
+    if (! paypal) {
+      return;
+    }
     paypal.setAttribute('tabindex', '0');
     paypal.setAttribute('role', 'button');
     paypal.setAttribute('aria-label', 'opens in a new window');

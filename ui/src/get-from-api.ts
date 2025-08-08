@@ -1,5 +1,5 @@
 ((root) => {
-  root.getFromAPI = async(endpoint, method, body = null, timeout = 600000, decode = true) => {
+  root.getFromAPI = async(endpoint: string, method: 'POST'|'GET'|'PUT', body: any = undefined, timeout: number = 600000, decode: boolean = true): Promise<object> => {
     try {
       const content = await fetch(`${root.apiEndpoint}/${endpoint}`, {
         credentials: "include",
@@ -8,7 +8,7 @@
           "Accept": "application/json",
         },
         signal: AbortSignal.timeout(timeout),
-        body: body ? JSON.stringify(body) : undefined,
+        body: body ? JSON.stringify(body) : null,
         method,
       });
       return await (decode? content.json() : content.text());
