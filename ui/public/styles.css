@@ -53,9 +53,6 @@ h1, h2, h3, h4, h5, h6 {
   grid-template-columns: 7fr 2fr;
   grid-template-rows: 1fr 1fr 1fr;
 }
-body.chat .content {
-  grid-template-rows: calc((100% - 5em) / 3) calc((100% - 5em) / 3) calc((100% - 5em) / 3) 5em;
-}
 a, a:visited, a:active, a:hover, a:focus {
   color: var(--main-color);
   text-decoration: underline;
@@ -244,6 +241,7 @@ nav, footer {
 .chat .content {
   transition-property: grid-template-rows;
   transition-duration: 1.6s;
+  grid-template-rows: calc((100% - 5em) / 3) calc((100% - 5em) / 3) calc((100% - 5em) / 3) 5em;
 }
 .chat .content.hovers-footer {
   grid-template-rows: calc((100% - 10em)/ 3) calc((100% - 10em)/ 3) calc((100% - 10em)/ 3) 10em

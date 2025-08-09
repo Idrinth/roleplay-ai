@@ -1,16 +1,16 @@
 (() => {
-  const footer = document.createElement("footer");
-  const worlds = document.createElement("worlds");
-  const documents = document.createElement("documents");
-  const characters = document.createElement("characters");
-  const content = document.getElementById("content");
+  const footer = document.createElement('footer');
+  const worlds = document.createElement('worlds');
+  const documents = document.createElement('documents');
+  const characters = document.createElement('characters');
+  const content = document.getElementById('content');
   if (!content) {
     return;
   }
-  const data = {footer, worlds, documents, characters};
-  for (const element of Object.keys(data)) {
-    if (Object.hasOwn(data, element)) {
-      const item = data[element as 'documents'|'characters'|'worlds'|'footer'] as HTMLElement;
+  const elements = {footer, worlds, documents, characters};
+  for (const element of Object.keys(elements)) {
+    if (Object.hasOwn(elements, element)) {
+      const item = elements[element as keyof typeof elements] as HTMLElement;
       for (const event of ['mouseenter', 'focusin']) {
         item.addEventListener(event, () => {
           content.classList.add(`hovers-${element}`);
