@@ -30,6 +30,8 @@ def answer(context, **params):
     from shared.answer_from_model import answer_from_model
     model, tokenizer = context.on_start_value
     messages = params["messages"]
+    if messages[0]["role"] != "system":
+        messages.insert(0, {"role": "system", "content": ""})
     messages[0]["content"] = rules + "\n\n" + messages[0]["content"]
     return {
         "answer": answer_from_model(model, tokenizer, messages, 550)
