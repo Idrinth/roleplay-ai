@@ -127,7 +127,7 @@
         documents.removeChild(lastElementChild);
       }
     }
-    // @ts-ignore
+    // @ts-expect-error typescript does not recognise .documents as existing after hasOwn
     if (!json || typeof json !== 'object' || Object.hasOwn(json, 'documents') || !Array.isArray(json.documents)) {
       for (const md_document of (json as {documents: {name: string,content: string, id: string}[]}).documents) {
         const doc = document.createElement('li');
@@ -163,7 +163,7 @@
         characters.removeChild(character);
       }
     }
-    // @ts-ignore
+    // @ts-expect-error typescript does not recognise .characters as existing after hasOwn
     if (!json || typeof json !== 'object' || !Object.hasOwn(json, 'characters') || !Array.isArray(json.characters)) {
       for (const character of (json as { characters: {id: string, name: {taken: string}}[] }).characters) {
         const characterElement = document.createElement('li');
@@ -270,7 +270,7 @@
   });
   await (async () => {
     const json = await root.getFromAPI(`chat/${chat.id}`, 'GET');
-    if (typeof json === 'object' && json !== null && Object.hasOwn(json, 'messages') && Array.isArray((json as {messages: any}).messages)) {
+    if (typeof json === 'object' && json !== null && Object.hasOwn(json, 'messages') && Array.isArray((json as {messages: []}).messages)) {
       for (const message of (json as {messages: {role: string, content: string}[]}).messages) {
         const listElement = document.createElement('li');
         chatWrapper.appendChild(listElement);

@@ -1,5 +1,5 @@
 (async(root) => {
-  root.uploadDocument = async(event: Event, chatId: string, resource: string, getBody: (element: HTMLTextAreaElement) => Promise<any>, updateFunction: () => Promise<void>): Promise<void> => {
+  root.uploadDocument = async(event: Event, chatId: string, resource: string, getBody: (element: HTMLTextAreaElement) => Promise<object>, updateFunction: () => Promise<void>): Promise<void> => {
     const element = document.getElementById(resource) as HTMLTextAreaElement|null;
     if (!element || element.tagName !== 'TEXTAREA') {
       return;

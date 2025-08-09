@@ -1,15 +1,15 @@
 import js from "@eslint/js";
-import { defineConfig } from "eslint/config";
 import globals from "globals";
-import typescriptPlugin from "@typescript-eslint/eslint-plugin"
-import typescriptParser from "@typescript-eslint/parser"
+import tseslint from 'typescript-eslint';
 
-export default defineConfig([
-	{
+export default tseslint.config(
+  js.configs.recommended,
+  tseslint.configs.recommended,
+  {
 		files: ["**/*.ts"],
 		languageOptions: {
 			ecmaVersion: 2022,
-      parser: typescriptParser,
+      parser: tseslint.parser,
 			globals: {
 				...globals.browser,
         jsyaml: true,
@@ -18,13 +18,11 @@ export default defineConfig([
         bjoernbuettner: true,
 			},
 		},
-    plugins: {
-			js,
-      typescriptPlugin,
-		},
+    rules: {
+      'no-unused-vars': 'off',
+    },
     linterOptions: {
 			noInlineConfig: true,
 		},
-		extends: ["js/recommended"],
-	},
-]);
+	}
+);
