@@ -29,7 +29,7 @@ const TO_MERGE = {
 
 for(const file of readdirSync(process.cwd() + '/public', 'utf-8')) {
   if (file.endsWith('.js')) {
-    writeFileSync(process.cwd() + '/public/' + file, readFileSync(file, 'utf8').replace(/export \{};/g, ''), "utf8");
+    writeFileSync(process.cwd() + '/public/' + file, readFileSync(process.cwd() + '/public/' + file, 'utf8').replace(/export \{};/g, ''), "utf8");
   }
 }
 
