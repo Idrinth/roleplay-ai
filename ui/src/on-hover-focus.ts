@@ -1,8 +1,8 @@
 (() => {
-  const footer = document.createElement('footer');
-  const worlds = document.createElement('worlds');
-  const documents = document.createElement('documents');
-  const characters = document.createElement('characters');
+  const footer = document.getElementById('footer');
+  const worlds = document.getElementById('worlds');
+  const documents = document.getElementById('documents');
+  const characters = document.getElementById('characters');
   const content = document.getElementById('content');
   if (!content) {
     return;
@@ -12,12 +12,12 @@
     if (Object.hasOwn(elements, element)) {
       const item = elements[element as keyof typeof elements] as HTMLElement;
       for (const event of ['mouseenter', 'focusin']) {
-        item.addEventListener(event, () => {
+        item?.addEventListener(event, () => {
           content.classList.add(`hovers-${element}`);
         });
       }
       for (const event of ['mouseleave', 'focusout']) {
-        item.addEventListener(event, () => {
+        item?.addEventListener(event, () => {
           content.classList.remove(`hovers-${element}`);
         });
       }
