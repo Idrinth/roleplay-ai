@@ -43,6 +43,9 @@ declare global {
         makeHtml: (content: string) => string,
       },
     },
+    DOMPurify?: {
+      sanitize: (html: string) => string,
+    }
   }
 }
 

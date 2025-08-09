@@ -210,14 +210,17 @@
       return;
     }
     handlingClick = true;
-    await root.uploadDocument(event, chat.id, 'character', async(element) => window?.jsyaml?.load(element.value) ?? {}, updateCharacters);
-    await root.uploadDocument(event, chat.id, 'document', async(element) => {
-      return {
-        content: element.value,
-        name: element.getAttribute('data-name') ?? await root.prompt("What is your document named?"),
-      };
-    }, updateDocuments);
-    handlingClick = false;
+    try {
+      await root.uploadDocument(event, chat.id, 'character', async (element) => window?.jsyaml?.load(element.value) ?? {}, updateCharacters);
+      await root.uploadDocument(event, chat.id, 'document', async (element) => {
+        return {
+          content: element.value,
+          name: element.getAttribute('data-name') ?? await root.prompt("What is your document named?"),
+        };
+      }, updateDocuments);
+    } finally {
+      handlingClick = false;
+    }
   }
   await updateCharacters();
   document.getElementById('add-character')?.addEventListener('click', async (event) => {
@@ -268,7 +271,10 @@
       for (const message of (json as {messages: {role: string, content: string}[]}).messages) {
         const listElement = document.createElement('li');
         chatWrapper.appendChild(listElement);
-        listElement.innerHTML = (message.role === 'agent' ? '<span class="gamemaster"></span>' : '') + converter.makeHtml(message.content);
+        const newHTML = converter.makeHtml(message.content);
+        // if the purifier is not there, the only one suffering is the user themselves
+        const purifier = window.DOMPurify?.sanitize ?? ((html: string) => {return html;});
+        listElement.innerHTML = (message.role === 'agent' ? '<span class="gamemaster"></span>' : '') + purifier(newHTML);
         listElement.classList.add(message.role);
       }
       if (((json as {messages?: []})?.messages ?? [])?.length === 0 && !chatEntry.value && await root.confirm('Do you want help with your beginning scene?')) {

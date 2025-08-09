@@ -22,6 +22,7 @@ const TO_MERGE = {
   'chat-##.min.js': [
     'showdown.min.js',
     'js-yaml.min.js',
+    'purify.min.js',
     'document-upload.js',
     'chat.js',
   ]
@@ -55,6 +56,7 @@ for(const file of readdirSync(process.cwd() + '/public', 'utf-8')){
 for (const library of [
   'node_modules/js-yaml/dist/js-yaml.min.js',
   'node_modules/showdown/dist/showdown.min.js',
+  'node_modules/dompurify/dist/purify.min.js',
 ]) {
   writeFileSync(process.cwd() + '/dist/'+library.replace(/\\/g, '/').split('/').pop(), readFileSync(library, 'utf8'), 'utf8');
 }
