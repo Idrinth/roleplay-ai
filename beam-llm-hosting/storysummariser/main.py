@@ -1,6 +1,9 @@
 from beam import endpoint, Image, QueueDepthAutoscaler, Volume
 from shared.download_models import CACHE_PATH
 
+with open('./rules.md', 'r') as md_file:
+    rules = md_file.read()
+
 NAME = 'storysummariser'
 
 def download_models():
@@ -29,7 +32,7 @@ def answer(context, **params):
     messages = [
         {
             "role": "system",
-            "content": "You are reading a role playing session. SUMMARISE the most important points of the following message.",
+            "content": rules
         },
     ]
     for message in params["messages"]:

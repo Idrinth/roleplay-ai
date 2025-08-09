@@ -3,6 +3,9 @@ from shared.download_models import CACHE_PATH
 
 NAME = 'characterbuilder'
 
+with open('./rules.md', 'r') as md_file:
+    rules = md_file.read()
+
 def download_models():
     from shared.download_models import download_model
     return download_model(f"Idrinth/{NAME}ai")
@@ -29,8 +32,7 @@ def answer(context, **params):
     messages = [
         {
            "role": "system",
-           "content": "You are a PLAYER in a ROLE PLAYING GAME. Give a brief introduction for the user's character as if"
-                      " it was yours. Keep the world based on the user input in mind."
+           "content": rules,
         },
     ]
     for message in params["messages"]:

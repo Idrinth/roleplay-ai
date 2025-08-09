@@ -10,6 +10,12 @@ beam_characterbuilder_url = os.getenv('BEAM_CHARACTERBUILDER_DEPLOYMENT_URL')
 beam_storysummariser_url = os.getenv('BEAM_SUMMARISER_DEPLOYMENT_URL')
 beam_key = os.getenv('BEAM_API_KEY')
 llm_to_use = os.getenv('LLM_TO_USE')
+with open('./gamemaster.md', 'r') as rules_file:
+    gamemaster_rules = rules_file.read()
+with open('./characterbuilder.md', 'r') as rules_file:
+    characterbuilder_rules = rules_file.read()
+with open('./storysummariser.md', 'r') as rules_file:
+    storysummariser_rules = rules_file.read()
 
 async def ask_local(messages: List[Dict[str, str]]) -> str:
     async with aiohttp.ClientSession() as session:
@@ -69,6 +75,7 @@ async def ask_gamemaster(messages: List[Dict[str, str]]):
     if llm_to_use == "beam":
         return await ask_beam(messages, beam_gamemaster_url)
     elif llm_to_use == "local":
+        messages[0]["content"] += "\n\n" + gamemaster_rules
         return await ask_local(messages)
 
     raise ValueError("Could not get response from LLM")
@@ -77,6 +84,7 @@ async def ask_characterbuilder(messages: List[Dict[str, str]]):
     if llm_to_use == "beam":
         return await ask_beam(messages, beam_characterbuilder_url)
     elif llm_to_use == "local":
+        messages.insert(0, {"role": "system", "content": characterbuilder_rules})
         return await ask_local(messages)
 
     raise ValueError("Could not get response from LLM")
@@ -85,6 +93,7 @@ async def ask_storysummarizer(messages: List[Dict[str, str]]):
     if llm_to_use == "beam":
         return await ask_beam(messages, beam_storysummariser_url)
     elif llm_to_use == "local":
+        messages.insert(0, {"role": "system", "content": storysummariser_rules})
         return await ask_local(messages)
 
     raise ValueError("Could not get response from LLM")

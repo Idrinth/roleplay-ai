@@ -11,6 +11,7 @@ COPY beam-llm-hosting/shared/*.py ./
 
 WORKDIR /beam
 COPY beam-llm-hosting/storysummariser/requirements.remote.txt ./
+COPY system-prompts/characterbuilder.md ./rules.md
 COPY beam-llm-hosting/storysummariser/main.py ./
 
 RUN beam deploy main.py:answer
