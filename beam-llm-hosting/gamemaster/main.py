@@ -3,11 +3,8 @@ from shared.download_models import CACHE_PATH
 
 NAME = 'gamemaster'
 
-with open('./rules.md', 'r') as md_file:
+with open('./rules.md', 'r', encoding="utf-8") as md_file:
     rules = md_file.read()
-
-def get_rules():
-    return rules
 
 def download_models():
     from shared.download_models import download_model
@@ -33,7 +30,7 @@ def answer(context, **params):
     from shared.answer_from_model import answer_from_model
     model, tokenizer = context.on_start_value
     messages = params["messages"]
-    messages[0]["content"] = get_rules() + "\n\n" + messages[0]["content"]
+    messages[0]["content"] = rules + "\n\n" + messages[0]["content"]
     return {
         "answer": answer_from_model(model, tokenizer, messages, 550)
     }

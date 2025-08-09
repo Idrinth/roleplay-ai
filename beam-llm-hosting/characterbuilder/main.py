@@ -3,7 +3,7 @@ from shared.download_models import CACHE_PATH
 
 NAME = 'characterbuilder'
 
-with open('./rules.md', 'r') as md_file:
+with open('./rules.md', 'r', encoding="utf-8") as md_file:
     rules = md_file.read()
 
 def download_models():
