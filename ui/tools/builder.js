@@ -25,6 +25,7 @@ const TO_MERGE = {
     'purify.min.js',
     'document-upload.js',
     'chat.js',
+    'on-hover-focus.js',
   ]
 }
 
