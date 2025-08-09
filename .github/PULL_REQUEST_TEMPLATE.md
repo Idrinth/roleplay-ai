@@ -38,7 +38,19 @@ Closes #<issue-number>
 
 ## 🧪 How Has This Been Tested?
 
-<!-- Explain how you tested your changes -->
+<!-- Explain how you tested your changes. Include commands, results, and coverage. -->
+- [ ] Added/updated unit and/or integration tests
+- [ ] Manually verified locally
+
+```bash
+# Commands run (e.g., linting, tests, build, smoke checks)
+```
+
+Results/notes:
+- Test summary/coverage:
+- Manual verification details:
+
+If not applicable (e.g., docs-only), state: N/A
 
 ---
 
