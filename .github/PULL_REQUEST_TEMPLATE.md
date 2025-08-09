@@ -44,9 +44,15 @@ Closes #<issue-number>
 
 ## 📋 Checklist
 
-- [ ] I have followed the contribution guidelines.
-- [ ] I have tested the code before creating the PR.
-- [ ] I have linked related issues if applicable.
+- [ ] I have followed the contribution guidelines (see CONTRIBUTING.md)
+- [ ] I have self-reviewed my changes
+- [ ] I have added or updated tests as appropriate
+- [ ] I have tested these changes locally and confirmed expected behaviour
+- [ ] I have updated documentation where necessary
+- [ ] I have linked related issues if applicable
+- [ ] No secrets or sensitive data are present in code, logs, or screenshots
+- [ ] For UI changes: I have considered accessibility (a11y) and provided alt text
+- [ ] If breaking changes exist, I have documented them above
 
 ---
 
