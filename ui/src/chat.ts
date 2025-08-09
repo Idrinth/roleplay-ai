@@ -16,14 +16,8 @@
         return;
       }
     } else {
-      const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".split("")
-      const randChar = () => chars[Math.floor(Math.random() * chars.length)] as string;
-      const password = randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar()
-        + randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar()
-        + randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar()
-        + randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar() + randChar();
       const uuid = await root.getFromAPI(`register`, 'POST', {
-          password: await root.prompt("Enter a password for your account.", password)
+          password: await root.prompt("Enter a password for your account.", root.password())
         }, 10000, false);
       await root.alert(`Your user-id is ${uuid} - please save that for logging in.`)
     }
@@ -102,7 +96,7 @@
   const world = document.getElementById('world') as HTMLInputElement|null;
   const chatWrapper = document.getElementById('chat');
   const chatEntry = document.getElementById('chat-entry') as HTMLTextAreaElement|null;
-  if (!sendButton || !documents || !characters || !world || !chatWrapper || !chatEntry || !window?.showdown?.Converter) {
+  if (!sendButton || !documents || !characters || !world || !chatWrapper || !chatEntry || !window?.showdown?.Converter || !window?.jsyaml?.load) {
     return;
   }
   const converter = new window.showdown.Converter();
@@ -110,7 +104,7 @@
     const response = await root.getFromAPI(
       `chat/${chat.id}/active?${Date.now()}`,
       'GET',
-      null,
+      undefined,
       2400,
     );
     if (typeof response !== 'object' || response === null || !Object.hasOwn(response, 'active')) {
@@ -216,7 +210,7 @@
       return;
     }
     handlingClick = true;
-    await root.uploadDocument(event, chat.id, 'character', async(element) => window?.jsyaml?.load(element.value), updateCharacters);
+    await root.uploadDocument(event, chat.id, 'character', async(element) => window?.jsyaml?.load(element.value) ?? {}, updateCharacters);
     await root.uploadDocument(event, chat.id, 'document', async(element) => {
       return {
         content: element.value,

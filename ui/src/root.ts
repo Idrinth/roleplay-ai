@@ -4,6 +4,7 @@ declare global {
       button: (text: string, title: string, callback: (ev: MouseEvent) => void, useActualButton: boolean) => HTMLButtonElement|HTMLSpanElement,
       alert: (text: string) => Promise<void>,
       confirm: (text: string) => Promise<boolean>,
+      password: (minChars: number, maxChar: number) => string,
       prompt: (text: string, defaultText: string) => Promise<string>,
       listExistingChats: (chats: {id: string, name: string}[], chatId: string) => void,
       getFromAPI: (endpoint: string, method: 'POST'|'GET'|'PUT', body: object, timeout: number, decode: boolean) => Promise<unknown|{exception: string}>,
@@ -11,10 +12,12 @@ declare global {
     } & {
       button: (text: string, title: string, callback: (ev: MouseEvent) => void) => HTMLButtonElement|HTMLSpanElement,
       prompt: (text: string) => Promise<string>,
+      password: (minChars: number) => string,
       listExistingChats: (chats: {id: string, name: string}[]) => void,
-      getFromAPI: (endpoint: string, method: 'POST'|'GET'|'PUT', body: object, timeout: number) => Promise<unknown|{exception: string}>,
+      getFromAPI: (endpoint: string, method: 'POST'|'GET'|'PUT', body: object|undefined, timeout: number) => Promise<unknown|{exception: string}>,
     } & {
-      getFromAPI: (endpoint: string, method: 'POST'|'GET'|'PUT', body: object) => Promise<unknown|{exception: string}>,
+      password: () => string,
+      getFromAPI: (endpoint: string, method: 'POST'|'GET'|'PUT', body: object|undefined) => Promise<unknown|{exception: string}>,
     } & {
       getFromAPI: (endpoint: string, method: 'POST'|'GET'|'PUT') => Promise<unknown|{exception: string}>,
     },
