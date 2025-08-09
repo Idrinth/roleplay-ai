@@ -3,10 +3,12 @@ FROM node:24-alpine AS build
 WORKDIR /build
 
 COPY ui/.minify.json ./
+COPY ui/tsconfig.json ./
 COPY ui/package.json ./
 COPY ui/package-lock.json ./
 COPY ui/tools ./tools
 COPY ui/public ./public
+COPY ui/src ./src
 
 RUN npm ci && npm run build
 
