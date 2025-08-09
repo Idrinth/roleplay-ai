@@ -30,6 +30,12 @@ Closes #<issue-number>
 
 ---
 
+## ⚠️ Breaking Changes
+
+<!-- Describe any breaking changes and provide migration steps/examples -->
+
+---
+
 ## 🧪 How Has This Been Tested?
 
 <!-- Explain how you tested your changes -->
