@@ -1,5 +1,7 @@
 (async (root) => {
   const characterFiller = await (await fetch('/char-template.yaml')).text();
+  // if the purifier is not there, the only one suffering is the user themselves
+  const purifier = window.DOMPurify?.sanitize ?? ((html: string) => {return html;});
   const user = await (async () => {
     const user = await root.getFromAPI('whoami', 'GET');
     if (typeof user === 'object' && user !== null && !Object.hasOwn(user, 'error') && !Object.hasOwn(user, 'exception')) {
@@ -193,14 +195,14 @@
     chatEntry.value = '';
     const chatElement = document.createElement('li');
     chatWrapper.appendChild(chatElement);
-    chatElement.innerHTML = converter.makeHtml(value);
+    chatElement.innerHTML = purifier(converter.makeHtml(value));
     chatElement.classList.add('user');
     const json = await root.getFromAPI(`chat/${chat.id}`, 'POST', {description: value}) as {message?: string, error?: string, exception?: string};
     if (typeof json === 'object' && Object.hasOwn(json, 'message')) {
       const message = (json as {message: string}).message;
       const reply = document.createElement('li');
       chatWrapper.appendChild(reply);
-      reply.innerHTML = '<span class="gamemaster"></span>' + converter.makeHtml(message);
+      reply.innerHTML = '<span class="gamemaster"></span>' + purifier(converter.makeHtml(message));
       reply.classList.add('agent');
     }
   });
@@ -210,14 +212,17 @@
       return;
     }
     handlingClick = true;
-    await root.uploadDocument(event, chat.id, 'character', async(element) => window?.jsyaml?.load(element.value) ?? {}, updateCharacters);
-    await root.uploadDocument(event, chat.id, 'document', async(element) => {
-      return {
-        content: element.value,
-        name: element.getAttribute('data-name') ?? await root.prompt("What is your document named?"),
-      };
-    }, updateDocuments);
-    handlingClick = false;
+    try {
+      await root.uploadDocument(event, chat.id, 'character', async (element) => window?.jsyaml?.load(element.value) ?? {}, updateCharacters);
+      await root.uploadDocument(event, chat.id, 'document', async (element) => {
+        return {
+          content: element.value,
+          name: element.getAttribute('data-name') ?? await root.prompt("What is your document named?"),
+        };
+      }, updateDocuments);
+    } finally {
+      handlingClick = false;
+    }
   }
   await updateCharacters();
   document.getElementById('add-character')?.addEventListener('click', async (event) => {
@@ -268,7 +273,8 @@
       for (const message of (json as {messages: {role: string, content: string}[]}).messages) {
         const listElement = document.createElement('li');
         chatWrapper.appendChild(listElement);
-        listElement.innerHTML = (message.role === 'agent' ? '<span class="gamemaster"></span>' : '') + converter.makeHtml(message.content);
+        const newHTML = converter.makeHtml(message.content);
+        listElement.innerHTML = (message.role === 'agent' ? '<span class="gamemaster"></span>' : '') + purifier(newHTML);
         listElement.classList.add(message.role);
       }
       if (((json as {messages?: []})?.messages ?? [])?.length === 0 && !chatEntry.value && await root.confirm('Do you want help with your beginning scene?')) {
