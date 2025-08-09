@@ -6,26 +6,34 @@ declare global {
       confirm: (text: string) => Promise<boolean>,
       prompt: (text: string, defaultText: string) => Promise<string>,
       listExistingChats: (chats: {id: string, name: string}[], chatId: string) => void,
-      getFromAPI: (endpoint: string, method: 'POST'|'GET'|'PUT', body: any, timeout: number, decode: boolean) => Promise<unknown|{exception: string}>,
-      uploadDocument: (event: Event, chatId: string, resource: string, getBody: (element: HTMLTextAreaElement) => Promise<any>, updateFunction: () => Promise<void>) => Promise<void>,
+      getFromAPI: (endpoint: string, method: 'POST'|'GET'|'PUT', body: object, timeout: number, decode: boolean) => Promise<unknown|{exception: string}>,
+      uploadDocument: (event: Event, chatId: string, resource: string, getBody: (element: HTMLTextAreaElement) => Promise<object>, updateFunction: () => Promise<void>) => Promise<void>,
     } & {
       button: (text: string, title: string, callback: (ev: MouseEvent) => void) => HTMLButtonElement|HTMLSpanElement,
       prompt: (text: string) => Promise<string>,
       listExistingChats: (chats: {id: string, name: string}[]) => void,
-      getFromAPI: (endpoint: string, method: 'POST'|'GET'|'PUT', body: any, timeout: number) => Promise<unknown|{exception: string}>,
+      getFromAPI: (endpoint: string, method: 'POST'|'GET'|'PUT', body: object, timeout: number) => Promise<unknown|{exception: string}>,
     } & {
-      getFromAPI: (endpoint: string, method: 'POST'|'GET'|'PUT', body: any) => Promise<unknown|{exception: string}>,
+      getFromAPI: (endpoint: string, method: 'POST'|'GET'|'PUT', body: object) => Promise<unknown|{exception: string}>,
     } & {
       getFromAPI: (endpoint: string, method: 'POST'|'GET'|'PUT') => Promise<unknown|{exception: string}>,
     },
     PayPal?: {
       Donation?: {
-        Button?: (config: {}) => {render: (id: string) => HTMLElement},
+        Button?: (config: {
+          env: 'production'
+          hosted_button_id: string,
+          image: {
+            src: string,
+            alt: string,
+            title: string,
+          },
+        }) => {render: (id: string) => HTMLElement},
       },
     },
     jsyaml?: {
       load: <T = unknown>(input: string) => T,
-      dump: (input: any) => string,
+      dump: (input: object) => string,
     },
     showdown?: {
       Converter: new () => {

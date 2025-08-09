@@ -33,7 +33,6 @@ for(const file of readdirSync(process.cwd() + '/public', 'utf-8')) {
   }
 }
 
-
 for(const file of readdirSync(process.cwd() + '/public', 'utf-8')){
   if (file.endsWith('.js') || file.endsWith('.html') || file.endsWith('.css')) {
     try {
