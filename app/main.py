@@ -140,7 +140,7 @@ async def chat_document_delete(chat_id: str, document_id: str, user_jwt: Annotat
         return {"error": "Not a valid Document"}
     sql_connection.cursor().execute(f"DELETE FROM `{mariadb_name(user_id, chat_id)}`.documents WHERE id='{document_id}';")
     qdrant.delete(
-        collection_name=chat_id,
+        collection_name=f"{user_id}-{chat_id}",
         points_selector=[document_id],
         wait=True,
     )
