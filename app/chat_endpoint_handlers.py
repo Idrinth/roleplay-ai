@@ -104,7 +104,9 @@ async def chat_history_success(chat_id, user_id):
     messages = []
     sql_connection.ping()
     cursor = sql_connection.cursor()
-    cursor.execute(f"SELECT creator, content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages;")
+    cursor.execute(
+        f"SELECT creator, content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid;"
+    )
     old_messages = cursor.fetchall()
     for message in old_messages:
         messages.append({
