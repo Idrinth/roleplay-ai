@@ -7,7 +7,6 @@
     document.getElementById("documents"),
     document.getElementById("characters")
   ].filter(e => !!e) as HTMLElement[];
-  let initX = 0;
   const switchPage = () => {
     if (page < 0) {
       page = pages.length - 1;
@@ -17,6 +16,10 @@
     document.getElementById('content')?.setAttribute('data-page', `${page}`);
   }
   document.addEventListener("keyup", (event: KeyboardEvent) => {
+    const target = event.target as HTMLElement | null;
+    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+      return;
+    }
     if (event.key === "ArrowLeft") {
       page--;
     }
@@ -25,11 +28,12 @@
     }
     switchPage();
   })
-  document.addEventListener("touchstart", (event: TouchEvent) => {
-    initX = event.touches[0]?.pageX ?? 0;
-  })
   document.addEventListener("touchend", (event: TouchEvent) => {
-    const endX = event.touches[event.touches.length - 1]?.clientX ?? 0;
+    const endX = event.changedTouches[event.touches.length - 1]?.clientX ?? false;
+    const initX = event.changedTouches[0]?.clientX ?? false;
+    if (endX === false || initX === false) {
+      return;
+    }
     if (endX - initX > 100) {
       page++;
     } else if (endX - initX < 100) {
