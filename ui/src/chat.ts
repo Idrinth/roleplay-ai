@@ -17,12 +17,11 @@
         location.reload()
         return;
       }
-    } else {
-      const uuid = await root.getFromAPI(`register`, 'POST', {
-          password: await root.prompt("Enter a password for your account.", root.password())
-        }, 10000, false);
-      await root.alert(`Your user-id is ${uuid} - please save that for logging in.`)
     }
+    const uuid = await root.getFromAPI(`register`, 'POST', {
+        password: await root.prompt("Enter a password for your account.", root.password())
+      }, 10000, false);
+    await root.alert(`Your user-id is ${uuid} - please save that for logging in.`)
     return await root.getFromAPI(`whoami`, 'GET');
   })() as {name: string, id: string, chats: {id: string, name: string}[]};
 
