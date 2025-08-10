@@ -27,7 +27,7 @@
       page++;
     }
     switchPage();
-  })
+  });
   document.addEventListener("touchend", (event: TouchEvent) => {
     const endX = event.changedTouches[event.touches.length - 1]?.clientX ?? false;
     const initX = event.changedTouches[0]?.clientX ?? false;
@@ -40,5 +40,6 @@
       page--;
     }
     switchPage();
-  })
+  });
+  document.getElementById('content')?.setAttribute('data-page', `${page}`);
 })();
