@@ -65,12 +65,11 @@
         }
       }
     }
-    const newChat = await root.getFromAPI(`new`, 'GET') as {chat: string}|{error: string}|{exception: string};
-    if (Object.hasOwn(newChat, 'chat')) {
-      const chatId = (newChat as {chat: string}).chat;
+    const newChat = await root.getFromAPI(`new`, 'GET');
+    if (root.isObjectWithProperty(newChat, 'chat')) {
       return {
-        id: chatId,
-        name: chatId,
+        id: newChat['chat'] as string,
+        name: newChat['chat'] as string,
       }
     }
     return {
@@ -113,7 +112,7 @@
       undefined,
       2400,
     );
-    if (typeof response !== 'object' || response === null || !Object.hasOwn(response, 'active')) {
+    if (!root.isObjectWithProperty(response, 'active')) {
       return;
     }
     sendButton.disabled = (response as {active: boolean}).active;
@@ -127,8 +126,7 @@
         documents.removeChild(lastElementChild);
       }
     }
-    // @ts-expect-error typescript does not recognise .documents as existing after hasOwn
-    if (!json || typeof json !== 'object' || Object.hasOwn(json, 'documents') || !Array.isArray(json.documents)) {
+    if (root.isObjectWithProperty(json, 'documents') && Array.isArray(json['documents'])) {
       for (const md_document of (json as {documents: {name: string,content: string, id: string}[]}).documents) {
         const doc = document.createElement('li');
         documents.appendChild(doc);
@@ -163,8 +161,7 @@
         characters.removeChild(character);
       }
     }
-    // @ts-expect-error typescript does not recognise .characters as existing after hasOwn
-    if (!json || typeof json !== 'object' || !Object.hasOwn(json, 'characters') || !Array.isArray(json.characters)) {
+    if (root.isObjectWithProperty(json, 'characters') && Array.isArray(json['characters'])) {
       for (const character of (json as { characters: {id: string, name: {taken: string}}[] }).characters) {
         const characterElement = document.createElement('li');
         characters.appendChild(characterElement);
@@ -201,6 +198,7 @@
     chatWrapper.appendChild(chatElement);
     chatElement.innerHTML = purifier(converter.makeHtml(value));
     chatElement.classList.add('user');
+    chatElement.scrollIntoView({ behavior: 'smooth' });
     const json = await root.getFromAPI(`chat/${chat.id}`, 'POST', {description: value}) as {message?: string, error?: string, exception?: string};
     if (typeof json === 'object' && Object.hasOwn(json, 'message')) {
       const message = (json as {message: string}).message;
@@ -208,6 +206,7 @@
       chatWrapper.appendChild(reply);
       reply.innerHTML = '<span class="gamemaster"></span>' + purifier(converter.makeHtml(message));
       reply.classList.add('agent');
+      reply.scrollIntoView({ behavior: 'smooth' });
     }
   });
   let handlingClick = false;
@@ -280,6 +279,7 @@
         const newHTML = converter.makeHtml(message.content);
         listElement.innerHTML = (message.role === 'agent' ? '<span class="gamemaster"></span>' : '') + purifier(newHTML);
         listElement.classList.add(message.role);
+        listElement.scrollIntoView({ behavior: 'smooth' });
       }
       if (((json as {messages?: []})?.messages ?? [])?.length === 0 && !chatEntry.value && await root.confirm('Do you want help with your beginning scene?')) {
         const keywords = await root.prompt("What is the world like? Please provide keywords separated by comma.");
@@ -297,7 +297,7 @@
           genre: await root.prompt("What genre does the world fall into?"),
           world: keywords,
         });
-        chatEntry.value = typeof value === 'object' && value !== null && Object.hasOwn(value, 'message') ? (value as {message: string})?.message : '';
+        chatEntry.value = root.isObjectWithProperty(value, 'message') ? (value as {message: string})?.message : '';
       }
     }
   })();
