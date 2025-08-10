@@ -8,21 +8,22 @@ from .logger import log_exception
 from .llm_wrapper import ask_characterbuilder, ask_storysummarizer, ask_gamemaster, prewarm_gamemaster, prewarm_storysummarizer
 from .models import World, Character, Document, ChatStartingPoint, Action, Chat
 from .databases import sql_connection, mongo, qdrant, redis
-from .functions import mariadb_name, mongodb_name, to_mongo_compatible, get_system_prompt, simplify_result
+from .functions import mariadb_name, mongodb_name, to_mongo_compatible, get_system_prompt, simplify_result, get_from_redis
 from .chat_active import chat_is_in_use,remove_chat_from_use
 
 
 async def update_summary(chat_id: str, user_id: str, offset: int, end: int, redis_key: str):
-    """Summarize messages from ``offset`` up to but not including ``end``.
-
-    ``offset`` represents the starting index and ``end`` is an exclusive upper
-    bound. The number of rows to retrieve is therefore ``end - offset`` which we
-    refer to as ``count`` when issuing the SQL query.
-    """
+    if offset < 0:
+        offset = 0
+    if end < offset:
+        temp = offset
+        offset = end
+        end = temp
     count = end - offset
+    sql_connection.ping()
     cursor = sql_connection.cursor()
     cursor.execute(
-        f"SELECT * FROM (SELECT content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid DESC LIMIT {offset},{count}) as a ORDER BY aid;")
+        f"SELECT * FROM (SELECT content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid DESC LIMIT {int(offset)},{int(count)}) as a ORDER BY aid;")
     summary = []
     for message in cursor.fetchall():
         summary.append(message[0])
@@ -44,7 +45,7 @@ def update_history_dbs(chat_id:str, user_id, action: str, result: str, previous_
     sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.messages (`creator`, `content`) VALUES ('agent', ?);", [result])
 
 async def get_world_internal(chat_id: str, user_id: str):
-    return {"world": json.loads(redis.get(f"{user_id}-{chat_id}.world") or "[]")}
+    return {"world": json.loads(get_from_redis(user_id, chat_id, "world", "[]"))}
 
 async def update_world_internal(chat_id: str, user_id: str, world: World):
     keywords = []
@@ -145,12 +146,19 @@ async def post_proposals_internal(chat_id: str, user_id: str, starting_point: Ch
     await prewarm_gamemaster()
     return {"message": response}
 
+CHAT_SUMMARY_WINDOWS = {
+    "short_summary": [20, 40],
+    "medium_summary": [40, 80],
+    "long_summary": [80, 160],
+}
+
 async def chat_message_internal(chat_id: str, user_id: str, action: Action, background_tasks: BackgroundTasks):
     await prewarm_gamemaster()
-    long_term_summary = redis.get(f"{user_id}-{chat_id}.long_summary") or ""
-    medium_term_summary = redis.get(f"{user_id}-{chat_id}.medium_summary") or ""
-    short_term_summary = redis.get(f"{user_id}-{chat_id}.short_summary") or ""
-    world = ", ".join(json.loads(redis.get(f"{user_id}-{chat_id}.world") or "[]"))
+    long_term_summary = get_from_redis(user_id,chat_id, "long_summary")
+    medium_term_summary = get_from_redis(user_id,chat_id, "medium_summary")
+    short_term_summary = get_from_redis(user_id,chat_id, "short_summary")
+    world = get_from_redis(user_id,chat_id, "world", "[]")
+    world = ", ".join(json.loads(world))
     characters = []
     try:
         characters = list(mongo[mongodb_name(user_id, chat_id)]["characters"].find())
@@ -194,9 +202,15 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
     response = await ask_gamemaster(messages)
     await prewarm_storysummarizer()
     background_tasks.add_task(update_history_dbs, chat_id, user_id, action.description, response, previous_response)
-    background_tasks.add_task(update_summary, chat_id, user_id, 20, 40, f"{user_id}-{chat_id}.short_summary")
-    background_tasks.add_task(update_summary, chat_id, user_id, 40, 80, f"{user_id}-{chat_id}.medium_summary")
-    background_tasks.add_task(update_summary, chat_id, user_id, 80, 160, f"{user_id}-{chat_id}.long_summary")
+    for window in CHAT_SUMMARY_WINDOWS:
+        background_tasks.add_task(
+            update_summary,
+            chat_id,
+            user_id,
+            CHAT_SUMMARY_WINDOWS[window][0],
+            CHAT_SUMMARY_WINDOWS[window][0],
+            f"{user_id}-{chat_id}.{window}"
+        )
     return {"message": response}
 
 async def chat_name_success(chat_id: str, user_id: str, chat_data: Chat):
