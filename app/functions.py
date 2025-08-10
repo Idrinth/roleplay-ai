@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from bson import json_util
 from datetime import datetime, UTC, timedelta
 from jwt import encode, decode
+from .databases import redis
 
 from .logger import log_exception
 
@@ -107,3 +108,11 @@ def set_login_cookie(response, user_id: str):
         domain=os.getenv("UI_HOST", "http://localhost").replace("http://", "").replace("https://", ""),
         httponly=True
     )
+
+def get_from_redis(user_id: str, chat_id: str, key: str, default: str=""):
+    data = redis.get(f"{user_id}-{chat_id}.{key}")
+    if data is None:
+        return default
+    if isinstance(data, bytes):
+        data = data.decode()
+    return data or default
