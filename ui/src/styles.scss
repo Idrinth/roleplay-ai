@@ -95,6 +95,10 @@ li {
   padding: 0.5em 1em;
   display: block;
 }
+article li {
+  list-style: circle;
+  display: list-item;
+}
 li.user, li.agent {
   border-radius: 0.5em;
   border: 1px solid var(--main-shadow);
@@ -208,6 +212,14 @@ a[target="_blank"] {
 nav > ul {
   display: flex;
 }
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
+  tr {
+    border-bottom: 1px solid var(--light-shadow);
+  }
+}
 #prompt {
   position: absolute;
   top: 0;
@@ -266,6 +278,13 @@ nav, footer {
 .imprint .aside, .index .aside {
   grid-row-start: 1;
   grid-row-end: 4;
+}
+.button[target="_blank"] {
+  padding-right: 2.05em;
+  background-image: url('/external-link.dark.svg')
+}
+.inverted-colors .button[target="_blank"] {
+  background-image: url('/external-link.light.svg')
 }
 @media screen and (width < 800px) {
   body {
