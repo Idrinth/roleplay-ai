@@ -22,6 +22,7 @@ const TO_MERGE = {
   ],
   'chat-##.min.js': [
     'showdown.min.js',
+    'password.js',
     'js-yaml.min.js',
     'purify.min.js',
     'document-upload.js',
