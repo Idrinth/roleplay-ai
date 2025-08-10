@@ -1,6 +1,7 @@
 import {readdirSync, writeFileSync, readFileSync, mkdirSync, existsSync, rmSync} from 'node:fs';
 import {minify} from 'minify';
 import { hash } from 'node:crypto';
+import {compile} from 'sass';
 
 if (existsSync(process.cwd() + '/dist')) {
   rmSync(process.cwd() + '/dist', {recursive: true});
@@ -27,6 +28,12 @@ const TO_MERGE = {
     'chat.js',
     'on-hover-focus.js',
   ]
+}
+
+for(const file of readdirSync(process.cwd() + '/src', 'utf-8')) {
+  if (file.endsWith('.scss')) {
+    writeFileSync(process.cwd() + '/public/' + file.replace('.scss', '.css'), compile(process.cwd() + '/src/' + file).css, "utf8")
+  }
 }
 
 for(const file of readdirSync(process.cwd() + '/public', 'utf-8')) {

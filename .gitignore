@@ -4,3 +4,4 @@
 /ui/node_modules
 /ui/dist
 /ui/public/**/*.js
+/ui/public/**/*.css
