@@ -281,10 +281,10 @@ nav, footer {
 }
 .button[target="_blank"] {
   padding-right: 2.05em;
-  background-image: url('/external-link.dark.svg')
+  background-image: url('/external-link.dark.svg');
 }
 .inverted-colors .button[target="_blank"] {
-  background-image: url('/external-link.light.svg')
+  background-image: url('/external-link.light.svg');
 }
 @media screen and (width < 800px) {
   body {
