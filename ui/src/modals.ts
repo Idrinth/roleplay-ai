@@ -11,6 +11,15 @@
     return new Promise(resolve => {
       const prmt = createModal(text, true);
       const input = document.createElement('input');
+      input.onkeyup = (event: KeyboardEvent) => {
+        if (event.key === 'Enter') {
+          if (!input.value) {
+            return;
+          }
+          document.body.removeChild(prmt);
+          resolve(input.value);
+        }
+      }
       prmt.appendChild(input);
       input.value = defaultText;
       prmt.appendChild(root.button('Send', 'Send changes', () => {
