@@ -10,7 +10,7 @@
   const elements = {footer, worlds, documents, characters};
   for (const element of Object.keys(elements)) {
     if (Object.hasOwn(elements, element)) {
-      const item = elements[element as keyof typeof elements] as HTMLElement;
+      const item = elements[element as keyof typeof elements] as HTMLElement|null;
       for (const event of ['mouseenter', 'focusin']) {
         item?.addEventListener(event, () => {
           content.classList.add(`hovers-${element}`);
