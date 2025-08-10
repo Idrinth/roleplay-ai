@@ -81,6 +81,7 @@ async def chat_characters_success(chat_id, user_id):
     fixed_data = []
     for character in data:
         character["id"] = character["_id"]["$oid"]
+        del character["_id"]
         fixed_data.append(character)
     return {"characters": fixed_data}
 
