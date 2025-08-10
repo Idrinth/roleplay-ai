@@ -8,13 +8,13 @@ from argon2.exceptions import VerifyMismatchError
 from fastapi import Cookie, BackgroundTasks, Response
 import mariadb
 
+from .logger import log_exception
 from .llm_wrapper import prewarm_characterbuilder
 from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint, User
 from .functions import is_uuid_like, mariadb_name, mongodb_name, to_mongo_compatible, user_id_from_jwt, set_login_cookie
 from .databases import sql_connection, mongo, qdrant, redis
 from .app import app
 from .chat_auth_wrapper import wrap
-from .logger import log_error
 from .chat_endpoint_handlers import chat_delete_success, chat_active_success, chat_history_success, \
     chat_characters_success, chat_character_add_success, chat_document_add_success, chat_document_list_success, \
     update_world_internal, get_world_internal, post_proposals_internal, chat_message_internal, chat_name_success
@@ -26,6 +26,8 @@ async def root():
 @app.post('/login')
 async def login(response: Response, login_data: Login):
     if not is_uuid_like(login_data.user_id):
+        return {"error": "Login failed"}
+    if not login_data.password:
         return {"error": "Login failed"}
     try:
         cursor = sql_connection.cursor()
@@ -40,7 +42,7 @@ async def login(response: Response, login_data: Login):
         set_login_cookie(response, login_data.user_id)
         return {"success": True}
     except mariadb.Error as e:
-        log_error(e, "login")
+        log_exception(e, "login")
         return {"error": "Login failed"}
 
 @app.post('/me')
@@ -73,6 +75,8 @@ async def me(user: User, user_jwt: Annotated[str | None, Cookie()] = None):
 
 @app.post('/register')
 async def register(response: Response, register_data: Register):
+    if not register_data.password:
+        return {"error": "Registration failed"}
     try:
         user_id = str(uuid.uuid4())
         encrypted_password = PasswordHasher().hash(register_data.password)
@@ -84,8 +88,8 @@ async def register(response: Response, register_data: Register):
         set_login_cookie(response, user_id)
         return {"user": user_id}
     except mariadb.Error as e:
-        log_error(e, "login")
-        return {"error": "Login failed"}
+        log_exception(e, "register")
+        return {"error": "Registration failed"}
 
 @app.get('/new')
 async def new_chat(user_jwt: Annotated[str | None, Cookie()] = None):
