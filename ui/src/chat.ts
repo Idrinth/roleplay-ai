@@ -9,18 +9,23 @@
     }
     if (await root.confirm("Do you already have an account?")) {
       const userId = await root.prompt("Enter your User-ID.", "");
-      if (await root.getFromAPI(`login`, 'POST', {
+      if (!(await root.getFromAPI(`login`, 'POST', {
           user_id: userId,
           password: await root.prompt("Enter your password.", "")
-        }, 10000, false) !== "true") {
+        }, 10000, false) as {success?:boolean})?.success) {
         await root.alert("Login failed!");
         location.reload()
         return;
       }
     }
-    const uuid = await root.getFromAPI(`register`, 'POST', {
+    const uuid = (await root.getFromAPI(`register`, 'POST', {
         password: await root.prompt("Enter a password for your account.", root.password())
-      }, 10000, false);
+      }, 10000, false) as {user?: string}).user ?? false;
+    if (uuid === false) {
+      await root.alert("Registration failed!");
+      location.reload()
+      return;
+    }
     await root.alert(`Your user-id is ${uuid} - please save that for logging in.`)
     return await root.getFromAPI(`whoami`, 'GET');
   })() as {name: string, id: string, chats: {id: string, name: string}[]};

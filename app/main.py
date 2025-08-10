@@ -6,7 +6,9 @@ import uuid
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from fastapi import Cookie, BackgroundTasks, Response
+import mariadb
 
+from .logger import log_exception
 from .llm_wrapper import prewarm_characterbuilder
 from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint, User
 from .functions import is_uuid_like, mariadb_name, mongodb_name, to_mongo_compatible, user_id_from_jwt, set_login_cookie
@@ -25,17 +27,23 @@ async def root():
 async def login(response: Response, login_data: Login):
     if not is_uuid_like(login_data.user_id):
         return {"error": "Login failed"}
-    cursor = sql_connection.cursor()
-    cursor.execute("SELECT user_id, password FROM `chat_users`.`users` WHERE `user_id` = ?", [login_data.user_id])
-    chatuser = cursor.fetchone()
-    if not chatuser:
+    if not login_data.password:
         return {"error": "Login failed"}
     try:
-        PasswordHasher().verify(chatuser[1], login_data.password)
-    except VerifyMismatchError as e:
+        cursor = sql_connection.cursor()
+        cursor.execute("SELECT user_id, password FROM `chat_users`.`users` WHERE `user_id` = ?", [login_data.user_id])
+        chatuser = cursor.fetchone()
+        if not chatuser:
+            return {"error": "Login failed"}
+        try:
+            PasswordHasher().verify(chatuser[1], login_data.password)
+        except VerifyMismatchError as e:
+            return {"error": "Login failed"}
+        set_login_cookie(response, login_data.user_id)
+        return {"success": True}
+    except mariadb.Error as e:
+        log_exception(e, "login")
         return {"error": "Login failed"}
-    set_login_cookie(response, login_data.user_id)
-    return {"success": True}
 
 @app.post('/me')
 async def me(user: User, user_jwt: Annotated[str | None, Cookie()] = None):
@@ -67,12 +75,21 @@ async def me(user: User, user_jwt: Annotated[str | None, Cookie()] = None):
 
 @app.post('/register')
 async def register(response: Response, register_data: Register):
-    user_id = str(uuid.uuid4())
-    encrypted_password = PasswordHasher().hash(register_data.password)
-    sql_connection.ping()
-    sql_connection.cursor().execute("INSERT INTO `chat_users`.`users` (user_id, password, active) VALUES (?, ?, ?)", [user_id, encrypted_password, 1])
-    set_login_cookie(response, user_id)
-    return user_id
+    if not register_data.password:
+        return {"error": "Registration failed"}
+    try:
+        user_id = str(uuid.uuid4())
+        encrypted_password = PasswordHasher().hash(register_data.password)
+        sql_connection.ping()
+        sql_connection.cursor().execute(
+            "INSERT INTO `chat_users`.`users` (user_id, password, active) VALUES (?, ?, ?);",
+            [user_id, encrypted_password, 1]
+        )
+        set_login_cookie(response, user_id)
+        return {"user": user_id}
+    except mariadb.Error as e:
+        log_exception(e, "register")
+        return {"error": "Registration failed"}
 
 @app.get('/new')
 async def new_chat(user_jwt: Annotated[str | None, Cookie()] = None):
@@ -93,7 +110,7 @@ async def new_chat(user_jwt: Annotated[str | None, Cookie()] = None):
         "content text, PRIMARY KEY(id)) charset=utf8;"
     )
     sql_connection.cursor().execute(
-        f"INSERT INTO chat_users.mapping (chat_id, user_id, chat_name) VALUES (?, ?, ?)",
+        f"INSERT INTO chat_users.mapping (chat_id, user_id, chat_name) VALUES (?, ?, ?);",
         [chat_id, user_id, chat_id]
     )
     redis.set(f"{user_id}-{chat_id}.world", json.dumps(["fantasy", "high magic"]))
