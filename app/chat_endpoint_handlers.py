@@ -11,10 +11,18 @@ from .databases import sql_connection, mongo, qdrant, redis
 from .functions import mariadb_name, mongodb_name, to_mongo_compatible, get_system_prompt, simplify_result
 from .chat_active import chat_is_in_use,remove_chat_from_use
 
-async def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_key: str):
+
+async def update_summary(chat_id: str, user_id: str, offset: int, end: int, redis_key: str):
+    """Summarize messages from ``offset`` up to but not including ``end``.
+
+    ``offset`` represents the starting index and ``end`` is an exclusive upper
+    bound. The number of rows to retrieve is therefore ``end - offset`` which we
+    refer to as ``count`` when issuing the SQL query.
+    """
+    count = end - offset
     cursor = sql_connection.cursor()
     cursor.execute(
-        f"SELECT * FROM (SELECT content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid DESC LIMIT {start},{end}) as a ORDER BY aid;")
+        f"SELECT * FROM (SELECT content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid DESC LIMIT {offset},{count}) as a ORDER BY aid;")
     summary = []
     for message in cursor.fetchall():
         summary.append(message[0])
@@ -81,6 +89,7 @@ async def chat_characters_success(chat_id, user_id):
     fixed_data = []
     for character in data:
         character["id"] = character["_id"]["$oid"]
+        del character["_id"]
         fixed_data.append(character)
     return {"characters": fixed_data}
 
@@ -104,7 +113,9 @@ async def chat_history_success(chat_id, user_id):
     messages = []
     sql_connection.ping()
     cursor = sql_connection.cursor()
-    cursor.execute(f"SELECT creator, content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages;")
+    cursor.execute(
+        f"SELECT creator, content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid;"
+    )
     old_messages = cursor.fetchall()
     for message in old_messages:
         messages.append({

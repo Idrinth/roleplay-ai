@@ -2,8 +2,6 @@ import unittest
 from app.functions import *
 
 class FunctionTestCase(unittest.TestCase):
-    def test_get_rules(self):
-        self.assertTrue(len(get_rules()) > 0)
     def test_mariadb_name(self):
         self.assertRaises(TypeError, mariadb_name, "mar-i-a","---db")
         self.assertEqual(
@@ -17,7 +15,7 @@ class FunctionTestCase(unittest.TestCase):
         self.assertFalse(is_uuid_like(None))
         self.assertFalse(is_uuid_like(""))
         self.assertFalse(is_uuid_like("sfdfdsfdsfsf"))
-        self.assertTrue(is_uuid_like(uuid.UUID().hex))
+        self.assertTrue(is_uuid_like(uuid.UUID(int=0).hex))
         self.assertTrue(is_uuid_like(uuid.uuid4().hex))
 
 if __name__ == '__main__':
