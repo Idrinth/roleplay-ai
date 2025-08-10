@@ -65,12 +65,11 @@
         }
       }
     }
-    const newChat = await root.getFromAPI(`new`, 'GET') as {chat: string}|{error: string}|{exception: string};
+    const newChat = await root.getFromAPI(`new`, 'GET');
     if (root.isObjectWithProperty(newChat, 'chat')) {
-      const chatId = (newChat as {chat: string}).chat;
       return {
-        id: chatId,
-        name: chatId,
+        id: newChat['chat'] as string,
+        name: newChat['chat'] as string,
       }
     }
     return {
@@ -127,8 +126,7 @@
         documents.removeChild(lastElementChild);
       }
     }
-    // @ts-expect-error typescript does not recognise .documents as existing after hasOwn
-    if (root.isObjectWithProperty(json, 'documents') && Array.isArray(json.documents)) {
+    if (root.isObjectWithProperty(json, 'documents') && Array.isArray(json['documents'])) {
       for (const md_document of (json as {documents: {name: string,content: string, id: string}[]}).documents) {
         const doc = document.createElement('li');
         documents.appendChild(doc);
@@ -163,8 +161,7 @@
         characters.removeChild(character);
       }
     }
-    // @ts-expect-error typescript does not recognise .characters as existing after hasOwn
-    if (root.isObjectWithProperty(json, 'characters') && Array.isArray(json.characters)) {
+    if (root.isObjectWithProperty(json, 'characters') && Array.isArray(json['characters'])) {
       for (const character of (json as { characters: {id: string, name: {taken: string}}[] }).characters) {
         const characterElement = document.createElement('li');
         characters.appendChild(characterElement);
