@@ -22,19 +22,6 @@ declare global {
     } & {
       getFromAPI: (endpoint: string, method: 'POST'|'GET'|'PUT') => Promise<unknown|{exception: string}>,
     },
-    PayPal?: {
-      Donation?: {
-        Button?: (config: {
-          env: 'production'
-          hosted_button_id: string,
-          image: {
-            src: string,
-            alt: string,
-            title: string,
-          },
-        }) => {render: (id: string) => HTMLElement},
-      },
-    },
     jsyaml?: {
       load: <T = unknown>(input: string) => T,
       dump: (input: object) => string,

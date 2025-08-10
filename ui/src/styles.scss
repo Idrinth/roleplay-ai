@@ -148,6 +148,7 @@ textarea {
   box-shadow: inset 2px 2px 5px rgba(255,255,255,0.2);
   margin: 1px;
   text-decoration: none;
+  display: inline-block;
   background-image: linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
     linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
 }
