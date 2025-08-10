@@ -19,6 +19,7 @@ const TO_MERGE = {
     'paypal-donate-sdk.min.js',
     'paypal.js',
     'list-existing-chats-handler.js',
+    'swipe.js'
   ],
   'chat-##.min.js': [
     'showdown.min.js',

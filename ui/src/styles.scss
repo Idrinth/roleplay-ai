@@ -266,3 +266,30 @@ nav, footer {
   grid-row-start: 1;
   grid-row-end: 4;
 }
+@media screen and (width < 800px) {
+  body {
+    display: block;
+    overflow-y: auto;
+  }
+  .content {
+    display: block;
+  }
+  #worlds, #documents, #characters, #chat, article {
+    display: none;
+  }
+  [data-page="0"] #worlds {
+    display: block;
+  }
+  [data-page="1"] #chat,
+  [data-page=""] #chat,
+  [data-page="1"] article,
+  [data-page=""] article {
+    display: block;
+  }
+  [data-page="2"] #documents {
+    display: block;
+  }
+  [data-page="3"] #characters {
+    display: block;
+  }
+}
