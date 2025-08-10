@@ -17,8 +17,6 @@ const TO_MERGE = {
     'button.js',
     'dark-light-switch.js',
     'modals.js',
-    'paypal-donate-sdk.min.js',
-    'paypal.js',
     'list-existing-chats-handler.js',
     'swipe.js'
   ],
@@ -70,12 +68,6 @@ for (const library of [
 ]) {
   writeFileSync(process.cwd() + '/dist/'+library.replace(/\\/g, '/').split('/').pop(), readFileSync(library, 'utf8'), 'utf8');
 }
-
-const paypalSDK = await fetch('https://www.paypalobjects.com/donate/sdk/donate-sdk.js');
-if (!paypalSDK.ok) {
-  throw new Error('PayPalSDK failed downloading.');
-}
-writeFileSync(process.cwd() + '/dist/paypal-donate-sdk.min.js', await paypalSDK.text(), 'utf8');
 
 for (const target of Object.keys(TO_MERGE)) {
   let out = [];
