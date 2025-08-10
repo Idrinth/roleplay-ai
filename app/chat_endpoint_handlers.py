@@ -147,9 +147,9 @@ async def post_proposals_internal(chat_id: str, user_id: str, starting_point: Ch
 
 async def chat_message_internal(chat_id: str, user_id: str, action: Action, background_tasks: BackgroundTasks):
     await prewarm_gamemaster()
-    long_term_summary = redis.get(f"{user_id}-{chat_id}.long_text_summary") or ""
-    medium_term_summary = redis.get(f"{user_id}-{chat_id}.medium_text_summary") or ""
-    short_term_summary = redis.get(f"{user_id}-{chat_id}.short_text_summary") or ""
+    long_term_summary = redis.get(f"{user_id}-{chat_id}.long_summary") or ""
+    medium_term_summary = redis.get(f"{user_id}-{chat_id}.medium_summary") or ""
+    short_term_summary = redis.get(f"{user_id}-{chat_id}.short_summary") or ""
     world = ", ".join(json.loads(redis.get(f"{user_id}-{chat_id}.world") or "[]"))
     characters = []
     try:
@@ -194,9 +194,9 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
     response = await ask_gamemaster(messages)
     await prewarm_storysummarizer()
     background_tasks.add_task(update_history_dbs, chat_id, user_id, action.description, response, previous_response)
-    background_tasks.add_task(update_summary, chat_id, user_id, 20, 40, f"{user_id}-{chat_id}.short_text_summary")  # offset, end
-    background_tasks.add_task(update_summary, chat_id, user_id, 40, 80, f"{user_id}-{chat_id}.medium_text_summary")  # offset, end
-    background_tasks.add_task(update_summary, chat_id, user_id, 80, 160, f"{user_id}-{chat_id}.long_text_summary")  # offset, end
+    background_tasks.add_task(update_summary, chat_id, user_id, 20, 40, f"{user_id}-{chat_id}.short_summary")
+    background_tasks.add_task(update_summary, chat_id, user_id, 40, 80, f"{user_id}-{chat_id}.medium_summary")
+    background_tasks.add_task(update_summary, chat_id, user_id, 80, 160, f"{user_id}-{chat_id}.long_summary")
     return {"message": response}
 
 async def chat_name_success(chat_id: str, user_id: str, chat_data: Chat):
