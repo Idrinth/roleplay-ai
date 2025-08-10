@@ -11,10 +11,18 @@ from .databases import sql_connection, mongo, qdrant, redis
 from .functions import mariadb_name, mongodb_name, to_mongo_compatible, get_system_prompt, simplify_result
 from .chat_active import chat_is_in_use,remove_chat_from_use
 
-async def update_summary(chat_id:str, user_id:str, start: int, end: int, redis_key: str):
+
+async def update_summary(chat_id: str, user_id: str, offset: int, end: int, redis_key: str):
+    """Summarize messages from ``offset`` up to but not including ``end``.
+
+    ``offset`` represents the starting index and ``end`` is an exclusive upper
+    bound. The number of rows to retrieve is therefore ``end - offset`` which we
+    refer to as ``count`` when issuing the SQL query.
+    """
+    count = end - offset
     cursor = sql_connection.cursor()
     cursor.execute(
-        f"SELECT * FROM (SELECT content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid DESC LIMIT {start},{end}) as a ORDER BY aid;")
+        f"SELECT * FROM (SELECT content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid DESC LIMIT {offset},{count}) as a ORDER BY aid;")
     summary = []
     for message in cursor.fetchall():
         summary.append(message[0])
@@ -186,9 +194,9 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
     response = await ask_gamemaster(messages)
     await prewarm_storysummarizer()
     background_tasks.add_task(update_history_dbs, chat_id, user_id, action.description, response, previous_response)
-    background_tasks.add_task(update_summary, chat_id, user_id, 20, 40, f"{user_id}-{chat_id}.short_text_summary")
-    background_tasks.add_task(update_summary, chat_id, user_id, 40, 80, f"{user_id}-{chat_id}.medium_text_summary")
-    background_tasks.add_task(update_summary, chat_id, user_id, 80, 160, f"{user_id}-{chat_id}.long_text_summary")
+    background_tasks.add_task(update_summary, chat_id, user_id, 20, 40, f"{user_id}-{chat_id}.short_text_summary")  # offset, end
+    background_tasks.add_task(update_summary, chat_id, user_id, 40, 80, f"{user_id}-{chat_id}.medium_text_summary")  # offset, end
+    background_tasks.add_task(update_summary, chat_id, user_id, 80, 160, f"{user_id}-{chat_id}.long_text_summary")  # offset, end
     return {"message": response}
 
 async def chat_name_success(chat_id: str, user_id: str, chat_data: Chat):
