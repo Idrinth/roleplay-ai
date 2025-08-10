@@ -36,7 +36,7 @@
     }
     if (endX - initX > 100) {
       page++;
-    } else if (endX - initX < 100) {
+    } else if (endX - initX < -100) {
       page--;
     }
     switchPage();
