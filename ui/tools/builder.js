@@ -13,6 +13,7 @@ const TO_MERGE = {
   'shared-##.min.js': [
     'root.js',
     'get-from-api.js',
+    'is-object-with-property.js',
     'button.js',
     'dark-light-switch.js',
     'modals.js',

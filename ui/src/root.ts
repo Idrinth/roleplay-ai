@@ -1,6 +1,7 @@
 declare global {
   interface Window {
     bjoernbuettner: {
+      isObjectWithProperty: (value: any, key: string) => boolean,
       button: (text: string, title: string, callback: (ev: MouseEvent) => void, useActualButton: boolean) => HTMLButtonElement|HTMLSpanElement,
       alert: (text: string) => Promise<void>,
       confirm: (text: string) => Promise<boolean>,
