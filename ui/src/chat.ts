@@ -249,7 +249,19 @@
       return;
     }
     const keywords = (response as {world: string[]}).world;
-    world?.previousElementSibling?.setAttribute('title', keywords.join("\n"))
+    const expandedKeywords = [...keywords];
+    for (let keyword of expandedKeywords) {
+      let counter = 0;
+      for (const music of root.audios) {
+        if (keyword === music.keyword) {
+          counter++;
+        }
+      }
+      if (counter > 0) {
+        keyword = keyword + '\n  ' + counter + ' songs';
+      }
+    }
+    world?.previousElementSibling?.setAttribute('title', expandedKeywords.join("\n"))
     world.setAttribute('data-original', JSON.stringify(keywords))
     world.value = keywords.join(", ")
   })();
