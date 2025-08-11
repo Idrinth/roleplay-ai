@@ -251,16 +251,10 @@
     const keywords = (response as {world: string[]}).world;
     const expandedKeywords = [...keywords];
     for (let pos in keywords) {
-      let counter = 0;
       const keyword = keywords[pos] as string;
-      const lowerCaseKeyword = keyword.toLowerCase();
-      for (const music of root.audios) {
-        if (lowerCaseKeyword === music.keyword) {
-          counter++;
-        }
-      }
-      if (counter > 0) {
-        expandedKeywords[pos] = keyword + '\n  ' + counter + ' songs';
+      const matchingSongs = root.getMatchingSongs(keyword.toLowerCase());
+      if (matchingSongs.length > 0) {
+        expandedKeywords[pos] = keyword + '\n  ' + matchingSongs.length + ' songs';
       }
     }
     world?.previousElementSibling?.setAttribute('title', expandedKeywords.join("\n"))
