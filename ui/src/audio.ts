@@ -22,7 +22,7 @@
   }
   audio.volume = 0;
   let isPlaying = false;
-  const setRandomAudio = () => {
+  const setRandomAudio = async() => {
     const keywords = (document.getElementById("world") as null|HTMLInputElement)?.value.split(',').map(x => x.toLowerCase().trim()).filter(x => x !== '') ?? [];
     const possibleAudios = [];
     for (const keyword in keywords) {
