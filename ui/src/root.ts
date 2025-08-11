@@ -1,6 +1,10 @@
 declare global {
   interface Window {
     bjoernbuettner: {
+      randomFloat: (excludedMaximum: number) => number,
+      randomInt: (excludedMaximum: number) => number,
+      randomBool: () => boolean,
+      randomString: (list: string[]) => string,
       getMatchingSongs: (keyword: string) => string[],
       audios: {src: string, keyword: string}[],
       isObjectWithProperty: <K extends PropertyKey>(value: unknown, key: string) => value is object & Record<K, unknown>,
