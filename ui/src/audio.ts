@@ -1,4 +1,20 @@
 (async (root) => {
+  root.getMatchingSongs = (keyword: string): string[] => {
+    const possibleAudios = [];
+    for (const set of root.audios) {
+      if (keyword == set.keyword) {
+        possibleAudios.push(set.src);
+      }
+    }
+    if (possibleAudios.length === 0) {
+      for (const set of root.audios) {
+        if (keyword.includes(set.keyword)) {
+          possibleAudios.push(set.src);
+        }
+      }
+    }
+    return possibleAudios;
+  }
   const audio = document.getElementById('music') as null|HTMLAudioElement;
   const audioButton = document.getElementById('music-button') as null|HTMLButtonElement;
   if (!Array.isArray(root.audios) || root.audios.length === 0 || !audio || !audioButton) {
@@ -10,20 +26,8 @@
   const setRandomAudio = () => {
     const keywords = (document.getElementById("world") as null|HTMLInputElement)?.value.split(',').map(x => x.toLowerCase().trim()).filter(x => x !== '') ?? [];
     const possibleAudios = [];
-    for (const set of root.audios) {
-      if (keywords.includes(set.keyword) || keywords.length === 0) {
-        possibleAudios.push(set.src);
-      }
-    }
-    if (possibleAudios.length === 0) {
-      for (const set of root.audios) {
-        for (const keyword of keywords) {
-          if (keyword.includes(set.keyword)) {
-            possibleAudios.push(set.src);
-            break;
-          }
-        }
-      }
+    for (const keyword in keywords) {
+      possibleAudios.push(...root.getMatchingSongs(keyword));
     }
     if (possibleAudios.length === 0) {
       for (const set of root.audios) {
