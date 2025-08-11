@@ -164,7 +164,7 @@ textarea {
 .button:hover, button:hover, .button:focus, button:focus {
   box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
 }
-input, textarea {
+input, textarea, select {
   border-radius: 3px;
   padding: 3px;
   color: var(--main-striking);
