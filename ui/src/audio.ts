@@ -34,11 +34,28 @@
       }
     }
     audio.setAttribute('src', root.randomString(possibleAudios));
+    if (!isPlaying) {
+      try {
+        audio.volume = 0.01;
+        await audio.play();
+        select.selectedIndex = 1;
+        isPlaying = true;
+      } catch (e) {
+        console.error(e);
+        try {
+          audio.volume = 0;
+          await audio.play();
+          isPlaying = true;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      return;
+    }
     try {
       await audio.play();
       isPlaying = true;
     } catch (e) {
-      // expected on first load
       console.error(e);
     }
   }
@@ -51,15 +68,8 @@
       } catch (e) {
         console.error(e);
       }
-      return;
     }
     audio.volume = Number.parseFloat(select.value)
   });
   await setRandomAudio();
-  try {
-    audio.volume = 0.01;
-    select.selectedIndex = 1;
-  } catch (e) {
-    console.error(e);
-  }
 })(window.bjoernbuettner);
