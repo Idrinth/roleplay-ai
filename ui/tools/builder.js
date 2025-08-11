@@ -22,6 +22,7 @@ const TO_MERGE = {
     'swipe.js'
   ],
   'chat-##.min.js': [
+    'random.js',
     'audio-list.js',
     'showdown.min.js',
     'password.js',

@@ -22,7 +22,6 @@
   }
   audio.volume = 0.01;
   let isPlaying = false;
-  const rand = (possibleAudios: string[]) => Math.random() * possibleAudios.length;
   const setRandomAudio = () => {
     const keywords = (document.getElementById("world") as null|HTMLInputElement)?.value.split(',').map(x => x.toLowerCase().trim()).filter(x => x !== '') ?? [];
     const possibleAudios = [];
@@ -34,7 +33,7 @@
         possibleAudios.push(set.src);
       }
     }
-    audio.setAttribute('src', possibleAudios[Math.floor(rand(possibleAudios))] as string);
+    audio.setAttribute('src', root.randomString(possibleAudios));
     try {
       audio.play();
       isPlaying = true;
