@@ -36,12 +36,22 @@
       isPlaying = true;
     } catch (e) {
       // expected on first load
+      console.error(e);
     }
   }
   audio.addEventListener('ended', setRandomAudio);
-  audioButton.addEventListener('click', () => {
-    isPlaying ? audio.pause() : audio.play();
-    isPlaying = !isPlaying;
+  audioButton.addEventListener('click', async() => {
+    if (!isPlaying) {
+      try {
+        await audio.play();
+        isPlaying = true;
+      } catch (e) {
+        console.error(e);
+      }
+      return;
+    }
+    audio.pause();
+    isPlaying = false;
   });
   setRandomAudio();
 })(window.bjoernbuettner);

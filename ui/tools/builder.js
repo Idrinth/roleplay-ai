@@ -22,6 +22,7 @@ const TO_MERGE = {
     'swipe.js'
   ],
   'chat-##.min.js': [
+    'audio-list.js',
     'showdown.min.js',
     'password.js',
     'js-yaml.min.js',
@@ -29,7 +30,6 @@ const TO_MERGE = {
     'document-upload.js',
     'chat.js',
     'on-hover-focus.js',
-    'audio-list.js',
     'audio.js'
   ]
 }
