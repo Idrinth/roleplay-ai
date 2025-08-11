@@ -245,7 +245,7 @@
   });
   const setWorldKeywordsTitle = (element: Element|null, keywords: string[]) => {
     const expandedKeywords = [...keywords];
-    for (let pos in keywords) {
+    for (const pos in keywords) {
       const keyword = keywords[pos] as string;
       const matchingSongs = root.getMatchingSongs(keyword.toLowerCase());
       if (matchingSongs.length > 0) {
