@@ -243,12 +243,7 @@
     el.value = '';
     document.body.appendChild(el);
   });
-  await (async () => {
-    const response = await root.getFromAPI(`chat/${chat.id}/world`,'GET');
-    if (typeof response !== 'object' || response === null || !Object.hasOwn(response, 'world')) {
-      return;
-    }
-    const keywords = (response as {world: string[]}).world;
+  const setWorldKeywordsTitle = (element: Element|null, keywords: string[]) => {
     const expandedKeywords = [...keywords];
     for (let pos in keywords) {
       const keyword = keywords[pos] as string;
@@ -257,7 +252,15 @@
         expandedKeywords[pos] = keyword + '\n  ' + matchingSongs.length + ' songs';
       }
     }
-    world?.previousElementSibling?.setAttribute('title', expandedKeywords.join("\n"))
+    element?.setAttribute('title', expandedKeywords.join("\n"))
+  }
+  await (async () => {
+    const response = await root.getFromAPI(`chat/${chat.id}/world`,'GET');
+    if (typeof response !== 'object' || response === null || !Object.hasOwn(response, 'world')) {
+      return;
+    }
+    const keywords = (response as {world: string[]}).world;
+    setWorldKeywordsTitle(world?.previousElementSibling, keywords);
     world.setAttribute('data-original', JSON.stringify(keywords))
     world.value = keywords.join(", ")
   })();
@@ -272,8 +275,8 @@
     if (keywords.join() === oldKeywords.join()) {
       return;
     }
-    world.setAttribute('data-original', JSON.stringify(keywords))
-    world?.previousElementSibling?.setAttribute('title', keywords.join("\n"))
+    world.setAttribute('data-original', JSON.stringify(keywords));
+    setWorldKeywordsTitle(world?.previousElementSibling, keywords);
     await root.getFromAPI(`chat/${chat.id}/world`, 'PUT', {
       keywords,
     });
