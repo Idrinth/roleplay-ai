@@ -55,5 +55,5 @@
     }
     audio.volume = Number.parseFloat(select.value)
   });
-  setRandomAudio();
+  await setRandomAudio();
 })(window.bjoernbuettner);
