@@ -250,15 +250,17 @@
     }
     const keywords = (response as {world: string[]}).world;
     const expandedKeywords = [...keywords];
-    for (let keyword of expandedKeywords) {
+    for (let pos in keywords) {
       let counter = 0;
+      const keyword = keywords[pos] as string;
+      const lowerCaseKeyword = keyword.toLowerCase();
       for (const music of root.audios) {
-        if (keyword === music.keyword) {
+        if (lowerCaseKeyword === music.keyword) {
           counter++;
         }
       }
       if (counter > 0) {
-        keyword = keyword + '\n  ' + counter + ' songs';
+        expandedKeywords[pos] = keyword + '\n  ' + counter + ' songs';
       }
     }
     world?.previousElementSibling?.setAttribute('title', expandedKeywords.join("\n"))
