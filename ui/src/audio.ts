@@ -16,11 +16,11 @@
     return possibleAudios;
   }
   const audio = document.getElementById('music') as null|HTMLAudioElement;
-  const audioButton = document.getElementById('music-button') as null|HTMLButtonElement;
-  if (!Array.isArray(root.audios) || root.audios.length === 0 || !audio || !audioButton) {
+  const select = document.getElementById('music-select') as null|HTMLSelectElement;
+  if (!Array.isArray(root.audios) || root.audios.length === 0 || !audio || !select) {
     return;
   }
-  audio.volume = 0.01;
+  audio.volume = 0;
   let isPlaying = false;
   const setRandomAudio = () => {
     const keywords = (document.getElementById("world") as null|HTMLInputElement)?.value.split(',').map(x => x.toLowerCase().trim()).filter(x => x !== '') ?? [];
@@ -35,7 +35,7 @@
     }
     audio.setAttribute('src', root.randomString(possibleAudios));
     try {
-      audio.play();
+      await audio.play();
       isPlaying = true;
     } catch (e) {
       // expected on first load
@@ -43,7 +43,7 @@
     }
   }
   audio.addEventListener('ended', setRandomAudio);
-  audioButton.addEventListener('click', async() => {
+  select.addEventListener('change', async() => {
     if (!isPlaying) {
       try {
         await audio.play();
@@ -53,8 +53,7 @@
       }
       return;
     }
-    audio.pause();
-    isPlaying = false;
+    audio.volume = Number.parseFloat(select.value)
   });
   setRandomAudio();
 })(window.bjoernbuettner);
