@@ -1,6 +1,7 @@
 declare global {
   interface Window {
     bjoernbuettner: {
+      audios: {src: string, keyword: string}[],
       isObjectWithProperty: <K extends PropertyKey>(value: unknown, key: string) => value is object & Record<K, unknown>,
       button: (text: string, title: string, callback: (ev: MouseEvent) => void, useActualButton: boolean) => HTMLButtonElement|HTMLSpanElement,
       alert: (text: string) => Promise<void>,
