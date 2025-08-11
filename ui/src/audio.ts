@@ -56,4 +56,10 @@
     audio.volume = Number.parseFloat(select.value)
   });
   await setRandomAudio();
+  try {
+    audio.volume = 0.01;
+    select.selectedIndex = 1;
+  } catch (e) {
+    console.error(e);
+  }
 })(window.bjoernbuettner);
