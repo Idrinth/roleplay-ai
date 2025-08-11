@@ -9,6 +9,7 @@ COPY ui/package-lock.json ./
 COPY ui/tools ./tools
 COPY ui/public ./public
 COPY ui/src ./src
+COPY ui/audio ./audio
 
 RUN npm ci && npm run build
 

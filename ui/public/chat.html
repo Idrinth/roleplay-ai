@@ -47,6 +47,14 @@
                 <li>
                     <label for="world">World keywords</label>
                     <input type="text" title="keyword, other keyword,..." id="world"/>
+                    <button
+                      id="music-button"
+                      type="button"
+                      aria-label="Toggle background music"
+                      aria-controls="music"
+                      aria-pressed="false"
+                    >Toggle matching background music</button>
+                    <audio id="music" aria-hidden="true"></audio>
                 </li>
                 <li><button id="add-document" title="Add new document" type="button">+ Document</button></li>
             </ul>
