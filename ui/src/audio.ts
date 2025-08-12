@@ -99,5 +99,5 @@
     }
     audio.volume = Number.parseFloat(select.value)
   });
-  await setRandomAudio();
+  document.getElementById('world')?.addEventListener('change', setRandomAudio);
 })(window.bjoernbuettner);
