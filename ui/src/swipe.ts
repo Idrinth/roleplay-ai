@@ -28,10 +28,13 @@
     }
     switchPage();
   });
+  let initX: number|null = null;
+  document.addEventListener("touchstart", (event: TouchEvent) => {
+    initX = event.touches[0]?.pageX ?? null;
+  });
   document.addEventListener("touchend", (event: TouchEvent) => {
-    const endX = event.changedTouches[event.touches.length - 1]?.clientX ?? false;
-    const initX = event.changedTouches[0]?.clientX ?? false;
-    if (endX === false || initX === false) {
+    const endX = event.changedTouches[0]?.clientX ?? null;
+    if (endX === null || initX === null) {
       return;
     }
     if (endX - initX > 100) {
