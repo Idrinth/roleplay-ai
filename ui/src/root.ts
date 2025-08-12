@@ -1,6 +1,7 @@
 declare global {
   interface Window {
     bjoernbuettner: {
+      getWorldKeywords: () => string[],
       randomFloat: (excludedMaximum: number) => number,
       randomInt: (excludedMaximum: number) => number,
       randomBool: () => boolean,

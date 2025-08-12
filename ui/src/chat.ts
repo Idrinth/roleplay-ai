@@ -247,7 +247,7 @@
     const expandedKeywords = [...keywords];
     for (const pos in keywords) {
       const keyword = keywords[pos] as string;
-      const matchingSongs = root.getMatchingSongs(keyword.toLowerCase());
+      const matchingSongs = root.getMatchingSongs(keyword);
       if (matchingSongs.length > 0) {
         expandedKeywords[pos] = keyword + '\n  ' + matchingSongs.length + ' songs';
       }
@@ -265,11 +265,7 @@
     world.value = keywords.join(", ")
   })();
   world.addEventListener('change', async() => {
-    const keywords = world.value.split(",").map((keyword) => {
-      return keyword.trim()
-    }).filter((keyword) => {
-      return !!keyword;
-    });
+    const keywords = root.getWorldKeywords();
     keywords.sort();
     const oldKeywords = JSON.parse(world.getAttribute('data-original') ?? '[]').sort();
     if (keywords.join() === oldKeywords.join()) {

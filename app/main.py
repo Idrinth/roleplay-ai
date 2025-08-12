@@ -78,10 +78,10 @@ async def remaining_messages(user_jwt: Annotated[str | None, Cookie()] = None):
     user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {
-            "remaining_messages": 0,
-            "last_incremented": 0,
-            "increment_every_seconds": 0,
-            "maximum_remaining_messages": 0,
+            "remainingMessages": 0,
+            "lastIncremented": 0,
+            "incrementEverySeconds": 0,
+            "maximumRemainingMessages": 0,
         }
     try:
         cursor = sql_connection.cursor()
@@ -99,19 +99,19 @@ async def remaining_messages(user_jwt: Annotated[str | None, Cookie()] = None):
             maximum_remaining_messages = int(user_row[3])
             remaining_messages = int(user_row[0])
             return {
-                "remaining_messages": remaining_messages,
-                "last_incremented": last_incremented,
-                "increment_every_seconds": increment_every_seconds,
-                "maximum_remaining_messages": maximum_remaining_messages,
+                "remainingMessages": remaining_messages,
+                "lastIncremented": last_incremented,
+                "incrementEverySeconds": increment_every_seconds,
+                "maximumRemainingMessages": maximum_remaining_messages,
             }
     except mariadb.Error as e:
         log_exception(e, "remaining_messages")
 
     return {
-        "remaining_messages": 0,
-        "last_incremented": 0,
-        "increment_every_seconds": 0,
-        "maximum_remaining_messages": 0,
+        "remainingMessages": 0,
+        "lastIncremented": 0,
+        "incrementEverySeconds": 0,
+        "maximumRemainingMessages": 0,
     }
 
 @app.post('/register')
