@@ -83,26 +83,30 @@ async def remaining_messages(user_jwt: Annotated[str | None, Cookie()] = None):
             "increment_every_seconds": 0,
             "maximum_remaining_messages": 0,
         }
-    cursor = sql_connection.cursor()
-    cursor.execute(
-        "SELECT remaining_messages, last_incremented, increment_every_seconds, maximum_remaining_messages FROM chat_users.users WHERE user_id=?;",
-        [user_id]
-    )
-    for user_row in list(cursor.fetchall()):
-        last_incremented_raw = user_row[1]
-        if hasattr(last_incremented_raw, "timestamp"):
-            last_incremented = int(last_incremented_raw.timestamp(), 10)
-        else
-            last_incremented = int(last_incremented_raw, 10)
-        increment_every_seconds = int(user_row[2], 10)
-        maximum_remaining_messages = int(user_row[3], 10)
-        remaining_messages = int(user_row[0], 10)
-        return {
-            "remaining_messages": remaining_messages,
-            "last_incremented": last_incremented,
-            "increment_every_seconds": increment_every_seconds,
-            "maximum_remaining_messages": maximum_remaining_messages,
-        }
+    try:
+        cursor = sql_connection.cursor()
+        cursor.execute(
+            "SELECT remaining_messages, last_incremented, increment_every_seconds, maximum_remaining_messages FROM chat_users.users WHERE user_id=?;",
+            [user_id]
+        )
+        for user_row in list(cursor.fetchall()):
+            last_incremented_raw = user_row[1]
+            if hasattr(last_incremented_raw, "timestamp"):
+                last_incremented = int(last_incremented_raw.timestamp(), 10)
+            else
+                last_incremented = int(last_incremented_raw, 10)
+            increment_every_seconds = int(user_row[2], 10)
+            maximum_remaining_messages = int(user_row[3], 10)
+            remaining_messages = int(user_row[0], 10)
+            return {
+                "remaining_messages": remaining_messages,
+                "last_incremented": last_incremented,
+                "increment_every_seconds": increment_every_seconds,
+                "maximum_remaining_messages": maximum_remaining_messages,
+            }
+    except mariadb.Error as e:
+        log_exception(e, "remaining_messages")
+
     return {
         "remaining_messages": 0,
         "last_incremented": 0,
