@@ -164,7 +164,7 @@ async def get_world(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = No
 
 @app.put("/chat/{chat_id}/world")
 async def update_world(chat_id: str, world: World, user_jwt: Annotated[str | None, Cookie()] = None):
-    return wrap(chat_id, user_jwt, update_world_internal, world)
+    return await wrap(chat_id, user_jwt, update_world_internal, world)
 
 @app.get("/chat/{chat_id}/documents")
 async def chat_document_list(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
