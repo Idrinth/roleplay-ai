@@ -38,7 +38,7 @@
   }
   const setRandomAudio = async() => {
     const possibleAudios = [];
-    for (const keyword in root.getWorldKeywords()) {
+    for (const keyword of root.getWorldKeywords()) {
       possibleAudios.push(...root.getMatchingSongs(keyword));
     }
     if (possibleAudios.length === 0) {
