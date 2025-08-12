@@ -346,6 +346,15 @@ nav, footer {
     position: absolute;
     bottom: 0;
   }
+  #footer {
+    display: block;
+  }
+  #footer > * {
+    width: 100%;
+  }
+  #footer > textarea {
+    height: 10em;
+  }
   [data-page="0"] #worlds {
     display: block;
   }
