@@ -92,12 +92,12 @@ async def remaining_messages(user_jwt: Annotated[str | None, Cookie()] = None):
         for user_row in list(cursor.fetchall()):
             last_incremented_raw = user_row[1]
             if hasattr(last_incremented_raw, "timestamp"):
-                last_incremented = int(last_incremented_raw.timestamp(), 10)
+                last_incremented = int(last_incremented_raw.timestamp())
             else:
-                last_incremented = int(last_incremented_raw, 10)
-            increment_every_seconds = int(user_row[2], 10)
-            maximum_remaining_messages = int(user_row[3], 10)
-            remaining_messages = int(user_row[0], 10)
+                last_incremented = int(last_incremented_raw)
+            increment_every_seconds = int(user_row[2])
+            maximum_remaining_messages = int(user_row[3])
+            remaining_messages = int(user_row[0])
             return {
                 "remaining_messages": remaining_messages,
                 "last_incremented": last_incremented,
