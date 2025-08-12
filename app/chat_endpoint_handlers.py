@@ -161,10 +161,14 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
         [user_id]
     )
     remaining_messages = 0
-    for user_row in list(cursor.fetchall()):
-        remaining_messages = int(user_row["remaining_messages"], 10)
+    try:
+        for user_row in list(cursor.fetchall()):
+            remaining_messages = int(user_row[0"], 10)
+    except mariadb.Error as e:
+        log_exception(e, "chat_message_internal")
     if remaining_messages < 1:
         return {"success": False}
+    # @todo comment back in when handling in FE and Cron is done
     #+cursor.execute("UPDATE chat_users.users SET remaining_messages=IF(remaining_messages<1, 0, remaining_messages - 1) WHERE user_id=?;", [user_id])
     long_term_summary = get_from_redis(user_id,chat_id, "long_summary")
     medium_term_summary = get_from_redis(user_id,chat_id, "medium_summary")

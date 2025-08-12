@@ -93,7 +93,7 @@ async def remaining_messages(user_jwt: Annotated[str | None, Cookie()] = None):
             last_incremented_raw = user_row[1]
             if hasattr(last_incremented_raw, "timestamp"):
                 last_incremented = int(last_incremented_raw.timestamp(), 10)
-            else
+            else:
                 last_incremented = int(last_incremented_raw, 10)
             increment_every_seconds = int(user_row[2], 10)
             maximum_remaining_messages = int(user_row[3], 10)
