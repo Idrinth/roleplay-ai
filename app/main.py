@@ -73,7 +73,7 @@ async def me(user: User, user_jwt: Annotated[str | None, Cookie()] = None):
     return True
 
 
-@app.get("/me/messages")
+@app.get("/ratelimits")
 async def remaining_messages(user_jwt: Annotated[str | None, Cookie()] = None):
     user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
