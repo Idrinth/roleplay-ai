@@ -1,6 +1,7 @@
 declare global {
   interface Window {
     bjoernbuettner: {
+      desiredRoot: string,
       getWorldKeywords: () => string[],
       randomFloat: (excludedMaximum: number) => number,
       randomInt: (excludedMaximum: number) => number,
@@ -44,4 +45,10 @@ declare global {
   }
 }
 
-window.bjoernbuettner = window.bjoernbuettner || {};
+window.bjoernbuettner = window.bjoernbuettner || (() => {
+  const desiredRoot = '###DESIRED_ROOT###';
+  if (window.location.hostname !== desiredRoot) {
+    window.location.assign(window.location.protocol + '//' + desiredRoot + window.location.pathname);
+  }
+  return {};
+})();

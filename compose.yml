@@ -233,6 +233,8 @@ services:
     build:
       dockerfile: ui/Dockerfile
       no_cache: true
+      args:
+        DESIRED_ROOT: wolfgang-ai.com
     restart: always
     logging:
       driver: loki
