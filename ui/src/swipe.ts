@@ -7,12 +7,28 @@
     document.getElementById("documents"),
     document.getElementById("characters")
   ].filter(e => !!e) as HTMLElement[];
+  const dots = document.getElementById('swipe-dots');
+  for (let i = 0; i < pages.length; i++) {
+    const li = document.createElement('li');
+    li.appendChild(document.createElement('span'));
+    dots?.appendChild(li);
+  }
+  dots?.children[page]?.classList.add('active');
+  const mainnav = document.getElementById('mainnav');
+  mainnav?.addEventListener('click', () => {
+    mainnav.classList.toggle('active');
+  })
+
   const switchPage = () => {
     if (page < 0) {
       page = pages.length - 1;
     } else if (page > pages.length - 1) {
       page = 0;
     }
+    for (let i = 0; i < pages.length; i++) {
+      dots?.children[i]?.classList.remove('active');
+    }
+    dots?.children[page]?.classList.add('active');
     document.getElementById('content')?.setAttribute('data-page', `${page}`);
   }
   document.addEventListener("keyup", (event: KeyboardEvent) => {
