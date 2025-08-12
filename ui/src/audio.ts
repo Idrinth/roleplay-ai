@@ -42,6 +42,12 @@
         .join(" ");
     }
   }
+  const pathToCategoryNameAndPath = (path: string) => {
+    const pathParts = path.split('/');
+    const category = pathParts[1] ?? '';
+    const name = pathParts[2] ?? '';
+    return [category, name, path]
+  }
   const setRandomAudio = async() => {
     const possibleAudios = [];
     for (const keyword of root.getWorldKeywords()) {
@@ -52,13 +58,10 @@
         possibleAudios.push(set.src);
       }
     }
-    const selectedAudioPath = root.randomString(possibleAudios);
-    const pathParts = selectedAudioPath.split('/');
-    const category = pathParts[1];
-    const name = pathParts[2];
+    const [category, name, selectedAudioPath] = pathToCategoryNameAndPath(root.randomString(possibleAudios));
     setUcFirstInnerTextIfExists(category, 'songcategory');
     setUcFirstInnerTextIfExists(name?.split('.')[0], 'songname');
-    audio.setAttribute('src', selectedAudioPath);
+    audio.setAttribute('src', selectedAudioPath as string);
     if (!isPlaying) {
       try {
         audio.volume = 0.01;
