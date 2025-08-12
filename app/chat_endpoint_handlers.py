@@ -165,7 +165,7 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
         remaining_messages = int(user_row["remaining_messages"], 10)
     if remaining_messages < 1:
         return {"success": False}
-    cursor.execute("UPDATE chat_users.users SET remaining_messages=IF(remaining_messages<1, 0, remaining_messages - 1) WHERE user_id=?;", [user_id])
+    #cursor.execute("UPDATE chat_users.users SET remaining_messages=IF(remaining_messages<1, 0, remaining_messages - 1) WHERE user_id=?;", [user_id])
     long_term_summary = get_from_redis(user_id,chat_id, "long_summary")
     medium_term_summary = get_from_redis(user_id,chat_id, "medium_summary")
     short_term_summary = get_from_redis(user_id,chat_id, "short_summary")
