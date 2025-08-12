@@ -286,16 +286,65 @@ nav, footer {
 .inverted-colors .button[target="_blank"] {
   background-image: url('/external-link.light.svg');
 }
+#swipe-dots {
+  display: none;
+  top: 0;
+  left: 0;
+  width: 100%;
+  position: fixed;
+  flex-flow: row;
+  justify-content: center;
+  li {
+    display: block;
+    width: 0.5em;
+    height: 0.5em;
+    span {
+      display: block;
+      width: 0.5em;
+      height: 0.5em;
+      border-radius: 0.5em;
+      background-color: var(--main-shadow);
+      border: 1px solid var(--medium-shadow);
+    }
+    &.active span {
+      background-color: var(--bar-background-color);
+    }
+  }
+}
 @media screen and (width < 800px) {
   body {
     display: block;
     overflow-y: auto;
+    padding-bottom: 3em;
+  }
+  #peerlist img {
+    max-width: calc(100% - 1em);
+  }
+  #mainnav {
+    padding-top: 2.5em;
+    ul {
+      width: 100%;
+      flex-direction: column;
+      display: none;
+    }
+    &:focus ul,
+    &:hover ul,
+    &.active ul {
+      display: flex;
+    }
+  }
+  #swipe-dots {
+    display: flex;
   }
   .content {
     display: block;
   }
   #worlds, #documents, #characters, #chat, article {
     display: none;
+  }
+  footer {
+    position: absolute;
+    bottom: 0;
   }
   [data-page="0"] #worlds {
     display: block;
