@@ -99,5 +99,20 @@
     }
     audio.volume = Number.parseFloat(select.value)
   });
-  document.getElementById('world')?.addEventListener('change', setRandomAudio);
+  const world = document.getElementById('world') as HTMLInputElement;
+  if (!world) {
+    return;
+  }
+  let started = false;
+  world.addEventListener('change', () => {
+    started = true;
+    setRandomAudio();
+  });
+  const interval = window.setInterval(() => {
+    if (!started && world.value !== ' ') {
+      started = true;
+      setRandomAudio();
+      window.clearInterval(interval);
+    }
+  }, 100);
 })(window.bjoernbuettner);
