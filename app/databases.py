@@ -22,3 +22,13 @@ sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.mapping"
 sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.users"
                          " (aid BIGINT AUTO_INCREMENT NOT NULL, user_id char(36), user_name varchar(255), password varchar(255), active tinyint(1), PRIMARY KEY(aid), UNIQUE (user_id))"
                          " charset=utf8;")
+try:
+    sql_connection.cursor().execute("ALTER TABLE chat_users.users"
+                                    " ADD COLUMN email text default NULL,"
+                                    " ADD COLUMN remaining_messages INT(10) unsigned DEFAULT 10,"
+                                    " ADD COLUMN last_incremented TIMESTAMP DEFAULT NOW(),"
+                                    " ADD COLUMN increment_every_seconds INT(10) unsigned DEFAULT 1800,"
+                                    " ADD COLUMN maximum_remaining_messages INT(10) unsigned DEFAULT 25"
+                                    ";")
+except mariadb.Error as e:
+    pass

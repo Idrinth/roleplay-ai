@@ -73,6 +73,39 @@ async def me(user: User, user_jwt: Annotated[str | None, Cookie()] = None):
     return True
 
 
+@app.get("/me/messages")
+async def remaining_messages(user_jwt: Annotated[str | None, Cookie()] = None):
+    user_id = user_id_from_jwt(user_jwt)
+    if not is_uuid_like(user_id):
+        return {
+            "remaining_messages": 0,
+            "last_incremented": 0,
+            "increment_every_seconds": 0,
+            "maximum_remaining_messages": 0,
+        }
+    cursor = sql_connection.cursor()
+    cursor.execute(
+        "SELECT remaining_messages, last_incremented, increment_every_seconds, maximum_remaining_messages FROM chat_users.users WHERE user_id=?;",
+        [user_id]
+    )
+    for user_row in list(cursor.fetchall()):
+        last_incremented = int(user_row["last_incremented"], 10)
+        increment_every_seconds = int(user_row["increment_every_seconds"], 10)
+        maximum_remaining_messages = int(user_row["maximum_remaining_messages"], 10)
+        remaining_messages = int(user_row["remaining_messages"], 10)
+        return {
+            "remaining_messages": remaining_messages,
+            "last_incremented": last_incremented,
+            "increment_every_seconds": increment_every_seconds,
+            "maximum_remaining_messages": maximum_remaining_messages,
+        }
+    return {
+        "remaining_messages": 0,
+        "last_incremented": 0,
+        "increment_every_seconds": 0,
+        "maximum_remaining_messages": 0,
+    }
+
 @app.post('/register')
 async def register(response: Response, register_data: Register):
     if not register_data.password:

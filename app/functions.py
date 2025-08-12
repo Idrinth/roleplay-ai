@@ -75,7 +75,7 @@ def get_system_prompt(characters, world: str, short_term_summary: str, medium_te
         out += "# Potentially Related Information:\n```json\n" + json.dumps(vectordb_results) + "\n```"
     return out.strip()
 
-def user_id_from_jwt(encoded_jwt: str):
+def user_id_from_jwt(encoded_jwt: str) -> str|None:
     try:
         payload = decode(encoded_jwt, os.getenv('PUBLIC_KEY_PEM'), algorithms=["RS256"])
         if payload['iss'] != os.getenv("UI_HOST", "http://localhost"):
