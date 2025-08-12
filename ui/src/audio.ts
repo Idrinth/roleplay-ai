@@ -44,8 +44,8 @@
   }
   const pathToCategoryNameAndPath = (path: string) => {
     const pathParts = path.split('/');
-    const category = pathParts[1] ?? '';
-    const name = pathParts[2] ?? '';
+    const name = pathParts.pop()?.replaceAll('.mp3', '') ?? '';
+    const category = pathParts.pop() ?? '';
     return [category, name, path]
   }
   const setRandomAudio = async() => {
