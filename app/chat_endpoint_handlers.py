@@ -4,7 +4,6 @@ import uuid
 from bson import json_util
 from fastapi import BackgroundTasks
 
-from main import remaining_messages
 from .logger import log_exception
 from .llm_wrapper import ask_characterbuilder, ask_storysummarizer, ask_gamemaster, prewarm_gamemaster, prewarm_storysummarizer
 from .models import World, Character, Document, ChatStartingPoint, Action, Chat
