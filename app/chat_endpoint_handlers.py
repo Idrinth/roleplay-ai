@@ -4,6 +4,7 @@ import uuid
 from bson import json_util
 from fastapi import BackgroundTasks
 
+from main import remaining_messages
 from .logger import log_exception
 from .llm_wrapper import ask_characterbuilder, ask_storysummarizer, ask_gamemaster, prewarm_gamemaster, prewarm_storysummarizer
 from .models import World, Character, Document, ChatStartingPoint, Action, Chat
@@ -154,6 +155,17 @@ CHAT_SUMMARY_WINDOWS = {
 
 async def chat_message_internal(chat_id: str, user_id: str, action: Action, background_tasks: BackgroundTasks):
     await prewarm_gamemaster()
+    cursor = sql_connection.cursor()
+    cursor.execute(
+        "SELECT remaining_messages FROM chat_users.users WHERE user_id=?;",
+        [user_id]
+    )
+    remaining_messages = 0
+    for user_row in list(cursor.fetchall()):
+        remaining_messages = int(user_row["remaining_messages"], 10)
+    if remaining_messages < 1:
+        return {"success": False}
+    cursor.execute("UPDATE chat_users.users SET remaining_messages=IF(remaining_messages<1, 0, remaining_messages - 1) WHERE user_id=?;", [user_id])
     long_term_summary = get_from_redis(user_id,chat_id, "long_summary")
     medium_term_summary = get_from_redis(user_id,chat_id, "medium_summary")
     short_term_summary = get_from_redis(user_id,chat_id, "short_summary")
