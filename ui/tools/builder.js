@@ -70,7 +70,7 @@ for(const file of readdirSync(process.cwd() + '/public', 'utf-8')) {
 }
 
 for(const file of readdirSync(process.cwd() + '/public', 'utf-8')){
-  if (file.endsWith('.js') || file.endsWith('.html') || file.endsWith('.css') || file.endsWith('.xml')) {
+  if (file.endsWith('.js') || file.endsWith('.html') || file.endsWith('.css')) {
     try {
       const data = await minify(process.cwd() + '/public/' + file, config);
       if (data) {
@@ -81,13 +81,17 @@ for(const file of readdirSync(process.cwd() + '/public', 'utf-8')){
         }
       } else {
         console.error(`Failed to minify: ${file}`);
-        writeFileSync(process.cwd() + '/dist/' + file, readFileSync(process.cwd() + '/public/' + file, 'utf8').replace('###DESIRED_ROOT###', process.env.DESIRED_ROOT), 'utf8');
+        writeFileSync(
+          process.cwd() + '/dist/' + file,
+          readFileSync(process.cwd() + '/public/' + file, 'utf8').replace('###DESIRED_ROOT###', process.env.DESIRED_ROOT),
+          'utf8'
+        );
       }
     } catch (e) {
       console.error(`Failed to minify ${file}: `, e);
       writeFileSync(process.cwd() + '/dist/' + file, readFileSync(process.cwd() + '/public/' + file, 'binary'), 'binary');
     }
-  } else if(file.endsWith('.txt')) {
+  } else if(file.endsWith('.txt') || file.endsWith('.xml')) {
     writeFileSync(process.cwd() + '/dist/'+file, readFileSync(process.cwd() +'/public/'+file, 'utf8').replace('###DESIRED_ROOT###', process.env.DESIRED_ROOT), 'utf8');
   } else {
     writeFileSync(process.cwd() + '/dist/'+file, readFileSync(process.cwd() +'/public/'+file, 'binary'), 'binary');
