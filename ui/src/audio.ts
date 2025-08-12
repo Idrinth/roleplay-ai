@@ -104,15 +104,20 @@
     return;
   }
   let started = false;
-  world.addEventListener('change', () => {
-    started = true;
-    setRandomAudio();
-  });
   const interval = window.setInterval(() => {
     if (!started && world.value !== ' ') {
       started = true;
-      setRandomAudio();
+      if (!isPlaying) {
+        setRandomAudio();
+      }
       window.clearInterval(interval);
     }
   }, 100);
+  world.addEventListener('change', () => {
+    if (!started) {
+      window.clearInterval(interval);
+    }
+    started = true;
+    setRandomAudio();
+  });
 })(window.bjoernbuettner);
