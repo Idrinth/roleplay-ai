@@ -23,8 +23,9 @@ const TO_MERGE = {
   ],
   'chat-##.min.js': [
     'get-world-keywords.js',
-    'random.js',
     'audio-list.js',
+    'audio.js',
+    'random.js',
     'showdown.min.js',
     'password.js',
     'js-yaml.min.js',
@@ -32,7 +33,6 @@ const TO_MERGE = {
     'document-upload.js',
     'chat.js',
     'on-hover-focus.js',
-    'audio.js'
   ]
 }
 
