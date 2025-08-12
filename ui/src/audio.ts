@@ -12,7 +12,11 @@
     }
     if (possibleAudios.length === 0) {
       for (const set of root.audios) {
-        if (lowerCaseKeyword.includes(set.keyword)) {
+        const setKeyword = String(set.keyword ?? '')
+          .toLowerCase()
+          .replaceAll('-', ' ')
+          .replaceAll('_', ' ');
+        if (setKeyword.includes(lowerCaseKeyword) || lowerCaseKeyword.includes(set.keyword)) {
           possibleAudios.push(set.src);
         }
       }
