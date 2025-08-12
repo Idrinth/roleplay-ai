@@ -34,6 +34,8 @@
     const element = document.getElementById(id);
     if (text && element) {
       element.innerText = text
+        .replaceAll('-', ' ')
+        .replaceAll('_', ' ')
         .split(" ")
         .filter(textElement => !!textElement)
         .map(textElement => textElement.substring(0, 1).toUpperCase() + textElement.substring(1))
@@ -50,11 +52,13 @@
         possibleAudios.push(set.src);
       }
     }
-    const src = root.randomString(possibleAudios);
-    const [,, category, name] = src.split('/');
-    setUcFirstInnerTextIfExists(category?.replaceAll('-', ' '), 'songcategory');
-    setUcFirstInnerTextIfExists(name?.split('.')[0]?.replaceAll('_', ' '), 'songname');
-    audio.setAttribute('src', src);
+    const selectedAudioPath = root.randomString(possibleAudios);
+    const pathParts = selectedAudioPath.split('/');
+    const category = pathParts[1];
+    const name = pathParts[2];
+    setUcFirstInnerTextIfExists(category, 'songcategory');
+    setUcFirstInnerTextIfExists(name?.split('.')[0], 'songname');
+    audio.setAttribute('src', selectedAudioPath);
     if (!isPlaying) {
       try {
         audio.volume = 0.01;
