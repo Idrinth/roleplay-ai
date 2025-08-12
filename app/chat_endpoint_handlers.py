@@ -162,7 +162,7 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
     remaining_messages = 0
     try:
         for user_row in list(cursor.fetchall()):
-            remaining_messages = int(user_row[0], 10)
+            remaining_messages = int(user_row[0])
     except mariadb.Error as e:
         log_exception(e, "chat_message_internal")
     if remaining_messages < 1:
