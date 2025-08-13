@@ -23,10 +23,10 @@ const TO_MERGE = {
     'swipe.js'
   ],
   'chat-##.min.js': [
+    'random.js',
     'get-world-keywords.js',
     'audio-list.js',
     'audio.js',
-    'random.js',
     'showdown.min.js',
     'password.js',
     'js-yaml.min.js',
