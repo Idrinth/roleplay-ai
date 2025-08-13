@@ -1,6 +1,7 @@
 (async(root) => {
-  if (!root.user) {
+  const user = await root.getUser();
+  if (!user) {
     return;
   }
-  root.listExistingChats(root.user.chats)
+  root.listExistingChats(user.chats)
 })(window.bjoernbuettner);

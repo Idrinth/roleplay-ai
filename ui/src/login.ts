@@ -11,7 +11,7 @@
     }
     return;
   }
-  document.getElementById('login')?.addEventListener('click', async() => {
+  const login = async () =>  {
     const password = (document.getElementById('password') as HTMLInputElement|null)?.value
     const userid = (document.getElementById('userid') as HTMLInputElement|null)?.value
     if (password && userid) {
@@ -25,6 +25,22 @@
         return;
       }
       window.location.reload();
+    }
+  }
+  document.getElementById('login')?.addEventListener('click', login)
+  document.getElementById('login')?.addEventListener('keyup', (event: KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      login();
+    }
+  })
+  document.getElementById('password')?.addEventListener('keyup', (event: KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      login();
+    }
+  })
+  document.getElementById('userid')?.addEventListener('keyup', (event: KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      login();
     }
   })
 })(window.bjoernbuettner);

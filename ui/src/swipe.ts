@@ -27,9 +27,16 @@
       page = i;
       switchPage();
     }
+    li.addEventListener('keydown', (ev: KeyboardEvent) => {
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        page = i;
+        switchPage();
+      }
+    });
     li.setAttribute('role', 'button');
     li.setAttribute('tabindex', '0');
-    li.setAttribute('aria-label', 'switch to page ' + (page + 1));
+    li.setAttribute('aria-label', 'switch to page ' + (i + 1));
     dots?.appendChild(li);
   }
   dots?.children[page]?.classList.add('active');
