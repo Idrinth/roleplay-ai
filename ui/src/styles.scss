@@ -255,7 +255,8 @@ nav, footer {
 .chat {
   .content {
     transition-property: grid-template-rows;
-    transition-duration: 1.2s;
+    transition-duration: 0.9s;
+    transition-delay: 0.6s;
     grid-template-rows: calc((100% - 5em) / 3) calc((100% - 5em) / 3) calc((100% - 5em) / 3) 5em;
 
     &.hovers-footer {
