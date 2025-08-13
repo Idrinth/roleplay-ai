@@ -29,7 +29,6 @@
     return;
   }
   audio.volume = 0;
-  let isPlaying = false;
   const setUcFirstInnerTextIfExists = (text: string|undefined, id: string) => {
     const element = document.getElementById(id);
     if (text && element) {
@@ -62,62 +61,17 @@
     setUcFirstInnerTextIfExists(category, 'songcategory');
     setUcFirstInnerTextIfExists(name?.split('.')[0], 'songname');
     audio.setAttribute('src', selectedAudioPath as string);
-    if (!isPlaying) {
-      try {
-        audio.volume = 0.01;
-        await audio.play();
-        select.selectedIndex = 1;
-        isPlaying = true;
-      } catch (e) {
-        console.error(e);
-        try {
-          audio.volume = 0;
-          await audio.play();
-          isPlaying = true;
-        } catch (e) {
-          console.error(e);
-        }
-      }
-      return;
-    }
-    try {
-      await audio.play();
-      isPlaying = true;
-    } catch (e) {
-      console.error(e);
-    }
+    await audio.play();
   }
   audio.addEventListener('ended', setRandomAudio);
   select.addEventListener('change', async() => {
-    if (!isPlaying) {
-      try {
-        await audio.play();
-        isPlaying = true;
-      } catch (e) {
-        console.error(e);
-      }
-    }
+    await audio.play();
     audio.volume = Number.parseFloat(select.value)
   });
+  await setRandomAudio();
   const world = document.getElementById('world') as HTMLInputElement;
   if (!world) {
     return;
   }
-  let started = false;
-  const interval = window.setInterval(() => {
-    if (!started && world.value !== ' ') {
-      started = true;
-      if (!isPlaying) {
-        setRandomAudio();
-      }
-      window.clearInterval(interval);
-    }
-  }, 100);
-  world.addEventListener('change', () => {
-    if (!started) {
-      window.clearInterval(interval);
-    }
-    started = true;
-    setRandomAudio();
-  });
+  world.addEventListener('change', setRandomAudio);
 })(window.bjoernbuettner);
