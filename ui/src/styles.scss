@@ -142,7 +142,7 @@ textarea {
   height: 1.5em;
   cursor: pointer;
 }
-.button, .button:active, .button:visited, button, button:active, button:visited {
+.button, .button:active, .button:visited, .button:hover, .button:focus, button, button:active, button:visited, button:hover, button:focus {
   cursor: pointer;
   background-color: var(--main-color);
   color: var(--main-bg);
@@ -255,7 +255,8 @@ nav, footer {
 .chat {
   .content {
     transition-property: grid-template-rows;
-    transition-duration: 1.2s;
+    transition-duration: 0.9s;
+    transition-delay: 0.6s;
     grid-template-rows: calc((100% - 5em) / 3) calc((100% - 5em) / 3) calc((100% - 5em) / 3) 5em;
 
     &.hovers-footer {
@@ -311,7 +312,7 @@ nav, footer {
     }
   }
 }
-@media screen and (width < 800px) {
+@media screen and ((width < 800px) or (height < 450px)) {
   body {
     display: block;
     overflow-y: auto;
@@ -345,6 +346,7 @@ nav, footer {
   footer {
     position: absolute;
     bottom: 0;
+    width: 100%;
   }
   #footer {
     display: block;

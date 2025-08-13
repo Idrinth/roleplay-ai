@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Home | Wolfgang AI - Your personal GameMaster</title>
+        <link rel="stylesheet" href="/styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="canonical" href="https://###DESIRED_ROOT###/"/>
+        <meta name="description" content="Wolfgang AI - Your personal game master for solo RPG adventures. Open-source, privacy-focused, with unlimited context for epic storytelling sessions."/>
+    </head>
+    <body class="index">
+        <nav class="skiplinks">
+            <ul>
+                <li><a href="#mainnav">Skip to main navigation</a></li>
+                <li><a href="#content">Skip to content</a></li>
+            </ul>
+        </nav>
+        <nav id="mainnav">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/imprint">Imprint & Privacy</a></li>
+                <li><a href="/chat/new">Start New Session</a></li>
+                <li><a href="/login">Login</a></li>
+                <li><a rel="noopener noreferrer" aria-label="link opens in new tab" href="https://discord.gg/idrinth" target="_blank">Discord</a></li>
+                <li><a rel="noopener noreferrer" aria-label="link opens in new tab" href="https://github.com/bjoern-buettner/roleplay-ai" target="_blank">GitHub</a></li>
+            </ul>
+        </nav>
+        <h1>
+            <span id="logo" role="button" aria-label="changes the color mode on click" tabindex="0" title="click to switch color mode" class="gamemaster"></span>
+            <span>Wolfgang AI</span>
+        </h1>
+        <div class="content" id="content">
+            <article>
+                <label for="userid">User-ID</label>
+                <input type="text" id="userid" placeholder="User-ID" autocomplete="off">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Password" autocomplete="off">
+                <button id="login" role="button" aria-label="click to login">Login</button>
+            </article>
+            <ul class="aside" id="worlds">
+                <li>
+                    <a href="/chat/new" class="button call-to-action">START NEW CHAT</a>
+                </li>
+                <li>
+                    <a id="donate-button" aria-label="opens in a new window" rel="noopener noreferrer"
+                       title="Donate to keep the project up and running using PayPal." class="button"
+                       href="https://www.paypal.com/donate/?hosted_button_id=AENZ9E63F85G8" target="_blank">Donate</a>
+                </li>
+            </ul>
+        </div>
+        <footer>&copy;2025 Björn 'Idrinth' Büttner. The chatbot may make mistakes, please do not abuse it.</footer>
+        <ul id="swipe-dots"></ul>
+        <script type="text/javascript"  src="/shared-##.min.js"></script>
+        <script type="text/javascript"  src="/login.js"></script>
+        <script type="text/javascript"  src="/list-existing-chats.js"></script>
+    </body>
+</html>

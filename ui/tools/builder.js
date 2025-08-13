@@ -15,6 +15,7 @@ const TO_MERGE = {
     'root.js',
     'get-from-api.js',
     'is-object-with-property.js',
+    'get-current-user.js',
     'button.js',
     'dark-light-switch.js',
     'modals.js',
