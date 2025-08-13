@@ -1,6 +1,7 @@
 declare global {
   interface Window {
     bjoernbuettner: {
+      getUser: () => Promise<{ id: string, name?: string, chats: { id: string, name: string }[] }|undefined>
       desiredRoot: string,
       getWorldKeywords: () => string[],
       randomFloat: (excludedMaximum: number) => number,

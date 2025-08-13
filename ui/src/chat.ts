@@ -3,8 +3,8 @@
   // if the purifier is not there, the only one suffering is the user themselves
   const purifier = window.DOMPurify?.sanitize ?? ((html: string) => {return html;});
   const user = await (async () => {
-    const user = await root.getFromAPI('whoami', 'GET');
-    if (typeof user === 'object' && user !== null && !Object.hasOwn(user, 'error') && !Object.hasOwn(user, 'exception')) {
+    const user = await root.getUser();
+    if (user) {
       return user;
     }
     if (await root.confirm("Do you already have an account?")) {
@@ -34,7 +34,7 @@
 
   const playername = document.getElementById('playername');
   if (playername) {
-    playername.innerText = (user.name ?? user.id);
+    playername.innerText = user.name ?? user.id;
     playername.onclick = async () => {
       const previous = user.name ?? user.id;
       const name = await root.prompt("Enter a new name for yourself.", previous);
