@@ -8,17 +8,6 @@
     document.getElementById("characters")
   ].filter(e => !!e) as HTMLElement[];
   const dots = document.getElementById('swipe-dots');
-  for (let i = 0; i < pages.length; i++) {
-    const li = document.createElement('li');
-    li.appendChild(document.createElement('span'));
-    dots?.appendChild(li);
-  }
-  dots?.children[page]?.classList.add('active');
-  const mainnav = document.getElementById('mainnav');
-  mainnav?.addEventListener('click', () => {
-    mainnav.classList.toggle('active');
-  })
-
   const switchPage = () => {
     if (page < 0) {
       page = pages.length - 1;
@@ -31,6 +20,23 @@
     dots?.children[page]?.classList.add('active');
     document.getElementById('content')?.setAttribute('data-page', `${page}`);
   }
+  for (let i = 0; i < pages.length; i++) {
+    const li = document.createElement('li');
+    li.appendChild(document.createElement('span'));
+    li.onclick = () => {
+      page = i;
+      switchPage();
+    }
+    li.setAttribute('role', 'button');
+    li.setAttribute('tabindex', '0');
+    li.setAttribute('aria-label', 'switch to page ' + (page + 1));
+    dots?.appendChild(li);
+  }
+  dots?.children[page]?.classList.add('active');
+  const mainnav = document.getElementById('mainnav');
+  mainnav?.addEventListener('click', () => {
+    mainnav.classList.toggle('active');
+  });
   document.addEventListener("keyup", (event: KeyboardEvent) => {
     const target = event.target as HTMLElement | null;
     if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {

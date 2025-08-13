@@ -312,7 +312,7 @@ nav, footer {
     }
   }
 }
-@media screen and (width < 800px) {
+@media screen and ((width < 800px) or (height < 450px)) {
   body {
     display: block;
     overflow-y: auto;
@@ -346,6 +346,7 @@ nav, footer {
   footer {
     position: absolute;
     bottom: 0;
+    width: 100%;
   }
   #footer {
     display: block;
