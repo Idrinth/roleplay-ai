@@ -9,6 +9,10 @@
     <priority>1.00</priority>
   </url>
   <url>
+    <loc>https://###DESIRED_ROOT###/login</loc>
+    <priority>0.25</priority>
+  </url>
+  <url>
     <loc>https://###DESIRED_ROOT###/imprint</loc>
     <priority>0.20</priority>
   </url>

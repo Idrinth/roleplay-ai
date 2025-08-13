@@ -131,7 +131,7 @@ textarea {
   box-shadow: var(--main-shadow) 0 0 0.125em;
 }
 .gamemaster {
-  background-image: url('/logo.light.svg');
+  background-image: url('/logo.svg');
   background-size: 100% 100%;
   width: 1em;
   height: 1em;
@@ -201,10 +201,6 @@ a[target="_blank"] {
   background-position-x: right;
 }
 .inverted-colors {
-  .gamemaster {
-    background-image: url('/logo.dark.svg');
-  }
-
   a[target="_blank"] {
     background-image: url('/external-link.dark.svg')
   }
