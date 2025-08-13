@@ -22,7 +22,7 @@
     }
     const uuid = (await root.getFromAPI(`register`, 'POST', {
         password: await root.prompt("Enter a password for your account.", root.password())
-      }, 10000, false) as {user?: string}).user ?? false;
+      }, 10000) as {user?: string}).user ?? false;
     if (uuid === false) {
       await root.alert("Registration failed!");
       location.reload()
