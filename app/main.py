@@ -314,7 +314,7 @@ async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, 
         try:
             sql_connection.cursor().execute(
                 "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
-                ['Chat Messages']
+                ['Chat Replies']
             )
         except mariadb.Error as error:
             pass
@@ -326,7 +326,7 @@ async def post_proposals(starting_point: ChatStartingPoint, chat_id: str, user_j
     if proposal and "message" in proposal:
         try:
             sql_connection.cursor().execute(
-                "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
+                "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value + 1;",
                 ['Starting-Point Proposals']
             )
         except mariadb.Error as error:
