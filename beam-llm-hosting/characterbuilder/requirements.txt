@@ -1,4 +1,4 @@
 transformers~=4.54.1
 torch~=2.7.1
 huggingface_hub[hf-transfer]~=0.34.3
-beam-client~=0.2.173
+beam-client~=0.2.175
