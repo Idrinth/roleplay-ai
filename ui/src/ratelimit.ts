@@ -7,7 +7,7 @@
   }
   let chatIsActive = false;
   let creditsAreEmpty = false;
-  root.maySendMessage = async() => ! (creditsAreEmpty || chatIsActive);
+  root.maySendMessage = async() => !creditsAreEmpty && !chatIsActive;
   window.setInterval(async () => {
     const response = await root.getFromAPI(
       `chat/${chatId}/active?${Date.now()}`,
