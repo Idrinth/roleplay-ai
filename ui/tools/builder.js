@@ -136,3 +136,14 @@ for (const target of Object.keys(TO_MERGE)) {
     }
   }
 }
+const cssHash = hash('md5', readFileSync(process.cwd() + '/dist/styles.css', 'utf8'), 'hex');
+for(const file of readdirSync(process.cwd() + '/dist', 'utf-8')){
+  if (file.endsWith('.html')) {
+    writeFileSync(
+      `${process.cwd()}/dist/${file}`,
+      readFileSync(`${process.cwd()}/dist/${file}`, 'utf8')
+        .replace(`/styles.css`, `/styles.css?${cssHash}`),
+      'utf8'
+    );
+  }
+}
