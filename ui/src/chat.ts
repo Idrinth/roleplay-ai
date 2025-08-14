@@ -204,7 +204,7 @@
     }
     handlingClick = true;
     try {
-      await root.uploadDocument(event, chat.id, 'character', async (element) => window?.jsyaml?.load(element.value) ?? {}, updateCharacters);
+      await root.uploadDocument(event, chat.id, 'charactersheet', async (element) => window?.jsyaml?.load(element.value) ?? {}, updateCharacters);
       await root.uploadDocument(event, chat.id, 'document', async (element) => {
         return {
           content: element.value,
