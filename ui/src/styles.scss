@@ -321,6 +321,10 @@ nav, footer {
   width: 100%;
   max-width: 375px;
 }
+#statistics {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
 .index #content img.highlight {
   border: 1px solid var(--main-color);
   border-radius: 0.2em;
@@ -333,6 +337,10 @@ nav, footer {
     display: block;
     overflow-y: auto;
     padding-bottom: 3em;
+  }
+  #statistics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
   #peerlist img {
     max-width: calc(100% - 1em);
