@@ -8,7 +8,7 @@ from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from fastapi import Cookie, BackgroundTasks, Response
 import mariadb
-from fastapi_utils import repeat_at
+from fastapi_utils.tasks import repeat_every
 
 from .logger import log_exception
 from .llm_wrapper import prewarm_characterbuilder
@@ -22,7 +22,7 @@ from .chat_endpoint_handlers import chat_delete_success, chat_active_success, ch
     update_world_internal, get_world_internal, post_proposals_internal, chat_message_internal, chat_name_success
 
 @app.on_event("startup")
-@repeat_at(cron="* * * * *")
+@repeat_every(seconds=60)
 async def refill_tokens():
     sql_connection.ping()
     now = datetime.datetime.now(datetime.timezone.utc).timestamp().__floor__()
