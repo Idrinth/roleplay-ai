@@ -138,7 +138,7 @@ async def register(response: Response, register_data: Register):
         )
         try:
             sql_connection.cursor().execute(
-                "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY value = value +1;",
+                "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
                 ['Registrations']
             )
         except mariadb.Error as error:
