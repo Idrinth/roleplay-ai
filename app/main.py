@@ -1,3 +1,4 @@
+import datetime
 import json
 from bson import json_util
 from bson.objectid import ObjectId
@@ -7,6 +8,7 @@ from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from fastapi import Cookie, BackgroundTasks, Response
 import mariadb
+from fastapi_utils import repeat_at
 
 from .logger import log_exception
 from .llm_wrapper import prewarm_characterbuilder
@@ -18,6 +20,15 @@ from .chat_auth_wrapper import wrap
 from .chat_endpoint_handlers import chat_delete_success, chat_active_success, chat_history_success, \
     chat_characters_success, chat_character_add_success, chat_document_add_success, chat_document_list_success, \
     update_world_internal, get_world_internal, post_proposals_internal, chat_message_internal, chat_name_success
+
+@app.on_event("startup")
+@repeat_at(cron="* * * * *")
+async def refill_tokens():
+    sql_connection.ping()
+    now = datetime.datetime.now(datetime.timezone.utc).timestamp().__floor__()
+    sql_connection.cursor().execute("UPDATE chat_users.users SET last_incremented=? WHERE remaining_messages >= maximum_remaining_messages", [now])
+    sql_connection.cursor().execute("UPDATE chat_users.users SET remaining_messages=maximum_remaining_messages WHERE remaining_messages > maximum_remaining_messages")
+    sql_connection.cursor().execute("UPDATE chat_users.users SET last_incrementd=last_incremented+increments_every_seconds, remaining_messages=remaining_messages+1 WHERE remaining_messages < maximum_remaining_messages AND last_incremented + increment_every_seconds > ?", [now])
 
 @app.get('/')
 async def root():
