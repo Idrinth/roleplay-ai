@@ -72,6 +72,16 @@ async def me(user: User, user_jwt: Annotated[str | None, Cookie()] = None):
         )
     return True
 
+@app.get('/statistics')
+def statistics():
+    try:
+        sql_connection.ping()
+        cursor = sql_connection.cursor()
+        cursor.execute("SELECT `label`, `value` FROM `chat_users`.`statistics`")
+        return {label: value for (label, value) in cursor}
+    except mariadb.Error as e:
+        log_exception(e, "statistics")
+    return {}
 
 @app.get("/ratelimits")
 async def remaining_messages(user_jwt: Annotated[str | None, Cookie()] = None):
@@ -97,9 +107,9 @@ async def remaining_messages(user_jwt: Annotated[str | None, Cookie()] = None):
                 last_incremented = int(last_incremented_raw)
             increment_every_seconds = int(user_row[2])
             maximum_remaining_messages = int(user_row[3])
-            remaining_messages = int(user_row[0])
+            remaining_message_count = int(user_row[0])
             return {
-                "remainingMessages": remaining_messages,
+                "remainingMessages": remaining_message_count,
                 "lastIncremented": last_incremented,
                 "incrementEverySeconds": increment_every_seconds,
                 "maximumRemainingMessages": maximum_remaining_messages,
@@ -126,6 +136,13 @@ async def register(response: Response, register_data: Register):
             "INSERT INTO `chat_users`.`users` (user_id, password, active) VALUES (?, ?, ?);",
             [user_id, encrypted_password, 1]
         )
+        try:
+            sql_connection.cursor().execute(
+                "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY value = value +1;",
+                ['Registrations']
+            )
+        except mariadb.Error as error:
+            pass
         set_login_cookie(response, user_id)
         return {"user": user_id}
     except mariadb.Error as e:
@@ -155,6 +172,13 @@ async def new_chat(user_jwt: Annotated[str | None, Cookie()] = None):
         [chat_id, user_id, chat_id]
     )
     redis.set(f"{user_id}-{chat_id}.world", json.dumps(["fantasy", "high magic"]))
+    try:
+        sql_connection.cursor().execute(
+            "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
+            ['Chats']
+        )
+    except mariadb.Error as error:
+        pass
     await prewarm_characterbuilder()
     return {"chat": chat_id}
 
@@ -192,11 +216,29 @@ async def chat_document_delete(chat_id: str, document_id: str, user_jwt: Annotat
 
 @app.post("/chat/{chat_id}/documents")
 async def chat_document_add(chat_id: str, document: Document, user_jwt: Annotated[str | None, Cookie()] = None):
-    return await wrap(chat_id, user_jwt, chat_document_add_success, document)
+    document = await wrap(chat_id, user_jwt, chat_document_add_success, document)
+    if document and "success" in document:
+        try:
+            sql_connection.cursor().execute(
+                "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
+                ['Documents']
+            )
+        except mariadb.Error as error:
+            pass
+    return document
 
 @app.post("/chat/{chat_id}/characters")
 async def chat_character_add(chat_id: str, character: Character, user_jwt: Annotated[str | None, Cookie()] = None):
-    return await wrap(chat_id, user_jwt, chat_character_add_success, character)
+    character_sheet = await wrap(chat_id, user_jwt, chat_character_add_success, character)
+    if character_sheet and "success" in character_sheet:
+        try:
+            sql_connection.cursor().execute(
+                "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
+                ['Character Sheets']
+            )
+        except mariadb.Error as error:
+            pass
+    return character_sheet
 
 @app.post("/chat/{chat_id}/characters/{character_id}")
 async def chat_character_update(chat_id: str, character_id: str, character: Character, user_jwt: Annotated[str | None, Cookie()] = None):
@@ -267,8 +309,26 @@ async def chat_name(chat_id: str, chat_data: Chat, user_jwt: Annotated[str | Non
 
 @app.post("/chat/{chat_id}")
 async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, user_jwt: Annotated[str | None, Cookie()] = None):
-    return await wrap(chat_id, user_jwt, chat_message_internal, action, True, background_tasks)
+    chat_message = await wrap(chat_id, user_jwt, chat_message_internal, action, True, background_tasks)
+    if chat_message and "message" in chat_message:
+        try:
+            sql_connection.cursor().execute(
+                "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
+                ['Chat Messages']
+            )
+        except mariadb.Error as error:
+            pass
+    return chat_message
 
 @app.post("/chat/{chat_id}/starting-point-proposal")
 async def post_proposals(starting_point: ChatStartingPoint, chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
-    return await wrap(chat_id, user_jwt, post_proposals_internal, starting_point, True)
+    proposal = await wrap(chat_id, user_jwt, post_proposals_internal, starting_point, True)
+    if proposal and "message" in proposal:
+        try:
+            sql_connection.cursor().execute(
+                "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
+                ['Starting-Point Proposals']
+            )
+        except mariadb.Error as error:
+            pass
+    return proposal
