@@ -1,6 +1,7 @@
-from beam import endpoint, Image, QueueDepthAutoscaler, Volume
+from beam import endpoint, Image, QueueDepthAutoscaler
 from shared.download_models import CACHE_PATH
 from shared.allowed_gpus import ALL_POSSIBLE_GPUS
+from shared.volumes import VOLUMES
 
 with open('./rules.md', 'r', encoding="utf-8") as md_file:
     rules = md_file.read()
@@ -15,7 +16,7 @@ def download_models():
     secrets=["HUGGINGFACE_TOKEN"],
     name=f"roleplay-ai-{NAME}",
     on_start=download_models,
-    volumes=[Volume(name="roleplay-ai-cache", mount_path=CACHE_PATH)],
+    volumes=VOLUMES,
     cpu=2,
     gpu=ALL_POSSIBLE_GPUS,
     memory="6Gi",
