@@ -7,7 +7,11 @@
   }
   let chatIsActive = false;
   let creditsAreEmpty = false;
-  root.maySendMessage = async() => ! (creditsAreEmpty || chatIsActive);
+  root.maySendMessage = async() => {
+    const maySend = !creditsAreEmpty && !chatIsActive;
+    sendButton.disabled = !maySend;
+    return maySend;
+  }
   window.setInterval(async () => {
     const response = await root.getFromAPI(
       `chat/${chatId}/active?${Date.now()}`,
