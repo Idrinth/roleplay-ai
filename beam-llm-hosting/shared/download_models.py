@@ -37,4 +37,4 @@ def download_model(model_name: str):
         trust_remote_code=True
     )
 
-    return model, tokenizer
+    return model.to('cuda:0'), tokenizer
