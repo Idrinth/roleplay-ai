@@ -158,7 +158,7 @@
         characterElement.appendChild(root.button('[E]', 'Edit character', async (event: MouseEvent) => {
           event.stopPropagation();
           const el = document.createElement('textarea');
-          el.setAttribute('id', 'charactersheet')
+          el.setAttribute('id', 'character')
           const char = {...character} as {id?: string, name: {taken: string}};
           delete char['id'];
           el.setAttribute('data-id', character.id);
@@ -204,7 +204,7 @@
     }
     handlingClick = true;
     try {
-      await root.uploadDocument(event, chat.id, 'charactersheet', async (element) => window?.jsyaml?.load(element.value) ?? {}, updateCharacters);
+      await root.uploadDocument(event, chat.id, 'character', async (element) => window?.jsyaml?.load(element.value) ?? {}, updateCharacters);
       await root.uploadDocument(event, chat.id, 'document', async (element) => {
         return {
           content: element.value,
