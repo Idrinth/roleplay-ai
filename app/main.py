@@ -173,7 +173,7 @@ async def new_chat(user_jwt: Annotated[str | None, Cookie()] = None):
     redis.set(f"{user_id}-{chat_id}.world", json.dumps(["fantasy", "high magic"]))
     try:
         sql_connection.cursor().execute(
-            "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY value = value +1;",
+            "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
             ['Chats']
         )
     except mariadb.Error as error:
@@ -216,25 +216,27 @@ async def chat_document_delete(chat_id: str, document_id: str, user_jwt: Annotat
 @app.post("/chat/{chat_id}/documents")
 async def chat_document_add(chat_id: str, document: Document, user_jwt: Annotated[str | None, Cookie()] = None):
     document = await wrap(chat_id, user_jwt, chat_document_add_success, document)
-    try:
-        sql_connection.cursor().execute(
-            "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY value = value +1;",
-            ['Documents']
-        )
-    except mariadb.Error as error:
-        pass
+    if document and "success" in document:
+        try:
+            sql_connection.cursor().execute(
+                "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
+                ['Documents']
+            )
+        except mariadb.Error as error:
+            pass
     return document
 
 @app.post("/chat/{chat_id}/characters")
 async def chat_character_add(chat_id: str, character: Character, user_jwt: Annotated[str | None, Cookie()] = None):
     character_sheet = await wrap(chat_id, user_jwt, chat_character_add_success, character)
-    try:
-        sql_connection.cursor().execute(
-            "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY value = value +1;",
-            ['Character Sheets']
-        )
-    except mariadb.Error as error:
-        pass
+    if character_sheet and "success" in character_sheet:
+        try:
+            sql_connection.cursor().execute(
+                "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
+                ['Character Sheets']
+            )
+        except mariadb.Error as error:
+            pass
     return character_sheet
 
 @app.post("/chat/{chat_id}/characters/{character_id}")
@@ -307,23 +309,25 @@ async def chat_name(chat_id: str, chat_data: Chat, user_jwt: Annotated[str | Non
 @app.post("/chat/{chat_id}")
 async def chat(chat_id: str, action: Action, background_tasks: BackgroundTasks, user_jwt: Annotated[str | None, Cookie()] = None):
     chat_message = await wrap(chat_id, user_jwt, chat_message_internal, action, True, background_tasks)
-    try:
-        sql_connection.cursor().execute(
-            "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY value = value +1;",
-            ['Chat Messages']
-        )
-    except mariadb.Error as error:
-        pass
+    if chat_message and "message" in chat_message:
+        try:
+            sql_connection.cursor().execute(
+                "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
+                ['Chat Messages']
+            )
+        except mariadb.Error as error:
+            pass
     return chat_message
 
 @app.post("/chat/{chat_id}/starting-point-proposal")
 async def post_proposals(starting_point: ChatStartingPoint, chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
     proposal = await wrap(chat_id, user_jwt, post_proposals_internal, starting_point, True)
-    try:
-        sql_connection.cursor().execute(
-            "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY value = value +1;",
-            ['Starting-Point Proposals']
-        )
-    except mariadb.Error as error:
-        pass
+    if proposal and "message" in proposal:
+        try:
+            sql_connection.cursor().execute(
+                "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
+                ['Starting-Point Proposals']
+            )
+        except mariadb.Error as error:
+            pass
     return proposal
