@@ -74,13 +74,14 @@ async def me(user: User, user_jwt: Annotated[str | None, Cookie()] = None):
 
 @app.get('/statistics')
 def statistics():
-    sql_connection.ping()
-    cursor = sql_connection.cursor()
-    cursor.execute("SELECT label, value FROM chat_users.statistics")
-    out = {}
-    for label, value in cursor:
-        out[label] = value
-    return out
+    try:
+        sql_connection.ping()
+        cursor = sql_connection.cursor()
+        cursor.execute("SELECT `label`, `value` FROM `chat_users`.`statistics`")
+        return {label: value for (label, value) in cursor}
+    except mariadb.Error as e:
+        log_exception(e, "statistics")
+    return {}
 
 @app.get("/ratelimits")
 async def remaining_messages(user_jwt: Annotated[str | None, Cookie()] = None):
