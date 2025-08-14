@@ -1,6 +1,7 @@
 declare global {
   interface Window {
     bjoernbuettner: {
+      maySendMessage: () => Promise<boolean>;
       getUser: () => Promise<{ id: string, name?: string, chats: { id: string, name: string }[] }|undefined>
       getWorldKeywords: () => string[],
       randomFloat: (excludedMaximum: number) => number,

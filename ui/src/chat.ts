@@ -97,7 +97,6 @@
   root.listExistingChats(user.chats, chat.id)
 
   const sendButton = document.getElementById('send') as  null|HTMLButtonElement;
-  const loader = document.getElementById('loader');
   const documents = document.getElementById('documents');
   const characters = document.getElementById('characters');
   const world = document.getElementById('world') as HTMLInputElement|null;
@@ -107,19 +106,6 @@
     return;
   }
   const converter = new window.showdown.Converter();
-  window.setInterval(async () => {
-    const response = await root.getFromAPI(
-      `chat/${chat.id}/active?${Date.now()}`,
-      'GET',
-      undefined,
-      2400,
-    );
-    if (!root.isObjectWithProperty(response, 'active')) {
-      return;
-    }
-    sendButton.disabled = (response as {active: boolean}).active;
-    loader?.setAttribute('style', sendButton.disabled ? '' : 'display: none');
-  }, 2500);
   const updateDocuments = async () => {
     const json = await root.getFromAPI(`chat/${chat.id}/documents`, 'GET');
     while (documents.children.length > 2) {
@@ -192,7 +178,7 @@
   }
   sendButton.addEventListener('click', async function () {
     const value = chatEntry.value;
-    if (!value || !value.trim()) {
+    if (!await root.maySendMessage() || !value || !value.trim()) {
       return;
     }
     chatEntry.value = '';
@@ -201,7 +187,7 @@
     chatElement.innerHTML = purifier(converter.makeHtml(value));
     chatElement.classList.add('user');
     chatElement.scrollIntoView({ behavior: 'smooth' });
-    const json = await root.getFromAPI(`chat/${chat.id}`, 'POST', {description: value}) as {message?: string, error?: string, exception?: string};
+    const json = await root.getFromAPI(`chat/${chat.id}`, 'POST', {description: value}, 75000) as {message?: string, error?: string, exception?: string};
     if (typeof json === 'object' && Object.hasOwn(json, 'message')) {
       const message = (json as {message: string}).message;
       const reply = document.createElement('li');
