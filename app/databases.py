@@ -32,3 +32,7 @@ try:
                                     ";")
 except mariadb.Error as e:
     pass
+
+sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.statistics"
+                         " (label varchar(255), value DECIMAL(15), PRIMARY KEY(label))"
+                         " charset=utf8;")
