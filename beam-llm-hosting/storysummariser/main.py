@@ -1,5 +1,6 @@
 from beam import endpoint, Image, QueueDepthAutoscaler, Volume
 from shared.download_models import CACHE_PATH
+from shared.allowed_gpus import ALL_POSSIBLE_GPUS
 
 with open('./rules.md', 'r', encoding="utf-8") as md_file:
     rules = md_file.read()
@@ -16,7 +17,7 @@ def download_models():
     on_start=download_models,
     volumes=[Volume(name="roleplay-ai-cache", mount_path=CACHE_PATH)],
     cpu=2,
-    gpu=["T4", "A10G", "RTX4090", "A100-40", "H100"],
+    gpu=ALL_POSSIBLE_GPUS,
     memory="6Gi",
     autoscaler=QueueDepthAutoscaler(
         max_containers=5,
