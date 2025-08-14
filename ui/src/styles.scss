@@ -316,6 +316,18 @@ nav, footer {
 #footer > p {
   text-align: center;
 }
+#peerlist {
+  display: block;
+  width: 100%;
+  max-width: 375px;
+}
+.index #content img.highlight {
+  border: 1px solid var(--main-color);
+  border-radius: 0.2em;
+  margin: 0.25em;
+  box-shadow: 2px 2px 5px var(--main-shadow);
+  max-width: calc(100% - 0.5em);
+}
 @media screen and ((width < 800px) or (height < 450px)) {
   body {
     display: block;
