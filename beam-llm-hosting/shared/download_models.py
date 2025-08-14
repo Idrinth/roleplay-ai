@@ -1,4 +1,4 @@
-CACHE_PATH = "./weights"
+CACHE_PATH = "/weights"
 
 def download_model(model_name: str):
     from transformers import AutoModelForCausalLM, AutoTokenizer

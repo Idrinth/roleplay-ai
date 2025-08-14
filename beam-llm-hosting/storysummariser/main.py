@@ -26,7 +26,14 @@ def download_models():
     keep_warm_seconds=90,
     authorized=True,
     checkpoint_enabled=True,
-    image=Image(python_version="python3.11", python_packages="requirements.remote.txt", env_vars="HF_HUB_ENABLE_HF_TRANSFER=1"),
+    image=Image(
+        python_version="python3.11",
+        python_packages="requirements.remote.txt",
+        env_vars={
+            "HF_HUB_ENABLE_HF_TRANSFER": "1",
+            "HF_HOME": CACHE_PATH,
+        }
+    ),
 )
 def answer(context, **params):
     from shared.answer_from_model import answer_from_model
