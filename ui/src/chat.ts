@@ -158,7 +158,7 @@
         characterElement.appendChild(root.button('[E]', 'Edit character', async (event: MouseEvent) => {
           event.stopPropagation();
           const el = document.createElement('textarea');
-          el.setAttribute('id', 'charactersheet')
+          el.setAttribute('id', 'character')
           const char = {...character} as {id?: string, name: {taken: string}};
           delete char['id'];
           el.setAttribute('data-id', character.id);
