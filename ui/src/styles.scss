@@ -353,6 +353,10 @@ nav, footer {
   max-width: 100%;
   height: 315px;
 }
+.feature {
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+}
 @media screen and ((width < 800px) or (height < 450px)) {
   body {
     display: block;
@@ -365,6 +369,9 @@ nav, footer {
   }
   #peerlist img {
     max-width: calc(100% - 1em);
+  }
+  .feature {
+    grid-template-columns: 1fr;
   }
   #mainnav {
     padding-top: 2.5em;
