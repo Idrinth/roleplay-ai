@@ -2,6 +2,8 @@ import {readdirSync, writeFileSync, readFileSync, mkdirSync, existsSync, rmSync}
 import {minify} from 'minify';
 import { hash } from 'node:crypto';
 import {compile} from 'sass';
+import sharp from 'sharp';
+import * as path from "node:path";
 
 if (existsSync(process.cwd() + '/dist')) {
   rmSync(process.cwd() + '/dist', {recursive: true});
@@ -98,6 +100,47 @@ for(const file of readdirSync(process.cwd() + '/public', 'utf-8')){
     }
   } else if(file.endsWith('.txt') || file.endsWith('.xml')) {
     writeFileSync(process.cwd() + '/dist/'+file, readFileSync(process.cwd() +'/public/'+file, 'utf8').replaceAll('###DESIRED_ROOT###', process.env.DESIRED_ROOT), 'utf8');
+  } else if (file.endsWith('.jpg')) {
+    writeFileSync(process.cwd() + '/dist/'+file, readFileSync(process.cwd() +'/public/'+file, 'binary'), 'binary');
+    const fileName = file.replace(/\.jpg$/, '');
+    await sharp(process.cwd() + '/dist/'+file)
+      .webp({ quality: 85 })
+      .toFile(`${process.cwd()}/dist/${fileName}.webp`);
+    await sharp(process.cwd() + '/dist/'+file)
+      .webp({ quality: 85 })
+      .resize(800)
+      .toFile(`${process.cwd()}/dist/${fileName}.1000.webp`);
+    await sharp(process.cwd() + '/dist/'+file)
+      .webp({ quality: 85 })
+      .resize(800)
+      .toFile(`${process.cwd()}/dist/${fileName}.800.webp`);
+    await sharp(process.cwd() + '/dist/'+file)
+      .webp({ quality: 85 })
+      .resize(800)
+      .toFile(`${process.cwd()}/dist/${fileName}.600.webp`);
+    await sharp(process.cwd() + '/dist/'+file)
+      .webp({ quality: 85 })
+      .resize(800)
+      .toFile(`${process.cwd()}/dist/${fileName}.400.webp`);
+    await sharp(process.cwd() + '/dist/'+file)
+      .avif({ quality: 75 })
+      .toFile(`${process.cwd()}/dist/${fileName}.avif`);
+    await sharp(process.cwd() + '/dist/'+file)
+      .avif({ quality: 75 })
+      .resize(1000)
+      .toFile(`${process.cwd()}/dist/${fileName}.1000.avif`);
+    await sharp(process.cwd() + '/dist/'+file)
+      .avif({ quality: 75 })
+      .resize(800)
+      .toFile(`${process.cwd()}/dist/${fileName}.800.avif`);
+    await sharp(process.cwd() + '/dist/'+file)
+      .resize(600)
+      .avif({ quality: 75 })
+      .toFile(`${process.cwd()}/dist/${fileName}.600.avif`);
+    await sharp(process.cwd() + '/dist/'+file)
+      .avif({ quality: 75 })
+      .resize(400)
+      .toFile(`${process.cwd()}/dist/${fileName}.400.avif`);
   } else {
     writeFileSync(process.cwd() + '/dist/'+file, readFileSync(process.cwd() +'/public/'+file, 'binary'), 'binary');
   }
