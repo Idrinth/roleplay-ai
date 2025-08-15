@@ -345,18 +345,19 @@ nav, footer {
     }
   }
 }
-.index #content img.highlight {
-  border: 1px solid var(--main-color);
-  border-radius: 0.2em;
-  margin: 0.25em;
-  box-shadow: 2px 2px 5px var(--main-shadow);
-  max-width: calc(100% - 0.5em);
-}
 .youtube-iframe {
   border: none;
   width: 560px;
   max-width: 100%;
   height: 315px;
+}
+.index #content .highlight {
+  border: 1px solid var(--main-color);
+  border-radius: 0.2em;
+  margin: 0.25em;
+  box-shadow: 2px 2px 5px var(--main-shadow);
+  max-width: calc(100% - 0.5em);
+  display: block;
 }
 .feature {
   display: grid;
