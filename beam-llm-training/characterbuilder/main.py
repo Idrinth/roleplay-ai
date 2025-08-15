@@ -34,7 +34,7 @@ def callback(data):
     memory="8Gi",
     name=f"roleplay-ai-{NAME}-training",
     image=Image(python_version="python3.12", python_packages="requirements.remote.txt", env_vars="HF_HUB_ENABLE_HF_TRANSFER=1")
-        .add_commands(["apt-get update", "apt-get install cmake g++ curl -y"]),
+        .add_commands(["apt-get update", "apt-get install cmake g++ curl libcurl4-openssl-dev -y"]),
     secrets=["HUGGINGFACE_TOKEN"],
 )
 def train():
