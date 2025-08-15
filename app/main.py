@@ -28,7 +28,7 @@ async def refill_tokens():
     now = datetime.datetime.now(datetime.timezone.utc).timestamp().__floor__()
     sql_connection.cursor().execute("UPDATE chat_users.users SET last_incremented=? WHERE remaining_messages >= maximum_remaining_messages", [now])
     sql_connection.cursor().execute("UPDATE chat_users.users SET remaining_messages=maximum_remaining_messages WHERE remaining_messages > maximum_remaining_messages")
-    sql_connection.cursor().execute("UPDATE chat_users.users SET last_incremented=last_incremented+increment_every_seconds, remaining_messages=remaining_messages+1 WHERE remaining_messages < maximum_remaining_messages AND last_incremented + increment_every_seconds > ?", [now])
+    sql_connection.cursor().execute("UPDATE chat_users.users SET last_incremented=last_incremented+increment_every_seconds, remaining_messages=remaining_messages+1 WHERE remaining_messages < maximum_remaining_messages AND last_incremented + increment_every_seconds < ?", [now])
 
 @app.get('/')
 async def root():
