@@ -10,7 +10,7 @@ WORKDIR /beam/shared
 COPY beam-llm-hosting/shared/*.py ./
 
 WORKDIR /beam
-COPY beam-llm-hosting/gamemaster/requirements.remote.txt ./
+COPY beam-llm-hosting/shared/requirements.remote.txt ./
 COPY beam-llm-hosting/gamemaster/main.py ./
 COPY system-prompts/gamemaster.md ./rules.md
 
