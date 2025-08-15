@@ -6,9 +6,14 @@
   const statistics = document.getElementById('statistics');
   if (statistics) {
     for (const statistic of Object.keys(data)) {
-      if (root.isObjectWithProperty(data, statistic)) {
+      if (root.isObjectWithProperty(data, statistic) && data[statistic] as number > 0) {
         const statisticElement = document.createElement('li');
-        statisticElement.innerText = (data[statistic] as string) + ' ' + statistic;
+        const label = document.createElement('span');
+        label.innerText = statistic;
+        const number = document.createElement('span');
+        number.innerText = data[statistic] as string;
+        statisticElement.appendChild(label);
+        statisticElement.appendChild(number);
         statistics.appendChild(statisticElement);
       }
     }

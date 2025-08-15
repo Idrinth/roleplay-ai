@@ -326,6 +326,15 @@ nav, footer {
   grid-template-columns: 1fr 1fr 1fr;
   > li {
     list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid var(--medium-shadow);
+    background-color: var(--bar-background-color);
+    color: var(--main-striking);
+    > span:last-child {
+      text-align: right;
+      font-weight: bold;
+    }
   }
 }
 .index #content img.highlight {
@@ -334,6 +343,12 @@ nav, footer {
   margin: 0.25em;
   box-shadow: 2px 2px 5px var(--main-shadow);
   max-width: calc(100% - 0.5em);
+}
+.youtube-iframe {
+  border: none;
+  width: 560px;
+  max-width: 100%;
+  height: 315px;
 }
 @media screen and ((width < 800px) or (height < 450px)) {
   body {
