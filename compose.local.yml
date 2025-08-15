@@ -1,0 +1,100 @@
+name: roleplay-ai
+include:
+  - compose.base.yml
+volumes:
+  llama: {}
+services:
+  gamemaster:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    restart: always
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: 15
+    healthcheck:
+      test: [ "CMD", "echo", "0" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: "-hf idrinth/gamemasterai-gguf --port 8000 -n 16384"
+    env_file:
+      - .env
+    volumes:
+      - llama:/models
+    logging:
+      driver: loki
+      options:
+        loki-url: http://127.0.0.1:3100/loki/api/v1/push
+        mode: non-blocking
+        max-buffer-size: 4m
+        loki-retries: "3"
+    depends_on:
+      loki:
+        condition: service_healthy
+  storysummariser:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    restart: always
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: 15
+    healthcheck:
+      test: [ "CMD", "echo", "0" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: "-hf idrinth/storysummariserai-gguf --port 8000 -n 16384"
+    env_file:
+      - .env
+    volumes:
+      - llama:/models
+    logging:
+      driver: loki
+      options:
+        loki-url: http://127.0.0.1:3100/loki/api/v1/push
+        mode: non-blocking
+        max-buffer-size: 4m
+        loki-retries: "3"
+    depends_on:
+      loki:
+        condition: service_healthy
+  app:
+    deploy:
+      replicas: 1
+    build:
+      dockerfile: app/Dockerfile
+      no_cache: true
+    env_file:
+      - .env
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "http://0.0.0.0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: loki
+      options:
+        loki-url: http://127.0.0.1:3100/loki/api/v1/push
+        mode: non-blocking
+        max-buffer-size: 4m
+        loki-retries: "3"
+    depends_on:
+      loki:
+        condition: service_healthy
+      characterbuilder:
+        condition: service_healthy
+      storysummariser:
+        condition: service_healthy
+      gamemaster:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      mariadb:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy

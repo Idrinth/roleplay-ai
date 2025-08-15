@@ -1,0 +1,88 @@
+name: roleplay-ai
+include:
+  - compose.base.yml
+volumes:
+  grafana_storage: {}
+  prometheus_storage: {}
+  promtail_log: {}
+services:
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - promtail_log:/var/log
+    restart: always
+    healthcheck:
+      test: [ "CMD", "echo", "0" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  grafana:
+    build:
+      dockerfile: grafana/Dockerfile
+      no_cache: true
+    restart: always
+    ports:
+      - '127.0.0.1:8012:3000'
+    environment:
+      GF_SERVER_ROOT_URL: "https://grafana.bjoern-buettner.me/"
+    healthcheck:
+      test: [ "CMD", "echo", "0" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - grafana_storage:/var/lib/grafana
+    depends_on:
+      loki:
+        condition: service_healthy
+      prometheus:
+        condition: service_healthy
+      mariadb:
+        condition: service_healthy
+  prometheus:
+    build:
+      dockerfile: prometheus/Dockerfile
+      no_cache: true
+    restart: always
+    healthcheck:
+      test: [ "CMD", "echo", "0" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - prometheus_storage:/prometheus
+    depends_on:
+      app:
+        condition: service_healthy
+  app:
+    deploy:
+      replicas: 1
+    build:
+      dockerfile: app/Dockerfile
+      no_cache: true
+    env_file:
+      - .env
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "http://0.0.0.0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: loki
+      options:
+        loki-url: http://127.0.0.1:3100/loki/api/v1/push
+        mode: non-blocking
+        max-buffer-size: 4m
+        loki-retries: "3"
+    depends_on:
+      loki:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      mariadb:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy

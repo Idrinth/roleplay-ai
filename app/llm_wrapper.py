@@ -21,10 +21,10 @@ if llm_to_use == "local":
     with open('./storysummariser.md', 'r', encoding="utf-8") as rules_file:
         storysummariser_rules = rules_file.read()
 
-async def ask_local(messages: List[Dict[str, str]]) -> str:
+async def ask_local(endpoint: str, messages: List[Dict[str, str]]) -> str:
     async with aiohttp.ClientSession() as session:
         async with session.post(
-            "http://llama:8000/v1/chat/completions",
+            f"http://{endpoint}:8000/v1/chat/completions",
             headers={
                 "Content-Type": "application/json"
             },
@@ -83,7 +83,7 @@ async def ask_gamemaster(messages: List[Dict[str, str]]):
         if msgs[0]["role"] != "system":
             msgs.insert(0, {"role": "system", "content": ""})
         msgs[0]["content"] = gamemaster_rules + "\n\n" + msgs[0]["content"]
-        return await ask_local(msgs)
+        return await ask_local("gamemaster", msgs)
 
     raise ValueError("Could not get response from LLM")
 
@@ -93,7 +93,7 @@ async def ask_characterbuilder(messages: List[Dict[str, str]]):
     elif llm_to_use == "local":
         msgs = list(messages)
         msgs.insert(0, {"role": "system", "content": characterbuilder_rules})
-        return await ask_local(msgs)
+        return await ask_local("characterbuilder", msgs)
 
     raise ValueError("Could not get response from LLM")
 
@@ -103,7 +103,7 @@ async def ask_storysummarizer(messages: List[Dict[str, str]]):
     elif llm_to_use == "local":
         msgs = list(messages)
         msgs.insert(0, {"role": "system", "content": storysummariser_rules})
-        return await ask_local(msgs)
+        return await ask_local("storysummariser", msgs)
 
     raise ValueError("Could not get response from LLM")
 
