@@ -26,7 +26,7 @@ try:
     sql_connection.cursor().execute("ALTER TABLE chat_users.users"
                                     " ADD COLUMN email text default NULL,"
                                     " ADD COLUMN remaining_messages INT(10) unsigned DEFAULT 10,"
-                                    " ADD COLUMN last_incremented TIMESTAMP DEFAULT NOW(),"
+                                    " ADD COLUMN last_incremented INT(10) unsigned DEFAULT UNIX_TIMESTAMP(),"
                                     " ADD COLUMN increment_every_seconds INT(10) unsigned DEFAULT 1800,"
                                     " ADD COLUMN maximum_remaining_messages INT(10) unsigned DEFAULT 25"
                                     ";")

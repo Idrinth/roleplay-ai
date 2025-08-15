@@ -3,6 +3,8 @@ import uuid
 
 from bson import json_util
 from fastapi import BackgroundTasks
+import os
+import mariadb
 
 from .logger import log_exception
 from .llm_wrapper import ask_characterbuilder, ask_storysummarizer, ask_gamemaster, prewarm_gamemaster, prewarm_storysummarizer
@@ -11,6 +13,7 @@ from .databases import sql_connection, mongo, qdrant, redis
 from .functions import mariadb_name, mongodb_name, to_mongo_compatible, get_system_prompt, simplify_result, get_from_redis
 from .chat_active import chat_is_in_use,remove_chat_from_use
 
+ENABLE_MESSAGE_LIMITS = os.environ.get("ENABLE_MESSAGE_LIMITS") == "true"
 
 async def update_summary(chat_id: str, user_id: str, offset: int, end: int, redis_key: str):
     if offset < 0:
@@ -154,25 +157,25 @@ CHAT_SUMMARY_WINDOWS = {
 
 async def chat_message_internal(chat_id: str, user_id: str, action: Action, background_tasks: BackgroundTasks):
     await prewarm_gamemaster()
-    cursor = sql_connection.cursor()
-    cursor.execute(
-        "SELECT remaining_messages FROM chat_users.users WHERE user_id=?;",
-        [user_id]
-    )
-    remaining_messages = 0
-    try:
-        for user_row in list(cursor.fetchall()):
-            remaining_messages = int(user_row[0])
-    except mariadb.Error as e:
-        log_exception(e, "chat_message_internal")
-    if remaining_messages < 1:
-        return {"success": False}
-    # @todo comment back in when handling in FE and Cron is done
-    #+cursor.execute("UPDATE chat_users.users SET remaining_messages=IF(remaining_messages<1, 0, remaining_messages - 1) WHERE user_id=?;", [user_id])
+    if ENABLE_MESSAGE_LIMITS:
+        cursor = sql_connection.cursor()
+        cursor.execute(
+            "SELECT remaining_messages FROM chat_users.users WHERE user_id=?;",
+            [user_id]
+        )
+        remaining_messages = 0
+        try:
+            for user_row in list(cursor.fetchall()):
+                remaining_messages = int(user_row[0])
+        except mariadb.Error as e:
+            log_exception(e, "chat_message_internal")
+        if remaining_messages < 1:
+            return {"success": False}
+        sql_connection.cursor().execute("UPDATE chat_users.users SET remaining_messages=IF(remaining_messages<1, 0, remaining_messages - 1) WHERE user_id=?;", [user_id])
     long_term_summary = get_from_redis(user_id,chat_id, "long_summary")
     medium_term_summary = get_from_redis(user_id,chat_id, "medium_summary")
     short_term_summary = get_from_redis(user_id,chat_id, "short_summary")
-    world = get_from_redis(user_id,chat_id, "world", "[]")
+    world = get_from_redis(user_id, chat_id, "world", "[]")
     world = ", ".join(json.loads(world))
     characters = []
     try:
