@@ -1,8 +1,8 @@
-from beam import function, Image
+from beam import function
 from shared.model_for_training import load_model_tokenizer
 from shared.dataset_for_training import load_dataset
 from shared.trainer_for_training import get_trainer
-from shared.constants import GLOBAL_BZ, DEVICES, MAX_SEQUENCE_LENGTH, BZ
+from shared.constants import GLOBAL_BZ, DEVICES, MAX_SEQUENCE_LENGTH, BZ, IMAGE
 from shared.export_results import export
 
 NAME = "storysummariser"
@@ -32,8 +32,7 @@ def callback(data):
     gpu=["A100-40", "H100"],
     memory="8Gi",
     name=f"roleplay-ai-{NAME}-training",
-    image=Image(python_version="python3.12", python_packages="requirements.remote.txt", env_vars="HF_HUB_ENABLE_HF_TRANSFER=1")
-        .add_commands(["apt-get update", "apt-get install cmake g++ curl libcurl4-openssl-dev -y"]),
+    image=IMAGE,
     secrets=["HUGGINGFACE_TOKEN"],
 )
 def train():
