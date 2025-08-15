@@ -12,6 +12,10 @@
       'src',
       'https://peerlist.io/api/v1/projects/embed/PRJHGNQ86JOPGEP7RF8E6QDP769BEN?showUpvote=true&theme=' + colorMode
     );
+    document.getElementById('producthunt')?.firstElementChild?.setAttribute(
+      'src',
+      'https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=1098467&theme=' + colorMode
+    );
     window?.localStorage?.setItem('preferred-color-scheme', colorMode);
     return colorMode;
   }

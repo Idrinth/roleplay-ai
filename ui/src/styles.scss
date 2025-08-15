@@ -321,6 +321,11 @@ nav, footer {
   width: 100%;
   max-width: 375px;
 }
+#producthunt {
+  display: block;
+  width: 100%;
+  max-width: 250px;
+}
 #statistics {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
