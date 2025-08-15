@@ -1,1 +1,1 @@
-git pull && docker compose down -f compose.beam.yml  && docker compose up -d --build --remove-orphans -f compose.beam.yml
+git pull && docker compose -f compose.beam.yml down  && docker compose -f compose.beam.yml up -d --build --remove-orphans
