@@ -1,3 +1,4 @@
-torch~=2.7.1
-unsloth~=2025.7.11
+torch~=2.8.0
+unsloth~=2025.8.5
 pyyaml~=6.0.2
+transformers[mistral-common]~=4.55.2

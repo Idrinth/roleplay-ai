@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - the-one
-      - create-gguf
     paths:
     - beam-llm-training/shared/*.py
     - beam-llm-training/characterbuilder/*.py
