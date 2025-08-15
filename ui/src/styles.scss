@@ -331,6 +331,9 @@ nav, footer {
     border: 1px solid var(--medium-shadow);
     background-color: var(--bar-background-color);
     color: var(--main-striking);
+    border-radius: 0.25em;
+    box-shadow: 2px 2px 5px var(--main-shadow);
+    margin: 1em;
     > span:last-child {
       text-align: right;
       font-weight: bold;
