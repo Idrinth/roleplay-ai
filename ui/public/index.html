@@ -40,11 +40,11 @@
                 <section>
                     <h2>Your Personal GameMaster!</h2>
                     <p><strong>Play role-playing games from anywhere at any time!</strong></p>
-                    <iframe src="https://www.youtube-nocookie.com/embed/NVCZu-0UfHc?si=J0ycFBNnv2JSor2l"
-                            title="YouTube video player" class="youtube-iframe highlight"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            referrerpolicy="strict-origin-when-cross-origin" allowfullscreen
-                    ></iframe>
+                    <picture class="highlight" data-video="https://www.youtube-nocookie.com/embed/NVCZu-0UfHc?si=J0ycFBNnv2JSor2l">
+                        <source srcset="/youtube-play.avif" type="image/avif">
+                        <source srcset="/youtube-play.webp" type="image/webp">
+                        <img src="/youtube-play.jpg" alt="Video of a roleplay session with Wolfgang AI" title="Video of a roleplay session with Wolfgang AI" />
+                    </picture>
                     <p>Wolfgang is a small open source AI Storyteller, that will be a Game Master for you if you desire.
                         <a href="/chat/new" class="button call-to-action">Start a new Role-Play-Session!</a></p>
                     <p>Play in any world you choose by adding documents about it, so that Wolfgang can reference details in character sheets, documents and your chat history for fine-tuned sessions.</p>
