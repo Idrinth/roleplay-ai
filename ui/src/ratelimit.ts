@@ -21,7 +21,7 @@
       return;
     }
     chatIsActive = response['active'] as boolean;
-    loader?.setAttribute('style', chatIsActive ? 'display:none' : '');
+    loader?.setAttribute('style', chatIsActive ? '' : 'display:none');
   }, 2500);
   let updateTimeout: null|number = null;
   const checkCredits = async () => {

@@ -282,6 +282,11 @@
         const keywords = await root.prompt("What is the world like? Please provide keywords separated by comma.");
         world.value = keywords;
         world.dispatchEvent(new Event('change'));
+        const selector = document.getElementById('music-select') as HTMLSelectElement|null;
+        if (selector && await root.confirm('Do you want help with your beginning scene?')) {
+          selector.selectedIndex = 1;
+          selector.dispatchEvent(new Event('change'));
+        }
         const value = await root.getFromAPI(`chat/${chat.id}/starting-point-proposal`, 'POST', {
           name: await root.prompt("What is your character's name?"),
           race: await root.prompt("What is your character's race?"),
