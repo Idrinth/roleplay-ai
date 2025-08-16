@@ -8,6 +8,7 @@ llm_model = os.getenv('LLM_MODEL')
 beam_gamemaster_url = os.getenv('BEAM_GAMEMASTER_DEPLOYMENT_URL')
 beam_characterbuilder_url = os.getenv('BEAM_CHARACTERBUILDER_DEPLOYMENT_URL')
 beam_storysummariser_url = os.getenv('BEAM_SUMMARISER_DEPLOYMENT_URL')
+beam_painter_url = os.getenv('BEAM_PAINTER_DEPLOYMENT_URL')
 beam_key = os.getenv('BEAM_API_KEY')
 llm_to_use = os.getenv('LLM_TO_USE')
 gamemaster_rules = ""
@@ -102,6 +103,12 @@ async def ask_gamemaster(messages: List[Dict[str, str]]):
 
     raise ValueError("Could not get response from LLM")
 
+async def ask_painter(description: str):
+    if llm_to_use == "beam":
+        return await ask_beam([{"role": "user", "content": description}], beam_painter_url)
+
+    raise ValueError("Could not get response from LLM")
+
 async def ask_characterbuilder(messages: List[Dict[str, str]]):
     if llm_to_use == "beam":
         return await ask_beam(messages, beam_characterbuilder_url)
@@ -125,6 +132,10 @@ async def ask_storysummarizer(messages: List[Dict[str, str]]):
 async def prewarm_gamemaster():
     if llm_to_use == "beam":
         asyncio.create_task(prewarm_beam(beam_gamemaster_url))
+
+async def prewarm_painter():
+    if llm_to_use == "beam":
+        asyncio.create_task(prewarm_beam(beam_painter_url))
 
 async def prewarm_characterbuilder():
     if llm_to_use == "beam":
