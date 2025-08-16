@@ -78,6 +78,8 @@ if (!process.env.DESIRED_ROOT) {
   process.env.DESIRED_ROOT = 'localhost';
 }
 
+const JS_FILE_MAPPINGS = {};
+
 for(const file of readdirSync(process.cwd() + '/public', 'utf-8')){
   if (file.endsWith('.js') || file.endsWith('.html') || file.endsWith('.css')) {
     try {
@@ -85,6 +87,7 @@ for(const file of readdirSync(process.cwd() + '/public', 'utf-8')){
       if (data) {
         if (file.endsWith('.js')) {
           writeFileSync(process.cwd() + '/dist/' + file, '(async()=>{' + data.replaceAll('###DESIRED_ROOT###', process.env.DESIRED_ROOT) + '})();');
+          JS_FILE_MAPPINGS[file] = hash('md5', data, 'hex');
         } else {
           writeFileSync(process.cwd() + '/dist/' + file, data.replaceAll('###DESIRED_ROOT###', process.env.DESIRED_ROOT));
         }
@@ -192,10 +195,14 @@ for (const target of Object.keys(TO_MERGE)) {
 const cssHash = hash('md5', readFileSync(process.cwd() + '/dist/styles.css', 'utf8'), 'hex');
 for(const file of readdirSync(process.cwd() + '/dist', 'utf-8')){
   if (file.endsWith('.html')) {
+    let data = readFileSync(`${process.cwd()}/dist/${file}`, 'utf8')
+        .replace(`/styles.css`, `/styles.css?${cssHash}`);
+    for (const jsFile of Object.keys(JS_FILE_MAPPINGS)) {
+      data = data.replace(`/${jsFile}`, `/${jsFile}?${JS_FILE_MAPPINGS[jsFile]}`);
+    }
     writeFileSync(
       `${process.cwd()}/dist/${file}`,
-      readFileSync(`${process.cwd()}/dist/${file}`, 'utf8')
-        .replace(`/styles.css`, `/styles.css?${cssHash}`),
+      data,
       'utf8'
     );
   }

@@ -1,5 +1,5 @@
 (async(root) => {
-  const data = await root.getFromAPI('statistics', 'GET') as {};
+  const data = await root.getFromAPI('statistics', 'GET') as {error?: string};
   if (root.isObjectWithProperty(data, 'error')) {
     return;
   }
