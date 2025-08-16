@@ -99,7 +99,7 @@ def statistics():
 @app.get('/statistics.jpg')
 def statistics_jpg():
     try:
-        image = Image.new("RGB", (300, 70), "black")
+        image = Image.new("RGB", (250, 70), "black")
         logo = Image.open("./logo.png", "r")
         logo = logo.resize((94, 70))
         image.paste(logo, (0, 0), logo)
