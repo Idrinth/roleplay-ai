@@ -8,7 +8,7 @@
   if (!share) {
     return;
   }
-  if (root.isObjectWithProperty(window.navigator, 'share')) {
+  if (typeof window.navigator['share'] !== 'undefined') {
     const li = document.createElement('li');
     li.setAttribute('class', 'native-share');
     li.appendChild(root.button('Share', 'Share Wolfgang AI with your friends', async() => {
@@ -35,11 +35,11 @@
   }, true))
   share.appendChild(liReddit);
 
-  if (root.isObjectWithProperty(window.navigator, 'clipboard')) {
+  if (typeof window.navigator['clipboard'] !== 'undefined') {
     const liCopy = document.createElement('li');
     liCopy.setAttribute('class', 'copy-share');
     liCopy.appendChild(root.button('Copy', 'Share Wolfgang AI with your friends', async (event: MouseEvent) => {
-      await navigator.clipboard.writeText(shareData.url);
+      await window.navigator.clipboard.writeText(shareData.url);
     }, true))
     share.appendChild(liCopy);
   }

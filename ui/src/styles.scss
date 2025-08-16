@@ -367,9 +367,13 @@ nav, footer {
   position: fixed;
   right: 0;
   top: 25%;
+  li {
+    display: grid;
+  }
   button {
     display: block;
     color: #fff;
+    justify-self: end;
   }
   .native-share button{
     background-color: #4CAF50;
