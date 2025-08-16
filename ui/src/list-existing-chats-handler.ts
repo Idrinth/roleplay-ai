@@ -6,6 +6,7 @@
     }
     for (const achat of chats) {
       const world = document.createElement('li');
+      world.setAttribute('class', 'name-edit-delete');
       worlds.appendChild(world);
       const link = document.createElement('a');
       world.appendChild(link);

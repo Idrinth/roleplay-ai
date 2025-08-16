@@ -117,6 +117,7 @@
     if (root.isObjectWithProperty(json, 'documents') && Array.isArray(json['documents'])) {
       for (const md_document of (json as {documents: {name: string,content: string, id: string}[]}).documents) {
         const doc = document.createElement('li');
+        doc.setAttribute('class', 'name-edit-delete');
         documents.appendChild(doc);
         const docName = document.createElement('span');
         doc.appendChild(docName);
@@ -152,6 +153,7 @@
     if (root.isObjectWithProperty(json, 'characters') && Array.isArray(json['characters'])) {
       for (const character of (json as { characters: {id: string, name: {taken: string}}[] }).characters) {
         const characterElement = document.createElement('li');
+        characterElement.setAttribute('class', 'name-edit-delete');
         characters.appendChild(characterElement);
         characterElement.appendChild(document.createElement('span'));
         characterElement.lastElementChild?.appendChild(document.createTextNode(character.name.taken));

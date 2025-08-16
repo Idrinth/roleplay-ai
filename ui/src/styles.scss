@@ -306,6 +306,10 @@ nav, footer {
     }
   }
 }
+.name-edit-delete {
+  display: grid;
+  grid-template-columns: auto 2.25em 2.25em;
+}
 .imprint .aside, .index .aside {
   grid-row-start: 1;
   grid-row-end: 4;
