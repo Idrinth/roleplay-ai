@@ -99,9 +99,9 @@ def statistics():
 @app.get('/statistics.jpg')
 def statistics_jpg():
     try:
-        image = (Image
-            .new("RGB", (300, 90), "black")
-            .paste(Image.open("./logo.png", "r")))
+        image = Image.new("RGB", (300, 90), "black")
+        logo = Image.open("./logo.png", "r")
+        image.paste(logo, (0, 0), logo)
         draw = ImageDraw.Draw(image)
         sql_connection.ping()
         cursor = sql_connection.cursor()
@@ -120,6 +120,8 @@ def statistics_jpg():
         image.save("./statistics.jpg")
         return FileResponse("./statistics.jpg")
     except mariadb.Error as e:
+        log_exception(e, "statistics")
+    except Exception as e:
         log_exception(e, "statistics")
     return FileResponse("/logo.png")
 
