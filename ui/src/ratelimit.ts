@@ -7,11 +7,7 @@
   }
   let chatIsActive = false;
   let creditsAreEmpty = false;
-  root.maySendMessage = async() => {
-    const maySend = !creditsAreEmpty && !chatIsActive;
-    sendButton.disabled = !maySend;
-    return maySend;
-  }
+  root.maySendMessage = async() => !creditsAreEmpty && !chatIsActive;
   window.setInterval(async () => {
     const response = await root.getFromAPI(
       `chat/${chatId}/active?${Date.now()}`,
@@ -20,7 +16,7 @@
       2400,
     );
     if (!root.isObjectWithProperty(response, 'active')) {
-      loader?.setAttribute('style', 'display:none');
+      loader?.setAttribute('style', '');
       chatIsActive = true;
       return;
     }
@@ -48,6 +44,9 @@
     const elementMessagesLeft = document.getElementById("messages-left");
     if (elementMessagesLeft) {
       elementMessagesLeft.innerText = response['remainingMessages'] as string;
+    }
+    if (root.isObjectWithProperty(response, 'incrementEverySeconds') && elementMessagesLeft) {
+      elementMessagesLeft.parentElement?.setAttribute('title', `Recharges by one every ${response['incrementEverySeconds']}seconds`)
     }
     if (root.isObjectWithProperty(response, 'maximumRemainingMessages')) {
       const elementMessagesMaximum = document.getElementById("messages-maximum");
