@@ -363,6 +363,27 @@ nav, footer {
   display: grid;
   grid-template-columns: 1fr 4fr;
 }
+#share {
+  position: fixed;
+  right: 0;
+  top: 25%;
+  button {
+    display: block;
+    color: #fff;
+  }
+  .native-share button{
+    background-color: #4CAF50;
+  }
+  .twitter-share button {
+    background-color: #000;
+  }
+  .reddit-share button {
+    background-color: #FF4500;
+  }
+  .copy-share button {
+      background-color: #2196F3;
+  }
+}
 @media screen and ((width < 800px) or (height < 450px)) {
   body {
     display: block;
