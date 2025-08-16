@@ -24,6 +24,7 @@ const TO_MERGE = {
     'list-existing-chats-handler.js',
     'swipe.js',
     'share.js',
+    'image-popup.js',
   ],
   'chat-##.min.js': [
     'ratelimit.js',
