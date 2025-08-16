@@ -2,6 +2,7 @@ from beam import endpoint, Image, QueueDepthAutoscaler
 from shared.download_models import CACHE_PATH
 from shared.allowed_gpus import ALL_POSSIBLE_GPUS
 from shared.volumes import VOLUMES
+from shared.enable_snapshotting import ENABLE_SNAPSHOTTING
 
 with open('./rules.md', 'r', encoding="utf-8") as md_file:
     rules = md_file.read()
@@ -26,7 +27,7 @@ def download_models():
     ),
     keep_warm_seconds=90,
     authorized=True,
-    checkpoint_enabled=True,
+    checkpoint_enabled=ENABLE_SNAPSHOTTING,
     image=Image(
         python_version="python3.11",
         python_packages="requirements.remote.txt",
