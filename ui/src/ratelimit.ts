@@ -45,6 +45,9 @@
     if (elementMessagesLeft) {
       elementMessagesLeft.innerText = response['remainingMessages'] as string;
     }
+    if (root.isObjectWithProperty(response, 'incrementEverySeconds') && elementMessagesLeft) {
+      elementMessagesLeft.parentElement?.setAttribute('title', `Recharges by one every ${response['incrementEverySeconds']}seconds`)
+    }
     if (root.isObjectWithProperty(response, 'maximumRemainingMessages')) {
       const elementMessagesMaximum = document.getElementById("messages-maximum");
       if (elementMessagesMaximum) {
