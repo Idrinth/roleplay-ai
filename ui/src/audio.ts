@@ -29,6 +29,7 @@
     return;
   }
   audio.volume = 0;
+  select.selectedIndex = 0;
   const setUcFirstInnerTextIfExists = (text: string|undefined, id: string) => {
     const element = document.getElementById(id);
     if (text && element) {
