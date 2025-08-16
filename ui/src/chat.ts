@@ -253,6 +253,7 @@
     setWorldKeywordsTitle(world?.previousElementSibling, keywords);
     world.setAttribute('data-original', JSON.stringify(keywords))
     world.value = keywords.join(", ")
+    world.dispatchEvent(new Event('change'));
   })();
   world.addEventListener('change', async() => {
     const keywords = root.getWorldKeywords();
