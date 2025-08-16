@@ -99,9 +99,9 @@ def statistics():
 @app.get('/statistics.jpg')
 def statistics_jpg():
     try:
-        image = Image.new("RGB", (250, 70), "black")
+        image = Image.new("RGB", (300, 70), "black")
         logo = Image.open("./logo.png", "r")
-        logo = logo.resize((52, 70))
+        logo = logo.resize((94, 70))
         image.paste(logo, (0, 0), logo)
         draw = ImageDraw.Draw(image)
         sql_connection.ping()
@@ -109,7 +109,7 @@ def statistics_jpg():
         cursor.execute("SELECT `label`, `value` FROM `chat_users`.`statistics` WHERE `value` > 0 ORDER BY `value` DESC")
         pos = 1
         for (label, value) in cursor:
-            draw.text((65, 10 * pos), f"{label}: {value}", fill="white")
+            draw.text((100, 10 * pos), f"{label}: {value}", fill="white")
             pos += 1
         image.save("./statistics.jpg")
         return FileResponse("./statistics.jpg")
