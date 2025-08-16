@@ -284,7 +284,7 @@
         world.value = keywords;
         world.dispatchEvent(new Event('change'));
         const selector = document.getElementById('music-select') as HTMLSelectElement|null;
-        if (selector && await root.confirm('Do you want help with your beginning scene?')) {
+        if (selector && await root.confirm('Do you want to turn on the background music?')) {
           selector.selectedIndex = 1;
           selector.dispatchEvent(new Event('change'));
         }
