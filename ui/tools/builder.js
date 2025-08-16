@@ -22,7 +22,8 @@ const TO_MERGE = {
     'dark-light-switch.js',
     'modals.js',
     'list-existing-chats-handler.js',
-    'swipe.js'
+    'swipe.js',
+    'share.js',
   ],
   'chat-##.min.js': [
     'ratelimit.js',
@@ -108,7 +109,7 @@ for(const file of readdirSync(process.cwd() + '/public', 'utf-8')){
       .toFile(`${process.cwd()}/dist/${fileName}.webp`);
     await sharp(process.cwd() + '/dist/'+file)
       .webp({ quality: 85 })
-      .resize(800)
+      .resize(1000)
       .toFile(`${process.cwd()}/dist/${fileName}.1000.webp`);
     await sharp(process.cwd() + '/dist/'+file)
       .webp({ quality: 85 })
@@ -116,12 +117,16 @@ for(const file of readdirSync(process.cwd() + '/public', 'utf-8')){
       .toFile(`${process.cwd()}/dist/${fileName}.800.webp`);
     await sharp(process.cwd() + '/dist/'+file)
       .webp({ quality: 85 })
-      .resize(800)
+      .resize(600)
       .toFile(`${process.cwd()}/dist/${fileName}.600.webp`);
     await sharp(process.cwd() + '/dist/'+file)
       .webp({ quality: 85 })
-      .resize(800)
+      .resize(400)
       .toFile(`${process.cwd()}/dist/${fileName}.400.webp`);
+    await sharp(process.cwd() + '/dist/'+file)
+      .webp({ quality: 85 })
+      .resize(200)
+      .toFile(`${process.cwd()}/dist/${fileName}.200.webp`);
     await sharp(process.cwd() + '/dist/'+file)
       .avif({ quality: 75 })
       .toFile(`${process.cwd()}/dist/${fileName}.avif`);
@@ -140,7 +145,11 @@ for(const file of readdirSync(process.cwd() + '/public', 'utf-8')){
     await sharp(process.cwd() + '/dist/'+file)
       .avif({ quality: 75 })
       .resize(400)
-      .toFile(`${process.cwd()}/dist/${fileName}.400.avif`);
+      .toFile(`${process.cwd()}/dist/${fileName}.400.avif`)
+    await sharp(process.cwd() + '/dist/'+file)
+      .avif({ quality: 75 })
+      .resize(200)
+      .toFile(`${process.cwd()}/dist/${fileName}.200.avif`);
   } else {
     writeFileSync(process.cwd() + '/dist/'+file, readFileSync(process.cwd() +'/public/'+file, 'binary'), 'binary');
   }
