@@ -7,11 +7,7 @@
   }
   let chatIsActive = false;
   let creditsAreEmpty = false;
-  root.maySendMessage = async() => {
-    const maySend = !creditsAreEmpty && !chatIsActive;
-    sendButton.disabled = !maySend;
-    return maySend;
-  }
+  root.maySendMessage = async() => !creditsAreEmpty && !chatIsActive;
   window.setInterval(async () => {
     const response = await root.getFromAPI(
       `chat/${chatId}/active?${Date.now()}`,
@@ -20,12 +16,12 @@
       2400,
     );
     if (!root.isObjectWithProperty(response, 'active')) {
-      loader?.setAttribute('style', 'display:none');
+      loader?.setAttribute('style', '');
       chatIsActive = true;
       return;
     }
     chatIsActive = response['active'] as boolean;
-    loader?.setAttribute('style', chatIsActive ? '' : 'display:none');
+    loader?.setAttribute('style', chatIsActive ? 'display:none' : '');
   }, 2500);
   let updateTimeout: null|number = null;
   const checkCredits = async () => {

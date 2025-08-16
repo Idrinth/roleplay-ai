@@ -12,7 +12,7 @@
   --header-color: rgb(200, 238, 200);
   --overlay-z-index: 111111;
   --modal-z-index: 111112;
-  --modal-bg: rgba(255, 255, 255, 0.8);
+  --modal-bg: rgba(0, 0, 0, 0.8);
 }
 :root.inverted-colors {
   --main-color: #333;
@@ -23,7 +23,7 @@
   --bar-background-color: rgb(100, 138, 100);
   --medium-shadow: rgba(0,0,0,0.1);
   --header-color: rgb(0, 75, 0);
-  --modal-bg: rgba(0, 0, 0, 0.8);
+  --modal-bg: rgba(255, 255, 255, 0.8);
 }
 body, html {
   width: 100%;
