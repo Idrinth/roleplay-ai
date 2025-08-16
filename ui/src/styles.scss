@@ -12,6 +12,7 @@
   --header-color: rgb(200, 238, 200);
   --overlay-z-index: 111111;
   --modal-z-index: 111112;
+  --modal-bg: rgba(255, 255, 255, 0.8);
 }
 :root.inverted-colors {
   --main-color: #333;
@@ -22,6 +23,7 @@
   --bar-background-color: rgb(100, 138, 100);
   --medium-shadow: rgba(0,0,0,0.1);
   --header-color: rgb(0, 75, 0);
+  --modal-bg: rgba(0, 0, 0, 0.8);
 }
 body, html {
   width: 100%;
@@ -144,7 +146,7 @@ textarea {
   height: 100%;
   width: 100%;
   overflow: auto;
-  background-color: var(--main-shadow);
+  background: var(--modal-bg);
   padding: 2em;
   div {
     display: grid;
@@ -258,7 +260,7 @@ table {
   height: 100vh;
   margin: 0;
   padding: calc(50vh - 50px) calc(50vw - 300px);
-  background: var(--light-shadow);
+  background: var(--modal-bg);
   color: var(--main-striking);
   display: grid;
   grid-template-rows: 1fr 1fr;
@@ -392,6 +394,7 @@ nav, footer {
   box-shadow: 2px 2px 5px var(--main-shadow);
   max-width: calc(100% - 0.5em);
   display: block;
+  width: fit-content;
 }
 .feature {
   display: grid;
