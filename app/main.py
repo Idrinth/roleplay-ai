@@ -101,7 +101,7 @@ def statistics_jpg():
     try:
         image = Image.new("RGB", (300, 70), "black")
         logo = Image.open("./logo.png", "r")
-        logo.resize((52, 70), Image.ANTIALIAS)
+        logo.resize((52, 70))
         image.paste(logo, (0, 0), logo)
         draw = ImageDraw.Draw(image)
         sql_connection.ping()
