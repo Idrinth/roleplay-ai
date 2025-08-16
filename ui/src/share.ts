@@ -38,7 +38,7 @@
   if (typeof window.navigator['clipboard'] !== 'undefined') {
     const liCopy = document.createElement('li');
     liCopy.setAttribute('class', 'copy-share');
-    liCopy.appendChild(root.button('Copy', 'Share Wolfgang AI with your friends', async (event: MouseEvent) => {
+    liCopy.appendChild(root.button('Copy', 'Share Wolfgang AI with your friends', async () => {
       await window.navigator.clipboard.writeText(shareData.url);
     }, true))
     share.appendChild(liCopy);
