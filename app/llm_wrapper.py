@@ -20,6 +20,17 @@ if llm_to_use == "local":
         characterbuilder_rules = rules_file.read()
     with open('./storysummariser.md', 'r', encoding="utf-8") as rules_file:
         storysummariser_rules = rules_file.read()
+elif llm_to_use == "beam":
+    if not beam_gamemaster_url:
+        raise Exception("Beam gamemaster deployment URL not set.")
+    if not beam_characterbuilder_url:
+        raise Exception("Beam characterbuilder deployment URL not set.")
+    if not beam_storysummariser_url:
+        raise Exception("Beam storysummariser deployment URL not set.")
+    if not beam_key:
+        raise Exception("Beam key deployment URL not set.")
+else:
+    raise Exception("Unknown llm_to_use")
 
 async def ask_local(endpoint: str, messages: List[Dict[str, str]]) -> str:
     async with aiohttp.ClientSession() as session:
@@ -43,6 +54,8 @@ async def ask_local(endpoint: str, messages: List[Dict[str, str]]) -> str:
                 raise ValueError("Could not get successful response from LLM")
 
 async def ask_beam(messages: List[Dict[str, str]], endpoint: str) -> str:
+    if not endpoint:
+        raise ValueError("Endpoint cannot be empty")
     async with aiohttp.ClientSession() as session:
         async with session.post(
             endpoint,
@@ -64,6 +77,8 @@ async def ask_beam(messages: List[Dict[str, str]], endpoint: str) -> str:
                 raise ValueError("Could not get successful response from LLM")
 
 async def prewarm_beam(endpoint: str):
+    if not endpoint:
+        raise ValueError("Endpoint cannot be empty")
     async with aiohttp.ClientSession() as session:
         async with session.post(
             endpoint + "warmup/",
