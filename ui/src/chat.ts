@@ -281,6 +281,7 @@
       if (((json as {messages?: []})?.messages ?? [])?.length === 0 && !chatEntry.value && await root.confirm('Do you want help with your beginning scene?')) {
         const keywords = await root.prompt("What is the world like? Please provide keywords separated by comma.");
         world.value = keywords;
+        world.dispatchEvent(new Event('change'));
         const value = await root.getFromAPI(`chat/${chat.id}/starting-point-proposal`, 'POST', {
           name: await root.prompt("What is your character's name?"),
           race: await root.prompt("What is your character's race?"),
