@@ -10,7 +10,7 @@ from fastapi import Cookie, BackgroundTasks, Response
 from fastapi.responses import FileResponse
 import mariadb
 from fastapi_utils.tasks import repeat_every
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 from .logger import log_exception
 from .llm_wrapper import prewarm_characterbuilder
@@ -99,23 +99,17 @@ def statistics():
 @app.get('/statistics.jpg')
 def statistics_jpg():
     try:
-        image = Image.new("RGB", (300, 90), "black")
+        image = Image.new("RGB", (300, 70), "black")
         logo = Image.open("./logo.png", "r")
+        logo.resize((52, 70), Image.ANTIALIAS)
         image.paste(logo, (0, 0), logo)
         draw = ImageDraw.Draw(image)
         sql_connection.ping()
         cursor = sql_connection.cursor()
-        cursor.execute("SELECT `label`, `value` FROM `chat_users`.`statistics` WHERE `value` > 0")
+        cursor.execute("SELECT `label`, `value` FROM `chat_users`.`statistics` WHERE `value` > 0 ORDER BY `value` DESC")
         pos = 1
         for (label, value) in cursor:
-            if int(value) > 999:
-                draw.text((10, 10 * pos), f"{value}x {label}", fill="white")
-            elif int(value) > 99:
-                draw.text((10, 10 * pos), f" {value}x {label}", fill="white")
-            elif int(value) > 9:
-                draw.text((10, 10 * pos), f"  {value}x {label}", fill="white")
-            else:
-                draw.text((10, 10 * pos), f"   {value}x {label}", fill="white")
+            draw.text((55, 10 * pos), f"{label}: {value}", fill="white")
             pos += 1
         image.save("./statistics.jpg")
         return FileResponse("./statistics.jpg")
