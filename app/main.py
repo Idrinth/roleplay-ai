@@ -7,8 +7,10 @@ import uuid
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from fastapi import Cookie, BackgroundTasks, Response
+from fastapi.responses import FileResponse
 import mariadb
 from fastapi_utils.tasks import repeat_every
+from PIL import Image, ImageDraw
 
 from .logger import log_exception
 from .llm_wrapper import prewarm_characterbuilder
@@ -93,6 +95,33 @@ def statistics():
     except mariadb.Error as e:
         log_exception(e, "statistics")
     return {}
+
+@app.get('/statistics.jpg')
+def statistics_jpg():
+    try:
+        image = (Image
+            .new("RGB", (300, 90), "black")
+            .paste(Image.open("./logo.png", "r")))
+        draw = ImageDraw.Draw(image)
+        sql_connection.ping()
+        cursor = sql_connection.cursor()
+        cursor.execute("SELECT `label`, `value` FROM `chat_users`.`statistics` WHERE `value` > 0")
+        pos = 1
+        for (label, value) in cursor:
+            if int(value) > 999:
+                draw.text((10, 10 * pos), f"{value}x {label}", fill="white")
+            elif int(value) > 99:
+                draw.text((10, 10 * pos), f" {value}x {label}", fill="white")
+            elif int(value) > 9:
+                draw.text((10, 10 * pos), f"  {value}x {label}", fill="white")
+            else:
+                draw.text((10, 10 * pos), f"   {value}x {label}", fill="white")
+            pos += 1
+        image.save("./statistics.jpg")
+        return FileResponse("./statistics.jpg")
+    except mariadb.Error as e:
+        log_exception(e, "statistics")
+    return FileResponse("/logo.png")
 
 @app.get("/ratelimits")
 async def remaining_messages(user_jwt: Annotated[str | None, Cookie()] = None):
