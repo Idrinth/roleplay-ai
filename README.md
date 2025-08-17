@@ -4,7 +4,7 @@
 
 This small repository is meant to create a better AI for role playing by providing a game master style assistant.
 
-Everything is open source, but the project is also hosted at [roleplay-ai.bjoern-buettner.me](https://roleplay-ai.bjoern-buettner.me) and the AI is available at huggingface:
+Everything is open source, but the project is also hosted at [wolfgang-ai.com](https://wolfgang-ai.com) and the AI is available at huggingface:
 - [Idrinth/gamemasterai](https://huggingface.co/Idrinth/gamemasterai) with the training data at [Idrinth/gamemasterai](https://huggingface.co/datasets/Idrinth/gamemasterai)
 - [Idrinth/characterbuilderai](https://huggingface.co/Idrinth/characterbuilderai) with the training data at [Idrinth/characterbuilderai](https://huggingface.co/datasets/Idrinth/characterbuilderai)
 - [Idrinth/storysummariserai](https://huggingface.co/Idrinth/gamemasterai) with the training data at [Idrinth/storysummariserai](https://huggingface.co/datasets/Idrinth/storysummariserai)
@@ -35,3 +35,11 @@ We are always looking for contributors:
 
 - testing
 - reporting issues
+
+# Run it locally
+
+A gaming PC or equivalent should be absolutely sufficient for running the whole project locally.
+
+- install docker
+- run `docker compose -f compose.local.yml up -d`
+- enjoy playing in your browser
