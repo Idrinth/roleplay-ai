@@ -35,3 +35,11 @@ We are always looking for contributors:
 
 - testing
 - reporting issues
+
+# Run it locally
+
+A gaming PC or equivalent should be absolutely sufficient for running the whole project locally.
+
+- install docker
+- run `docker compose -f compose.local.yml up -d`
+- enjoy playing in your browser
