@@ -54,7 +54,7 @@
             <ul class="aside" id="documents">
                 <li>
                     <div class="grid-half">
-                        <input type="text" title="" id="world" value="" placeholder="Add World Keywords"/>
+                        <input type="text" title="" id="world" aria-controls="keyword-list" value="" placeholder="Add World Keywords"/>
                         <select
                           id="music-select"
                           aria-label="Change background music volume"
@@ -70,7 +70,7 @@
                             <option value="1">High</option>
                         </select>
                     </div>
-                    <ul id="keyword-list" title="click to remove"></ul>
+                    <ul id="keyword-list" aria-live="polite" title="click to remove"></ul>
                     <audio id="music" aria-hidden="true"></audio>
                 </li>
                 <li><button id="add-document" title="Add new document" type="button">+ Document</button></li>

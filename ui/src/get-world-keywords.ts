@@ -53,13 +53,13 @@
     }
     setWorldKeywordsTitle(world, keywords);
     await root.getFromAPI(`chat/${chatId}/world`, 'PUT', {
-      keywords,
+      worldKeywords,
     });
     const keywordList = document.getElementById('keyword-list') as HTMLUListElement;
     if (!keywordList) {
       return;
     }
-    for (const keyword of keywords) {
+    for (const keyword of worldKeywords) {
       let found = false;
       for (let i = 0; i < keywordList.childElementCount; i++) {
         if (keywordList.children[i]?.innerHTML === keyword) {
