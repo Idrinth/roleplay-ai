@@ -30,17 +30,14 @@
   }
   audio.volume = 0;
   select.selectedIndex = 0;
-  const setUcFirstInnerTextIfExists = (text: string|undefined, id: string) => {
-    const element = document.getElementById(id);
-    if (text && element) {
-      element.innerText = text
-        .replaceAll('-', ' ')
-        .replaceAll('_', ' ')
-        .split(" ")
-        .filter(textElement => !!textElement)
-        .map(textElement => textElement.substring(0, 1).toUpperCase() + textElement.substring(1))
-        .join(" ");
-    }
+  const toUcFirstText = (text: string) => {
+    return text
+      .replaceAll('-', ' ')
+      .replaceAll('_', ' ')
+      .split(" ")
+      .filter(textElement => !!textElement)
+      .map(textElement => textElement.substring(0, 1).toUpperCase() + textElement.substring(1))
+      .join(" ");
   }
   const pathToCategoryNameAndPath = (path: string) => {
     const pathParts = path.split('/');
@@ -59,8 +56,7 @@
       }
     }
     const [category, name, selectedAudioPath] = pathToCategoryNameAndPath(root.randomString(possibleAudios));
-    setUcFirstInnerTextIfExists(category, 'songcategory');
-    setUcFirstInnerTextIfExists(name?.split('.')[0], 'songname');
+    select.setAttribute('title', name && category ?`${toUcFirstText(name)} (${toUcFirstText(category)})` : '');
     audio.setAttribute('src', selectedAudioPath as string);
     await audio.play();
   }

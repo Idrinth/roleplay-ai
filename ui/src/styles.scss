@@ -308,6 +308,10 @@ nav, footer {
     }
   }
 }
+.grid-half {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
 #keyword-list {
   display: flex;
   gap: 0.1em;
