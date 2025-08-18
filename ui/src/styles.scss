@@ -313,9 +313,12 @@ nav, footer {
   grid-template-columns: 1fr 1fr;
 }
 #keyword-list {
-  display: flex;
+  display: block;
   gap: 0.1em;
+  overflow: hidden;
+  height: auto;
   li {
+    float: left;
     padding: 0;
     margin: 0;
 
