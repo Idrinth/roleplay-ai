@@ -62,7 +62,7 @@
     for (const keyword of worldKeywords) {
       let found = false;
       for (let i = 0; i < keywordList.childElementCount; i++) {
-        if (keywordList.children[i]?.innerHTML === keyword) {
+        if (keywordList.children[i]?.firstElementChild?.innerHTML === keyword) {
           found = true;
           break;
         }
@@ -74,9 +74,9 @@
             worldKeywords.splice(worldKeywords.indexOf(keyword), 1);
           }
           keywordList.removeChild(keywordElement);
-          setWorldKeywordsTitle(world.previousElementSibling, worldKeywords);
+          setWorldKeywordsTitle(world, worldKeywords);
           root.getFromAPI(`chat/${chatId}/world`, 'PUT', {
-            worldKeywords,
+            keywords: worldKeywords,
           });
         }));
         keywordList.appendChild(keywordElement);
