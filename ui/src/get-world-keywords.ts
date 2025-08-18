@@ -19,16 +19,6 @@
     }
     element?.setAttribute('title', expandedKeywords.join("\n"))
   }
-  await (async () => {
-    const response = await root.getFromAPI(`chat/${chatId}/world`,'GET');
-    if (typeof response !== 'object' || response === null || !Object.hasOwn(response, 'world')) {
-      return;
-    }
-    const keywords = (response as {world: string[]}).world;
-    setWorldKeywordsTitle(world, keywords);
-    world.value = keywords.join(", ")
-    world.dispatchEvent(new Event('change'));
-  })();
   const addWorldKeywords = () => {
     const keywords = world.value
       .replaceAll(';', ',')
@@ -92,4 +82,14 @@
       worldChange()
     }
   });
+  await (async () => {
+    const response = await root.getFromAPI(`chat/${chatId}/world`,'GET');
+    if (typeof response !== 'object' || response === null || !Object.hasOwn(response, 'world')) {
+      return;
+    }
+    const keywords = (response as {world: string[]}).world;
+    setWorldKeywordsTitle(world, keywords);
+    world.value = keywords.join(", ")
+    world.dispatchEvent(new Event('change'));
+  })();
 })(window.bjoernbuettner)
