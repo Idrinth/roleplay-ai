@@ -5,6 +5,9 @@
   if (!world || ! chatId) {
     throw new Error("Could not find the world!");
   }
+  root.getWorldKeywords = (): string[] => {
+    return worldKeywords;
+  }
   const setWorldKeywordsTitle = (element: Element|null, keywords: string[]) => {
     const expandedKeywords = [...keywords];
     for (const pos in keywords) {
@@ -89,7 +92,4 @@
       worldChange()
     }
   });
-  root.getWorldKeywords = (): string[] => {
-    return worldKeywords;
-  }
 })(window.bjoernbuettner)
