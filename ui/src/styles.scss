@@ -308,9 +308,29 @@ nav, footer {
     }
   }
 }
+.grid-half {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+#keyword-list {
+  display: flex;
+  gap: 0.1em;
+  li {
+    padding: 0;
+    margin: 0;
+
+    .button {
+      padding: 0;
+      display: inline;
+    }
+  }
+}
 .name-edit-delete {
   display: grid;
   grid-template-columns: auto 2.25em 2.25em;
+  span {
+    align-self: center;
+  }
 }
 .imprint .aside, .index .aside {
   grid-row-start: 1;

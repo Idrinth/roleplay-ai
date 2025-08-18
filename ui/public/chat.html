@@ -53,23 +53,24 @@
             </ul>
             <ul class="aside" id="documents">
                 <li>
-                    <label for="world">World keywords</label>
-                    <input type="text" title="keyword, other keyword,..." id="world" value=" "/>
-                    <label for="music-select">Volume of "<span id="songname">Nothing</span>"(<span id="songcategory">Uncategorized</span>)</label>
-                    <select
-                      id="music-select"
-                      aria-label="Change background music volume"
-                      aria-controls="music"
-                      title="Change background music volume"
-                    >
-                        <option selected="selected" value="0">Muted</option>
-                        <option value="0.01">Very Low</option>
-                        <option value="0.1">Low</option>
-                        <option value="0.25">Medium Low</option>
-                        <option value="0.5">Medium</option>
-                        <option value="0.75">Medium High</option>
-                        <option value="1">High</option>
-                    </select>
+                    <div class="grid-half">
+                        <input type="text" title="" id="world" aria-controls="keyword-list" value="" placeholder="Add World Keywords"/>
+                        <select
+                          id="music-select"
+                          aria-label="Change background music volume"
+                          aria-controls="music"
+                          title=""
+                        >
+                            <option selected="selected" value="0">Muted</option>
+                            <option value="0.01">Very Low</option>
+                            <option value="0.1">Low</option>
+                            <option value="0.25">Medium Low</option>
+                            <option value="0.5">Medium</option>
+                            <option value="0.75">Medium High</option>
+                            <option value="1">High</option>
+                        </select>
+                    </div>
+                    <ul id="keyword-list" aria-live="polite" title="click to remove"></ul>
                     <audio id="music" aria-hidden="true"></audio>
                 </li>
                 <li><button id="add-document" title="Add new document" type="button">+ Document</button></li>
