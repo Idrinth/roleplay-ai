@@ -187,3 +187,6 @@ class Character(BaseModel):
     class Config:
         validate_by_name = True
         use_enum_values = True
+
+class ChatCopy(BaseModel):
+    num_messages: int = Field(ge=0)

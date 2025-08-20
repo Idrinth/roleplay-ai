@@ -1,5 +1,7 @@
 import datetime
 import json
+import math
+
 from bson import json_util
 from bson.objectid import ObjectId
 from typing import Annotated
@@ -14,14 +16,15 @@ from PIL import Image, ImageDraw, ImageFont
 
 from .logger import log_exception
 from .llm_wrapper import prewarm_characterbuilder
-from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint, User
+from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint, User, ChatCopy
 from .functions import is_uuid_like, mariadb_name, mongodb_name, to_mongo_compatible, user_id_from_jwt, set_login_cookie
 from .databases import sql_connection, mongo, qdrant, redis
 from .app import app
 from .chat_auth_wrapper import wrap
 from .chat_endpoint_handlers import chat_delete_success, chat_active_success, chat_history_success, \
     chat_characters_success, chat_character_add_success, chat_document_add_success, chat_document_list_success, \
-    update_world_internal, get_world_internal, post_proposals_internal, chat_message_internal, chat_name_success
+    update_world_internal, get_world_internal, post_proposals_internal, chat_message_internal, chat_name_success, \
+    chat_copy_success
 
 @app.on_event("startup")
 @repeat_every(seconds=60)
@@ -99,17 +102,22 @@ def statistics():
 @app.get('/statistics.jpg')
 def statistics_jpg():
     try:
-        image = Image.new("RGB", (250, 70), "black")
-        logo = Image.open("./logo.png", "r")
-        logo = logo.resize((94, 70))
-        image.paste(logo, (0, 0), logo)
-        draw = ImageDraw.Draw(image)
+        texts = []
         sql_connection.ping()
         cursor = sql_connection.cursor()
         cursor.execute("SELECT `label`, `value` FROM `chat_users`.`statistics` WHERE `value` > 0 ORDER BY `value` DESC")
-        pos = 1
         for (label, value) in cursor:
-            draw.text((100, 10 * pos), f"{label}: {value}", fill="white")
+            texts.append(f"{label}: {value}")
+        height = 10 * len(texts) + 20
+        logo = Image.open("./logo.png", "r")
+        logo_width = math.ceil(height/logo.height * logo.width)
+        image = Image.new("RGB", (logo_width + 100, height), "black")
+        logo = logo.resize((logo_width, height))
+        image.paste(logo, (0, 0), logo)
+        draw = ImageDraw.Draw(image)
+        pos = 1
+        for text in texts:
+            draw.text((logo_width + 10, 10 * pos), text, fill="white")
             pos += 1
         image.save("./statistics.jpg")
         return FileResponse("./statistics.jpg")
@@ -309,6 +317,10 @@ async def chat_active(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = 
 @app.post("/chat/{chat_id}/delete")
 async def chat_delete(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
     return await wrap(chat_id, user_jwt, chat_delete_success)
+
+@app.post("/chat/{chat_id}/copy")
+async def chat_copy(chat_id: str, copy : ChatCopy, user_jwt: Annotated[str | None, Cookie()] = None):
+    return await wrap(chat_id, user_jwt, chat_copy_success, copy)
 
 @app.get("/whoami")
 async def whoami(user_jwt: Annotated[str | None, Cookie()] = None):
