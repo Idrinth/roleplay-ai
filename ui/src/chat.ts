@@ -253,20 +253,24 @@
           selector.selectedIndex = 1;
           selector.dispatchEvent(new Event('change'));
         }
-        const value = await root.getFromAPI(`chat/${chat.id}/starting-point-proposal`, 'POST', {
-          name: await root.prompt("What is your character's name?"),
-          race: await root.prompt("What is your character's race?"),
-          gender: await root.prompt("What is your character's gender?"),
-          wear: await root.prompt("What does your character wear?"),
-          profession: await root.prompt("What is your character's profession?"),
-          location: await root.prompt("Where is your character?"),
-          purpose: await root.prompt("What is their purpose there?"),
-          mood: await root.prompt("What is your character's mood?"),
-          weather: await root.prompt("What is your weather like?"),
-          genre: await root.prompt("What genre does the world fall into?"),
-          world: keywords,
-        });
-        chatEntry.value = root.isObjectWithProperty(value, 'message') ? (value as {message: string})?.message : '';
+        if (await root.maySendMessage()) {
+          const value = await root.getFromAPI(`chat/${chat.id}/starting-point-proposal`, 'POST', {
+            name: await root.prompt("What is your character's name?"),
+            race: await root.prompt("What is your character's race?"),
+            gender: await root.prompt("What is your character's gender?"),
+            wear: await root.prompt("What does your character wear?"),
+            profession: await root.prompt("What is your character's profession?"),
+            location: await root.prompt("Where is your character?"),
+            purpose: await root.prompt("What is their purpose there?"),
+            mood: await root.prompt("What is your character's mood?"),
+            weather: await root.prompt("What is your weather like?"),
+            genre: await root.prompt("What genre does the world fall into?"),
+            world: keywords,
+          });
+          chatEntry.value = root.isObjectWithProperty(value, 'message') ? (value as { message: string })?.message : '';
+          return;
+        }
+        await root.alert('You are currently out of messages, please wait a bit and try again by reloading the page.')
       }
     }
   })();
