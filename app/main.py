@@ -320,7 +320,7 @@ async def chat_delete(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = 
 
 @app.post("/chat/{chat_id}/copy")
 async def chat_copy(chat_id: str, copy : ChatCopy, user_jwt: Annotated[str | None, Cookie()] = None):
-    return wrap(chat_id, user_jwt, chat_copy_success, copy)
+    return await wrap(chat_id, user_jwt, chat_copy_success, copy)
 
 @app.get("/whoami")
 async def whoami(user_jwt: Annotated[str | None, Cookie()] = None):

@@ -227,7 +227,7 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
             chat_id,
             user_id,
             CHAT_SUMMARY_WINDOWS[window][0],
-            CHAT_SUMMARY_WINDOWS[window][0],
+            CHAT_SUMMARY_WINDOWS[window][1],
             f"{user_id}-{chat_id}.{window}"
         )
     return {"message": response}
@@ -279,7 +279,7 @@ async def chat_copy_success(chat_id: str, user_id: str, copy: ChatCopy):
         except mariadb.Error as error:
             pass
     cursor3 = sql_connection.cursor()
-    cursor3.execute(f"SELECT content, creator FROM `{mariadb_name(user_id, chat_id)}`.messages LIMIT {copy.num_messages * 2} ORDER BY aid DESC;")
+    cursor3.execute(f"SELECT content, creator FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid ASC LIMIT {copy.num_messages * 2};")
     replies = 0
     for (content, creator) in cursor3.fetchall():
         sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, new_chat_id)}`.messages (content, creator) VALUES (?, ?);", [content, creator])
@@ -292,7 +292,7 @@ async def chat_copy_success(chat_id: str, user_id: str, copy: ChatCopy):
     except mariadb.Error as error:
         pass
     for character in mongo[mongodb_name(user_id, chat_id)]['characters'].find():
-        mongo[mongodb_name(user_id, new_chat_id)]['characters'].add(character)
+        mongo[mongodb_name(user_id, new_chat_id)]['characters'].insert_one(character)
         try:
             sql_connection.cursor().execute(
                 "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
@@ -302,13 +302,15 @@ async def chat_copy_success(chat_id: str, user_id: str, copy: ChatCopy):
             pass
     for window in CHAT_SUMMARY_WINDOWS:
         await update_summary(
-            chat_id,
+            new_chat_id,
             user_id,
             CHAT_SUMMARY_WINDOWS[window][0],
-            CHAT_SUMMARY_WINDOWS[window][0],
+            CHAT_SUMMARY_WINDOWS[window][1],
             f"{user_id}-{chat_id}.{window}"
         )
-    redis.set(f"{user_id}-{new_chat_id}.world", redis.get(f"{user_id}-{chat_id}.world"))
+    world_data = redis.get(f"{user_id}-{chat_id}.world")
+    if world_data:
+        redis.set(f"{user_id}-{new_chat_id}.world", world_data)
     try:
         sql_connection.cursor().execute(
             "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
