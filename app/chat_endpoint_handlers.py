@@ -130,6 +130,21 @@ async def chat_history_success(chat_id, user_id):
     return {"messages": messages}
 
 async def post_proposals_internal(chat_id: str, user_id: str, starting_point: ChatStartingPoint):
+    if ENABLE_MESSAGE_LIMITS:
+        cursor = sql_connection.cursor()
+        cursor.execute(
+            "SELECT remaining_messages FROM chat_users.users WHERE user_id=?;",
+            [user_id]
+        )
+        remaining_messages = 0
+        try:
+            for user_row in list(cursor.fetchall()):
+                remaining_messages = int(user_row[0])
+        except mariadb.Error as e:
+            log_exception(e, "chat_message_internal")
+        if remaining_messages < 1:
+            return {"success": False}
+        sql_connection.cursor().execute("UPDATE chat_users.users SET remaining_messages=IF(remaining_messages<1, 0, remaining_messages - 1) WHERE user_id=?;", [user_id])
     response = await ask_characterbuilder([
         {
             "role": "user",
