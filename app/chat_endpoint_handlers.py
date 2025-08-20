@@ -6,6 +6,7 @@ from fastapi import BackgroundTasks
 import os
 import mariadb
 
+from models import ChatCopy
 from .logger import log_exception
 from .llm_wrapper import ask_characterbuilder, ask_storysummarizer, ask_gamemaster, prewarm_gamemaster, prewarm_storysummarizer
 from .models import World, Character, Document, ChatStartingPoint, Action, Chat
@@ -236,3 +237,84 @@ async def chat_name_success(chat_id: str, user_id: str, chat_data: Chat):
         return {"error": "Chat name must be filled."}
     sql_connection.cursor().execute("UPDATE chat_users.mapping SET chat_name=? WHERE user_id=? AND chat_id=?;", [chat_data.name, user_id, chat_id])
     return {"success": True}
+
+async def chat_copy_success(chat_id: str, user_id: str, copy: ChatCopy):
+    sql_connection.ping()
+    cursor = sql_connection.cursor()
+    cursor.execute("SELECT COUNT(*) FROM chat_users.mapping WHERE user_id = ? AND chat_id = ?", [user_id, chat_id])
+    if cursor.fetchone()[0] == "0" :
+        return {"error": "Not a valid Chat"}
+    new_chat_id = str(uuid.uuid4())
+    sql_connection.cursor().execute(
+        f"CREATE DATABASE IF NOT EXISTS `{mariadb_name(user_id, new_chat_id)}`;"
+    )
+    sql_connection.cursor().execute(
+        f"CREATE TABLE IF NOT EXISTS `{mariadb_name(user_id, new_chat_id)}`.messages (aid BIGINT NOT NULL AUTO_INCREMENT, creator varchar(6),"
+        "content text, PRIMARY KEY(aid)) charset=utf8;"
+    )
+    sql_connection.cursor().execute(
+        f"CREATE TABLE IF NOT EXISTS `{mariadb_name(user_id, new_chat_id)}`.documents (id char(36) NOT NULL, document_name varchar(255),"
+        "content text, PRIMARY KEY(id)) charset=utf8;"
+    )
+    sql_connection.cursor().execute(
+        f"INSERT INTO chat_users.mapping (chat_id, user_id, chat_name) VALUES (?, ?, ?);",
+        [new_chat_id, user_id, new_chat_id]
+    )
+    cursor2 = sql_connection.cursor()
+    cursor2.execute(f"SELECT document_name, content FROM `{mariadb_name(user_id, chat_id)}`.documents")
+    for (document_name, content) in cursor2.fetchall():
+        document_id = qdrant.add(
+            collection_name=f"{user_id}-{new_chat_id}",
+            documents=[content],
+        )[0]
+        document_uuid = str(uuid.UUID(document_id))
+        sql_connection.cursor().execute(
+            f"INSERT INTO `{mariadb_name(user_id, new_chat_id)}`.documents (id, document_name, content) VALUES (?, ?, ?);",
+            [document_uuid, document_name, content])
+        try:
+            sql_connection.cursor().execute(
+                "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
+                ['Documents']
+            )
+        except mariadb.Error as error:
+            pass
+    cursor3 = sql_connection.cursor()
+    cursor3.execute(f"SELECT content, creator FROM `{mariadb_name(user_id, chat_id)}`.messages LIMIT {copy.num_messages * 2} ORDER BY aid DESC;")
+    replies = 0
+    for (content, creator) in cursor3.fetchall():
+        sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, new_chat_id)}`.messages (content, creator) VALUES (?, ?);", [content, creator])
+        replies += 1
+    try:
+        sql_connection.cursor().execute(
+            "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = value + ?;",
+            ['Chat Replies', replies/2, replies/2]
+        )
+    except mariadb.Error as error:
+        pass
+    for character in mongo[mongodb_name(user_id, chat_id)]['characters'].find():
+        mongo[mongodb_name(user_id, new_chat_id)]['characters'].add(character)
+        try:
+            sql_connection.cursor().execute(
+                "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
+                ['Character Sheets']
+            )
+        except mariadb.Error as error:
+            pass
+    for window in CHAT_SUMMARY_WINDOWS:
+        await update_summary(
+            chat_id,
+            user_id,
+            CHAT_SUMMARY_WINDOWS[window][0],
+            CHAT_SUMMARY_WINDOWS[window][0],
+            f"{user_id}-{chat_id}.{window}"
+        )
+    redis.set(f"{user_id}-{new_chat_id}.world", redis.get(f"{user_id}-{chat_id}.world"))
+    try:
+        sql_connection.cursor().execute(
+            "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
+            ['Chats']
+        )
+    except mariadb.Error as error:
+        pass
+    await prewarm_gamemaster()
+    return {"chat": new_chat_id}
