@@ -6,10 +6,9 @@ from fastapi import BackgroundTasks
 import os
 import mariadb
 
-from models import ChatCopy
 from .logger import log_exception
 from .llm_wrapper import ask_characterbuilder, ask_storysummarizer, ask_gamemaster, prewarm_gamemaster, prewarm_storysummarizer
-from .models import World, Character, Document, ChatStartingPoint, Action, Chat
+from .models import World, Character, Document, ChatStartingPoint, Action, Chat, ChatCopy
 from .databases import sql_connection, mongo, qdrant, redis
 from .functions import mariadb_name, mongodb_name, to_mongo_compatible, get_system_prompt, simplify_result, get_from_redis
 from .chat_active import chat_is_in_use,remove_chat_from_use
