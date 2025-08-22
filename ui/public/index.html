@@ -27,6 +27,8 @@
                 <li><a href="/imprint">Imprint & Privacy</a></li>
                 <li><a href="/chat/new">Start New Session</a></li>
                 <li><a href="/login">Login</a></li>
+                <li><a href="/addons">Addons</a></li>
+                <li><a href="/legal">Terms of Service</a></li>
                 <li><a rel="noopener noreferrer" aria-label="link opens in new tab" href="https://discord.gg/idrinth" target="_blank">Discord</a></li>
                 <li><a rel="noopener noreferrer" aria-label="link opens in new tab" href="https://github.com/bjoern-buettner/roleplay-ai" target="_blank">GitHub</a></li>
                 <li><a target="_blank" href="https://tally.so/r/w7ADRA" rel="noopener noreferrer" aria-label="link opens in new tab">Tally Feedback Form</a></li>
@@ -41,35 +43,47 @@
                 <section>
                     <h2>Your Personal GameMaster!</h2>
                     <p><strong>Play role-playing games from anywhere at any time!</strong></p>
-                    <picture class="highlight" data-video="https://www.youtube-nocookie.com/embed/NVCZu-0UfHc?si=J0ycFBNnv2JSor2l">
-                        <source srcset="/youtube-play.avif" type="image/avif">
-                        <source srcset="/youtube-play.webp" type="image/webp">
-                        <img src="/youtube-play.jpg" alt="Video of a roleplay session with Wolfgang AI" title="Video of a roleplay session with Wolfgang AI" />
-                    </picture>
-                    <p>Wolfgang is a small open source AI Storyteller, that will be a GameMaster for you if you desire.
-                        <a href="/chat/new" class="button call-to-action">Start a new Role-Play-Session!</a></p>
-                    <p>Play in any world you choose by adding documents about it, so that Wolfgang can reference details in character sheets, documents and your chat history for fine-tuned sessions.</p>
+                    <div class="grid-half">
+                        <div>
+                            <p>Wolfgang is a small open source AI Storyteller, that will be a GameMaster for you if you desire.
+                                <a href="/chat/new" class="button call-to-action">Start a new Role-Play-Session!</a></p>
+                            <p>Play in any world you choose by adding documents about it, so that Wolfgang can reference details in character sheets, documents and your chat history for fine-tuned sessions.</p>
+                        </div>
+                        <picture class="highlight" data-video="https://www.youtube-nocookie.com/embed/NVCZu-0UfHc?si=J0ycFBNnv2JSor2l">
+                            <source srcset="/youtube-play.avif" type="image/avif">
+                            <source srcset="/youtube-play.webp" type="image/webp">
+                            <img src="/youtube-play.jpg" alt="Video of a roleplay session with Wolfgang AI" title="Video of a roleplay session with Wolfgang AI" />
+                        </picture>
+                    </div>
+                </section>
                 <section>
                     <h2>Statistics</h2>
                     <ul id="statistics"></ul>
                 </section>
-                </section>
                 <section>
                     <h2>Launches</h2>
-                    <a id="peerlist" aria-label="link opens in new tab" href="https://peerlist.io/idrinth/project/roleplay-ai-v10" target="_blank" rel="noopener noreferrer">
-                        <img
-                            src="https://peerlist.io/api/v1/projects/embed/PRJHGNQ86JOPGEP7RF8E6QDP769BEN?showUpvote=true&theme=dark"
-                            alt="Roleplay AI v1.0"
-                        />
-                    </a>
-                    <p>With the launch on peerlist on the 4th of August 2025 we have shown, that Wolfgang works well for 30+ people. As you can see on our GitHub, we are quickly fixing bugs and constantly add more human-made training data to improve Wolfgang and make playing with him more fun!</p>
-                    <a id="producthunt" href="https://www.producthunt.com/products/wolfgang-ai/reviews?utm_source=badge-product_review&utm_medium=badge&utm_source=badge-wolfgang&#0045;ai" target="_blank">
-                        <img
-                            src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=1098467&theme=dark"
-                            alt="Wolfgang&#0032;AI - Your&#0032;personal&#0032;game&#0032;master&#0032;anywhere&#0032;and&#0032;at&#0032;any&#0032;time | Product Hunt"
-                        />
-                    </a>
-                    <p>The launch on ProductHunt is still ongoing and started on the 17th of August 2025, we hope to gather feedback there to improve our favourite GameMaster further.</p>
+                    <div class="grid-half">
+                        <p>With the launch on Peerlist on the 4th of August 2025 we have shown, that Wolfgang works well for 30+ people. As you can see on our GitHub, we are quickly fixing bugs and constantly add more human-made training data to improve Wolfgang and make playing with him more fun!</p>
+                        <div>
+                            <a id="peerlist" aria-label="link opens in new tab" href="https://peerlist.io/idrinth/project/roleplay-ai-v10" target="_blank" rel="noopener noreferrer">
+                                <img
+                                    src="https://peerlist.io/api/v1/projects/embed/PRJHGNQ86JOPGEP7RF8E6QDP769BEN?showUpvote=true&theme=dark"
+                                    alt="Roleplay AI v1.0"
+                                />
+                            </a>
+                        </div>
+                    </div>
+                    <div class="grid-half">
+                        <p>The launch on ProductHunt started on the 17th of August 2025, we hoped to gather feedback there to improve our favourite GameMaster further.</p>
+                        <div>
+                            <a id="producthunt" href="https://www.producthunt.com/products/wolfgang-ai/reviews?utm_source=badge-product_review&utm_medium=badge&utm_source=badge-wolfgang&#0045;ai" target="_blank">
+                                <img
+                                    src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=1098467&theme=dark"
+                                    alt="Wolfgang AI - Your personal GameMaster anywhere and at any time | Product Hunt"
+                                />
+                            </a>
+                        </div>
+                    </div>
                 </section>
                 <section>
                     <h2>Build By</h2>
@@ -82,8 +96,9 @@
                     <h2>How It Works</h2>
                     <ol>
                         <li>Create a new world by <a class="button call-to-action" href="/chat/new">starting a chat</a></li>
-                        <li>Create your character and choose your world(wizard optional)</li>
+                        <li>Create your character and choose your world(helpful wizard optional)</li>
                         <li>Upload relevant documents (optional)</li>
+                        <li>Turn on background music (optional)</li>
                         <li>Start playing - Wolfgang handles the rest!</li>
                     </ol>
                     <picture class="highlight">

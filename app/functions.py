@@ -1,6 +1,7 @@
 import os
 import uuid
 import json
+import base64
 from qdrant_client.http.models import QueryResponse
 from bson.objectid import ObjectId
 from enum import StrEnum
@@ -14,6 +15,9 @@ from .logger import log_exception
 
 with open('./app/character-sheet.schema.json', 'r') as schema_file:
     schema = json.dumps(json.load(schema_file))
+
+def b64(s: str)->str:
+    return base64.b64encode(s.encode("ascii")).decode("ascii")
 
 def mariadb_name(user_id: str, chat_id: str):
     if not is_uuid_like(user_id):

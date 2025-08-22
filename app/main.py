@@ -1,10 +1,11 @@
 import datetime
 import json
 import math
+import requests
 
 from bson import json_util
 from bson.objectid import ObjectId
-from typing import Annotated
+from typing import Annotated, Dict
 import uuid
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
@@ -17,7 +18,9 @@ from PIL import Image, ImageDraw, ImageFont
 from .logger import log_exception
 from .llm_wrapper import prewarm_characterbuilder
 from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint, User, ChatCopy
-from .functions import is_uuid_like, mariadb_name, mongodb_name, to_mongo_compatible, user_id_from_jwt, set_login_cookie
+from .functions import is_uuid_like, mariadb_name, mongodb_name, to_mongo_compatible, user_id_from_jwt, \
+                        set_login_cookie
+from .paypal import handle_transactions,PayPalWebhookEvent, ENABLE_PAYPAL, PAYPAL_WEBHOOK_ENDPOINT
 from .databases import sql_connection, mongo, qdrant, redis
 from .app import app
 from .chat_auth_wrapper import wrap
@@ -35,9 +38,48 @@ async def refill_tokens():
     sql_connection.cursor().execute("UPDATE chat_users.users SET remaining_messages=maximum_remaining_messages WHERE remaining_messages > maximum_remaining_messages")
     sql_connection.cursor().execute("UPDATE chat_users.users SET last_incremented=last_incremented+increment_every_seconds, remaining_messages=remaining_messages+1 WHERE remaining_messages < maximum_remaining_messages AND last_incremented + increment_every_seconds < ?", [now])
 
+@app.on_event("startup")
+@repeat_every(seconds=900)
+async def poll_paypal():
+    if not ENABLE_PAYPAL:
+        return
+    now = datetime.datetime.now(datetime.timezone.utc).timestamp().__floor__()
+    await handle_transactions((
+        ('start_date', datetime.datetime.fromtimestamp(now - 5400).isoformat(timespec='seconds')),
+        ('end_date', datetime.datetime.fromtimestamp(now - 1800).isoformat(timespec='seconds')),
+        ('transaction_status', 'S'),#Success
+        ('fields', 'all'),
+    ))
+
+@app.on_event("startup")
+@repeat_every(seconds=60)
+async def process_subscriptions():
+    if not ENABLE_PAYPAL:
+        return
+    sql_connection.ping()
+    sql_connection.cursor().execute("UPDATE chat_users.users SET maximum_remaining_messages=(SELECT COUNT(aid)+25 FROM chat_users.subscriptions WHERE subscriptions.user_id=users.user_id AND ? BETWEEN subscription.from_datetime AND subscription.to_datetime AND product IN('RECHARGELIMIT', 'REWARD_RECHARGELIMIT'))", [now])
+    sql_connection.cursor().execute("UPDATE chat_users.users SET increment_every_seconds=(SELECT 1800 - COUNT(aid)*180 FROM chat_users.subscriptions WHERE subscriptions.user_id=users.user_id AND ? BETWEEN subscription.from_datetime AND subscription.to_datetime AND product IN('RECHARGEFREQUENCY', 'REWARD_RECHARGEFREQUENCY'))", [now])
+
 @app.get('/')
 async def root():
     return 'OK'
+
+if PAYPAL_WEBHOOK_ENDPOINT and ENABLE_PAYPAL:
+    @app.post(f"/paypal/{PAYPAL_WEBHOOK_ENDPOINT}")
+    async def paypal_webhook(response: Response, headers: Dict[str, str], event: PayPalWebhookEvent):
+        webhook_allowed_event='PAYMENT.CAPTURE.COMPLETED'
+        if event.event_type != webhook_allowed_event:
+            response.status = 400
+            return False
+        now = event.resource.create_time.timestamp().__floor__()
+        await handle_transactions((
+            ('transaction_id', event.resource.supplementary_data.related_ids.order_id),#special case mentioned in the docs
+            ('start_date', datetime.datetime.fromtimestamp(now - 1800).isoformat(timespec='seconds')),
+            ('end_date', datetime.datetime.fromtimestamp(now + 1800).isoformat(timespec='seconds')),
+            ('transaction_status', 'S'),#Success
+            ('fields', 'all'),
+        ))
+        return True
 
 @app.post('/login')
 async def login(response: Response, login_data: Login):
@@ -136,11 +178,12 @@ async def remaining_messages(user_jwt: Annotated[str | None, Cookie()] = None):
             "lastIncremented": 0,
             "incrementEverySeconds": 0,
             "maximumRemainingMessages": 0,
+            "additionalRemainingMessages": 0,
         }
     try:
         cursor = sql_connection.cursor()
         cursor.execute(
-            "SELECT remaining_messages, last_incremented, increment_every_seconds, maximum_remaining_messages FROM chat_users.users WHERE user_id=?;",
+            "SELECT remaining_messages, last_incremented, increment_every_seconds, maximum_remaining_messages, additional_remaining_messages FROM chat_users.users WHERE user_id=?;",
             [user_id]
         )
         for user_row in list(cursor.fetchall()):
@@ -152,11 +195,13 @@ async def remaining_messages(user_jwt: Annotated[str | None, Cookie()] = None):
             increment_every_seconds = int(user_row[2])
             maximum_remaining_messages = int(user_row[3])
             remaining_message_count = int(user_row[0])
+            additional_remaining_messages = int(user_row[4])
             return {
                 "remainingMessages": remaining_message_count,
                 "lastIncremented": last_incremented,
                 "incrementEverySeconds": increment_every_seconds,
                 "maximumRemainingMessages": maximum_remaining_messages,
+                "additionalRemainingMessages": additional_remaining_messages,
             }
     except mariadb.Error as e:
         log_exception(e, "remaining_messages")
@@ -166,6 +211,7 @@ async def remaining_messages(user_jwt: Annotated[str | None, Cookie()] = None):
         "lastIncremented": 0,
         "incrementEverySeconds": 0,
         "maximumRemainingMessages": 0,
+        "additionalRemainingMessages": 0,
     }
 
 @app.post('/register')
