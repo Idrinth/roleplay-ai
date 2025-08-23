@@ -163,7 +163,7 @@ async def get_paypal_public_key(cert_url: str) -> dsa.DSAPublicKey | rsa.RSAPubl
                                                   x25519.X25519PublicKey | x448.X448PublicKey | None:
     if not cert_url.startswith("https://"):
         return None
-    if not re.match("^https://(.+\.)?paypal.com/", cert_url):
+    if not re.match("^https://(.+\\.)?paypal.com/", cert_url):
         return None
     cert_cache_name = hashlib.sha256(cert_url.encode()).hexdigest()
     try:
