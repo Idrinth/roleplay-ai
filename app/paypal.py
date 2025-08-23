@@ -151,14 +151,15 @@ async def get_paypal_public_key(cert_url: str) -> dsa.DSAPublicKey | rsa.RSAPubl
         with open(f"/tmp/{cert_cache_name}.pem", "rb") as cert_file:
             return x509.load_pem_x509_certificate(cert_file.read()).public_key()
     except FileNotFoundError as e:
-        response = requests.get(cert_url, timeout=10)
-        if response.status_code != 200:
-            return None
-        try:
-            with open(f"/tmp/{cert_cache_name}.pem", "wb") as cert_file:
-                cert_file.write(response.content)
-        finally:
-            return x509.load_pem_x509_certificate(response.content).public_key()
+        async with aiohttp.ClientSession() as session:
+            async with session.get(cert_url, timeout=10) as response:
+                if response.status != 200:
+                    return None
+                try:
+                    with open(f"/tmp/{cert_cache_name}.pem", "wb") as cert_file:
+                        cert_file.write(await response.read())
+                finally:
+                    return x509.load_pem_x509_certificate(await response.read()).public_key()
 
 async def login()->str:
     paypal_base_auth = b64(PAYPAL_APP_CLIENTID + ":" + PAYPAL_APP_SECRET)
