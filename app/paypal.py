@@ -173,7 +173,7 @@ async def handle_transactions(params: tuple):
             'Content-Type': 'application/json',
         }, params=params) as response:
             response.raise_for_status()
-            for transaction in response.json():
+            for transaction in (await response.json())['transactions']:
                 sql_connection.ping()
                 cursor = sql_connection.cursor()
                 cursor.execute("SELECT 1 FROM purchases WHERE paypal_transaction_id=?", [transaction['transaction_info']['transaction_id']])
@@ -203,7 +203,8 @@ async def handle_transactions(params: tuple):
                                     '100MESSAGES',
                                     transaction['transaction_info']['transaction_id']
                                 ])
-                                sql_connection.cursor().execute("UPDATE chat_users.users SET additional_remaining_messages=additional_remaining_messages+100 WHERE user_id=?", [user_id])
+                                for i in range(item['item_quantity']):
+                                    sql_connection.cursor().execute("UPDATE chat_users.users SET additional_remaining_messages=additional_remaining_messages+100 WHERE user_id=?", [user_id])
                             elif item['item_code'] == PAYPAL_ITEMCODE_RECHARGEFREQUENCY:
                                 log_info('FOUND RECHARGEFREQUENCY in transaction')
                                 sql_connection.cursor().execute("INSERT INTO purchases (user_id, at_datetime, amount, product, paypal_transaction_id) VALUES (?, ? ,?, ?, ?)", [
