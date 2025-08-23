@@ -11,11 +11,10 @@ from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.exceptions import InvalidSignature
-from logger import log_exception
 from .functions import b64, is_uuid_like
 from .databases import sql_connection
 import aiohttp
-from .logger import log_warning, log_info
+from .logger import log_warning, log_info, log_exception
 
 PAYPAL_ENDPOINT = os.getenv('PAYPAL_ENDPOINT')
 PAYPAL_ITEMCODE_100MESSAGES = os.getenv('PAYPAL_ITEMCODE_100MESSAGES')
