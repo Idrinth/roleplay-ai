@@ -77,7 +77,7 @@ if PAYPAL_WEBHOOK_ENDPOINT and ENABLE_PAYPAL:
         transmission_sig = request.headers.get("PAYPAL-TRANSMISSION-SIG")
         if not all([transmission_id, transmission_time, cert_url, auth_algo]):
             raise HTTPException(status_code=400, detail="PayPal webhook endpoint incomplete")
-        if not verify_paypal_signature(transmission_id, transmission_time, request.body, cert_url, transmission_sig, auth_algo):
+        if not await verify_paypal_signature(transmission_id, transmission_time, request.body, cert_url, transmission_sig, auth_algo):
             raise HTTPException(status_code=400, detail="PayPal event validation failed")
         now = event.resource.create_time.timestamp().__floor__()
         await handle_transactions((
@@ -87,7 +87,7 @@ if PAYPAL_WEBHOOK_ENDPOINT and ENABLE_PAYPAL:
             ('transaction_status', 'S'),#Success
             ('fields', 'all'),
         ))
-        return True
+        return {"success": True}
 
 @app.post('/login')
 async def login(response: Response, login_data: Login):
