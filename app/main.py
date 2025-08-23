@@ -1,15 +1,14 @@
 import datetime
 import json
 import math
-import requests
 
 from bson import json_util
 from bson.objectid import ObjectId
-from typing import Annotated, Dict
+from typing import Annotated
 import uuid
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
-from fastapi import Cookie, BackgroundTasks, Response
+from fastapi import Cookie, BackgroundTasks, Response, Request, HTTPException
 from fastapi.responses import FileResponse
 import mariadb
 from fastapi_utils.tasks import repeat_every
@@ -20,7 +19,8 @@ from .llm_wrapper import prewarm_characterbuilder
 from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint, User, ChatCopy
 from .functions import is_uuid_like, mariadb_name, mongodb_name, to_mongo_compatible, user_id_from_jwt, \
                         set_login_cookie
-from .paypal import handle_transactions,PayPalWebhookEvent, ENABLE_PAYPAL, PAYPAL_WEBHOOK_ENDPOINT
+from .paypal import handle_transactions,PayPalWebhookEvent, ENABLE_PAYPAL, PAYPAL_WEBHOOK_ENDPOINT, \
+                    verify_paypal_signature
 from .databases import sql_connection, mongo, qdrant, redis
 from .app import app
 from .chat_auth_wrapper import wrap
@@ -56,9 +56,10 @@ async def poll_paypal():
 async def process_subscriptions():
     if not ENABLE_PAYPAL:
         return
+    now = datetime.datetime.now(datetime.timezone.utc).timestamp().__floor__()
     sql_connection.ping()
-    sql_connection.cursor().execute("UPDATE chat_users.users SET maximum_remaining_messages=(SELECT COUNT(aid)+25 FROM chat_users.subscriptions WHERE subscriptions.user_id=users.user_id AND ? BETWEEN subscription.from_datetime AND subscription.to_datetime AND product IN('RECHARGELIMIT', 'REWARD_RECHARGELIMIT'))", [now])
-    sql_connection.cursor().execute("UPDATE chat_users.users SET increment_every_seconds=(SELECT 1800 - COUNT(aid)*180 FROM chat_users.subscriptions WHERE subscriptions.user_id=users.user_id AND ? BETWEEN subscription.from_datetime AND subscription.to_datetime AND product IN('RECHARGEFREQUENCY', 'REWARD_RECHARGEFREQUENCY'))", [now])
+    sql_connection.cursor().execute("UPDATE chat_users.users SET maximum_remaining_messages=(SELECT COUNT(aid)+25 FROM chat_users.subscriptions WHERE subscriptions.user_id=users.user_id AND ? BETWEEN subscriptions.from_datetime AND subscriptions.to_datetime AND subscriptions.product IN('RECHARGELIMIT', 'REWARD_RECHARGELIMIT'))", [now])
+    sql_connection.cursor().execute("UPDATE chat_users.users SET increment_every_seconds=(SELECT 1800 - COUNT(aid)*180 FROM chat_users.subscriptions WHERE subscriptions.user_id=users.user_id AND ? BETWEEN subscriptions.from_datetime AND subscriptions.to_datetime AND subscriptions.product IN('RECHARGEFREQUENCY', 'REWARD_RECHARGEFREQUENCY'))", [now])
 
 @app.get('/')
 async def root():
@@ -66,11 +67,18 @@ async def root():
 
 if PAYPAL_WEBHOOK_ENDPOINT and ENABLE_PAYPAL:
     @app.post(f"/paypal/{PAYPAL_WEBHOOK_ENDPOINT}")
-    async def paypal_webhook(response: Response, headers: Dict[str, str], event: PayPalWebhookEvent):
-        webhook_allowed_event='PAYMENT.CAPTURE.COMPLETED'
-        if event.event_type != webhook_allowed_event:
-            response.status = 400
-            return False
+    async def paypal_webhook(request: Request, event: PayPalWebhookEvent):
+        if event.event_type != 'PAYMENT.CAPTURE.COMPLETED':
+            raise HTTPException(status_code=400, detail="Unsupported event type")
+        transmission_id = request.headers.get("PAYPAL-TRANSMISSION-ID")
+        transmission_time = request.headers.get("PAYPAL-TRANSMISSION-TIME")
+        cert_url = request.headers.get("PAYPAL-CERT-URL")
+        auth_algo = request.headers.get("PAYPAL-AUTH-ALGO")
+        transmission_sig = request.headers.get("PAYPAL-TRANSMISSION-SIG")
+        if not all([transmission_id, transmission_time, cert_url, auth_algo]):
+            raise HTTPException(status_code=400, detail="PayPal webhook endpoint incomplete")
+        if not verify_paypal_signature(transmission_id, transmission_time, request.body, cert_url, transmission_sig, auth_algo):
+            raise HTTPException(status_code=400, detail="PayPal event validation failed")
         now = event.resource.create_time.timestamp().__floor__()
         await handle_transactions((
             ('transaction_id', event.resource.supplementary_data.related_ids.order_id),#special case mentioned in the docs
