@@ -192,7 +192,7 @@ async def login() -> str:
             'Content-Type': 'application/x-www-form-urlencoded',
         }, data=data) as response:
             response.raise_for_status()
-            access_token = response.json()['access_token']
+            access_token = (await response.json())['access_token']
             if not access_token:
                 raise Exception('Invalid access token')
             return access_token
