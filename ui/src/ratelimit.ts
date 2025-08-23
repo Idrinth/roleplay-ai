@@ -47,7 +47,7 @@
     }
     const elementAdditionalMessagesRemaining = document.getElementById("additional-messages-remaining");
     if (elementAdditionalMessagesRemaining) {
-      elementAdditionalMessagesRemaining.innerText = response['remainingMessages'] as string;
+      elementAdditionalMessagesRemaining.innerText = response['additionalRemainingMessages'] as string;
     }
     if (root.isObjectWithProperty(response, 'incrementEverySeconds') && elementMessagesLeft) {
       elementMessagesLeft.parentElement?.setAttribute('title', `Recharges by one every ${response['incrementEverySeconds']}seconds`)
