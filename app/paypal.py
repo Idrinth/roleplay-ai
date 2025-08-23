@@ -6,7 +6,6 @@ from typing import List, Optional
 import os
 import hashlib
 import base64
-import requests
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
