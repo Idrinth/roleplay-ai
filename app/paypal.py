@@ -35,12 +35,16 @@ PAYPAL_WEBHOOK_ENDPOINT = os.getenv('PAYPAL_WEBHOOK_ENDPOINT')
 ENABLE_PAYPAL = os.getenv('ENABLE_PAYPAL') == 'true'
 PAYPAL_WEBHOOK_ID = os.getenv('PAYPAL_WEBHOOK_ID')
 
-if ENABLE_PAYPAL and not all([PAYPAL_APP_SECRET, PAYPAL_APP_CLIENTID, PAYPAL_ITEMCODE_RECHARGELIMIT, PAYPAL_ITEMCODE_RECHARGEFREQUENCY, PAYPAL_ITEMCODE_100MESSAGES, PAYPAL_ENDPOINT]):
+if ENABLE_PAYPAL and not all(
+    [PAYPAL_APP_SECRET, PAYPAL_APP_CLIENTID, PAYPAL_ITEMCODE_RECHARGELIMIT, PAYPAL_ITEMCODE_RECHARGEFREQUENCY,
+     PAYPAL_ITEMCODE_100MESSAGES, PAYPAL_ENDPOINT]):
     raise Exception("Missing PAYPAL environment variables")
+
 
 class PayPalAmountModel(BaseModel):
     currency_code: str
     value: str
+
 
 class PayPalDisputeCategory(str, Enum):
     ITEM_NOT_RECEIVED = "ITEM_NOT_RECEIVED"
@@ -48,27 +52,34 @@ class PayPalDisputeCategory(str, Enum):
     MERCHANDISE_OR_SERVICE_NOT_RECEIVED = "MERCHANDISE_OR_SERVICE_NOT_RECEIVED"
     MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED = "MERCHANDISE_OR_SERVICE_NOT_AS_DESCRIBED"
 
+
 class PayPalSellerProtectionStatus(str, Enum):
     ELIGIBLE = "ELIGIBLE"
     PARTIALLY_ELIGIBLE = "PARTIALLY_ELIGIBLE"
     NOT_ELIGIBLE = "NOT_ELIGIBLE"
 
+
 class PayPalSellerProtectionModel(BaseModel):
     status: PayPalSellerProtectionStatus
     dispute_categories: List[PayPalDisputeCategory]
 
+
 class PayPalRelatedIdsModel(BaseModel):
     order_id: str
+
 
 class PayPalSupplementaryDataModel(BaseModel):
     related_ids: PayPalRelatedIdsModel
 
+
 class PayPalPayeeModel(BaseModel):
     merchant_id: str
+
 
 class PayPalPlatformFeeModel(BaseModel):
     amount: PayPalAmountModel
     payee: PayPalPayeeModel
+
 
 class PayPalSellerReceivableBreakdownModel(BaseModel):
     gross_amount: PayPalAmountModel
@@ -76,15 +87,18 @@ class PayPalSellerReceivableBreakdownModel(BaseModel):
     platform_fees: Optional[List[PayPalPlatformFeeModel]] = None
     net_amount: PayPalAmountModel
 
+
 class PayPalLinkModel(BaseModel):
     href: str
     rel: str
     method: str
     encType: Optional[str] = None
 
+
 class PayPalDisbursementMode(str, Enum):
     INSTANT = "INSTANT"
     DELAYED = "DELAYED"
+
 
 class PayPalCaptureStatus(str, Enum):
     COMPLETED = "COMPLETED"
@@ -92,6 +106,7 @@ class PayPalCaptureStatus(str, Enum):
     PARTIALLY_REFUNDED = "PARTIALLY_REFUNDED"
     PENDING = "PENDING"
     REFUNDED = "REFUNDED"
+
 
 class PayPalCaptureResourceModel(BaseModel):
     disbursement_mode: PayPalDisbursementMode
@@ -107,6 +122,7 @@ class PayPalCaptureResourceModel(BaseModel):
     id: str
     status: PayPalCaptureStatus
 
+
 class PayPalWebhookEvent(BaseModel):
     id: str
     create_time: datetime
@@ -118,7 +134,9 @@ class PayPalWebhookEvent(BaseModel):
     event_version: str
     resource_version: str
 
-async def verify_paypal_signature(transmission_id: str, transmission_time, body: bytes, cert_url: str, transmission_sig: str, auth_algo: str) -> bool:
+
+async def verify_paypal_signature(transmission_id: str, transmission_time, body: bytes, cert_url: str,
+                                  transmission_sig: str, auth_algo: str) -> bool:
     try:
         public_key = await get_paypal_public_key(cert_url)
         if not public_key:
@@ -127,7 +145,8 @@ async def verify_paypal_signature(transmission_id: str, transmission_time, body:
         if auth_algo == "SHA256withRSA":
             public_key.verify(
                 signature,
-                f"{transmission_id}|{transmission_time}|{PAYPAL_WEBHOOK_ID}|{hashlib.sha256(body).hexdigest()}".encode('utf-8'),
+                f"{transmission_id}|{transmission_time}|{PAYPAL_WEBHOOK_ID}|{int(hashlib.sha256(body).hexdigest())}".encode(
+                    'utf-8'),
                 padding.PKCS1v15(),
                 hashes.SHA256(),
             )
@@ -138,6 +157,7 @@ async def verify_paypal_signature(transmission_id: str, transmission_time, body:
     except Exception as e:
         log_exception(e, "verify_paypal_signature")
         return False
+
 
 async def get_paypal_public_key(cert_url: str) -> dsa.DSAPublicKey | rsa.RSAPublicKey | ec.EllipticCurvePublicKey | \
                                                   ed25519.Ed25519PublicKey | ed448.Ed448PublicKey | \
@@ -155,13 +175,15 @@ async def get_paypal_public_key(cert_url: str) -> dsa.DSAPublicKey | rsa.RSAPubl
             async with session.get(cert_url, timeout=10) as response:
                 if response.status != 200:
                     return None
+                data = await response.read()
                 try:
                     with open(f"/tmp/{cert_cache_name}.pem", "wb") as cert_file:
-                        cert_file.write(await response.read())
+                        cert_file.write(data)
                 finally:
-                    return x509.load_pem_x509_certificate(await response.read()).public_key()
+                    return x509.load_pem_x509_certificate(data).public_key()
 
-async def login()->str:
+
+async def login() -> str:
     paypal_base_auth = b64(PAYPAL_APP_CLIENTID + ":" + PAYPAL_APP_SECRET)
     async with aiohttp.ClientSession() as session:
         data = aiohttp.FormData()
@@ -176,6 +198,7 @@ async def login()->str:
                 raise Exception('Invalid access token')
             return access_token
 
+
 async def handle_transactions(params: tuple):
     access_token = await login()
     async with aiohttp.ClientSession() as session:
@@ -187,7 +210,8 @@ async def handle_transactions(params: tuple):
             for transaction in (await response.json())['transactions']:
                 sql_connection.ping()
                 cursor = sql_connection.cursor()
-                cursor.execute("SELECT 1 FROM purchases WHERE paypal_transaction_id=?", [transaction['transaction_info']['transaction_id']])
+                cursor.execute("SELECT 1 FROM purchases WHERE paypal_transaction_id=?",
+                               [transaction['transaction_info']['transaction_id']])
                 user_id = str(transaction['transaction_info']['custom_field']).strip(' ')
                 if cursor.fetchone():
                     continue
@@ -199,7 +223,8 @@ async def handle_transactions(params: tuple):
                     for row in cursor:
                         found = True
                     if not found:
-                        log_warning(f"User {user_id} not found for transaction {transaction['transaction_info']['transaction_id']}")
+                        log_warning(
+                            f"User {user_id} not found for transaction {transaction['transaction_info']['transaction_id']}")
                         continue
                     for item in transaction['cart_info']['item_details']:
                         item['item_quantity'] = int(item['item_quantity'])
@@ -207,36 +232,49 @@ async def handle_transactions(params: tuple):
                             sql_connection.ping()
                             if item['item_code'] == PAYPAL_ITEMCODE_100MESSAGES:
                                 log_info('FOUND 100MESSAGES in transaction')
-                                sql_connection.cursor().execute("INSERT INTO purchases (user_id, at_datetime, amount, product, paypal_transaction_id) VALUES (?, ? ,?, ?, ?)", [
-                                    user_id,
-                                    transaction['transaction_info']['transaction_initiation_date'],
-                                    item['item_quantity'] or 1,
-                                    '100MESSAGES',
-                                    transaction['transaction_info']['transaction_id']
-                                ])
+                                sql_connection.cursor().execute(
+                                    "INSERT INTO purchases (user_id, at_datetime, amount, product, paypal_transaction_id) VALUES (?, ? ,?, ?, ?)",
+                                    [
+                                        user_id,
+                                        transaction['transaction_info']['transaction_initiation_date'],
+                                        item['item_quantity'] or 1,
+                                        '100MESSAGES',
+                                        transaction['transaction_info']['transaction_id']
+                                    ])
                                 for i in range(item['item_quantity']):
-                                    sql_connection.cursor().execute("UPDATE chat_users.users SET additional_remaining_messages=additional_remaining_messages+100 WHERE user_id=?", [user_id])
+                                    sql_connection.cursor().execute(
+                                        "UPDATE chat_users.users SET additional_remaining_messages=additional_remaining_messages+100 WHERE user_id=?",
+                                        [user_id])
                             elif item['item_code'] == PAYPAL_ITEMCODE_RECHARGEFREQUENCY:
                                 log_info('FOUND RECHARGEFREQUENCY in transaction')
-                                sql_connection.cursor().execute("INSERT INTO purchases (user_id, at_datetime, amount, product, paypal_transaction_id) VALUES (?, ? ,?, ?, ?)", [
-                                    user_id,
-                                    transaction['transaction_info']['transaction_initiation_date'],
-                                    item['item_quantity'] or 1,
-                                    'RECHARGEFREQUENCY',
-                                    transaction['transaction_info']['transaction_id']
-                                ])
+                                sql_connection.cursor().execute(
+                                    "INSERT INTO purchases (user_id, at_datetime, amount, product, paypal_transaction_id) VALUES (?, ? ,?, ?, ?)",
+                                    [
+                                        user_id,
+                                        transaction['transaction_info']['transaction_initiation_date'],
+                                        item['item_quantity'] or 1,
+                                        'RECHARGEFREQUENCY',
+                                        transaction['transaction_info']['transaction_id']
+                                    ])
                                 for i in range(item['item_quantity']):
-                                    sql_connection.cursor().execute("INSERT INTO chat_users.subscriptions (user_id, product, from_datetime, to_datetime) VALUES (?, ?, Now(), NOW() + 86400*30)", [user_id, 'RECHARGEFREQUENCY'])
+                                    sql_connection.cursor().execute(
+                                        "INSERT INTO chat_users.subscriptions (user_id, product, from_datetime, to_datetime) VALUES (?, ?, Now(), NOW() + 86400*30)",
+                                        [user_id, 'RECHARGEFREQUENCY'])
                             elif item['item_code'] == PAYPAL_ITEMCODE_RECHARGELIMIT:
                                 log_info('FOUND RECHARGELIMIT in transaction')
-                                sql_connection.cursor().execute("INSERT INTO purchases (user_id, at_datetime, amount, product, paypal_transaction_id) VALUES (?, ? ,?, ?, ?)", [
-                                    user_id,
-                                    transaction['transaction_info']['transaction_initiation_date'],
-                                    item['item_quantity'] or 1,
-                                    'RECHARGELIMIT',
-                                    transaction['transaction_info']['transaction_id']
-                                ])
+                                sql_connection.cursor().execute(
+                                    "INSERT INTO purchases (user_id, at_datetime, amount, product, paypal_transaction_id) VALUES (?, ? ,?, ?, ?)",
+                                    [
+                                        user_id,
+                                        transaction['transaction_info']['transaction_initiation_date'],
+                                        item['item_quantity'] or 1,
+                                        'RECHARGELIMIT',
+                                        transaction['transaction_info']['transaction_id']
+                                    ])
                                 for i in range(item['item_quantity']):
-                                    sql_connection.cursor().execute("INSERT INTO chat_users.subscriptions (user_id, product, from_datetime, to_datetime) VALUES (?, ?, Now(), NOW() + 86400*30)", [user_id, 'RECHARGELIMIT'])
+                                    sql_connection.cursor().execute(
+                                        "INSERT INTO chat_users.subscriptions (user_id, product, from_datetime, to_datetime) VALUES (?, ?, Now(), NOW() + 86400*30)",
+                                        [user_id, 'RECHARGELIMIT'])
                             else:
-                                log_warning(f"Item {item['item_code']} not found for transaction {transaction['transaction_info']['transaction_id']}")
+                                log_warning(
+                                    f"Item {item['item_code']} not found for transaction {transaction['transaction_info']['transaction_id']}")
