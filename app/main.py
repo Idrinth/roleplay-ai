@@ -45,8 +45,8 @@ async def poll_paypal():
         return
     now = datetime.datetime.now(datetime.timezone.utc).timestamp().__floor__()
     await handle_transactions((
-        ('start_date', datetime.datetime.fromtimestamp(now - 5400).isoformat(timespec='seconds')),
-        ('end_date', datetime.datetime.fromtimestamp(now - 1800).isoformat(timespec='seconds')),
+        ('start_date', datetime.datetime.fromtimestamp(now - 5400).strftime('%Y-%m-%dT%H:%M:%SZ')),
+        ('end_date', datetime.datetime.fromtimestamp(now - 1800).strftime('%Y-%m-%dT%H:%M:%SZ')),
         ('transaction_status', 'S'),#Success
         ('fields', 'all'),
     ))
@@ -82,8 +82,8 @@ if PAYPAL_WEBHOOK_ENDPOINT and ENABLE_PAYPAL:
         now = event.resource.create_time.timestamp().__floor__()
         await handle_transactions((
             ('transaction_id', event.resource.supplementary_data.related_ids.order_id),#special case mentioned in the docs
-            ('start_date', datetime.datetime.fromtimestamp(now - 1800).isoformat(timespec='seconds')),
-            ('end_date', datetime.datetime.fromtimestamp(now + 1800).isoformat(timespec='seconds')),
+            ('start_date', datetime.datetime.fromtimestamp(now - 1800).strftime('%Y-%m-%dT%H:%M:%SZ')),
+            ('end_date', datetime.datetime.fromtimestamp(now + 1800).strftime('%Y-%m-%dT%H:%M:%SZ')),
             ('transaction_status', 'S'),#Success
             ('fields', 'all'),
         ))
