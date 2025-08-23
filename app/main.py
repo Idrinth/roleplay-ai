@@ -44,7 +44,7 @@ async def poll_paypal():
         return
     now = datetime.datetime.now(datetime.timezone.utc).timestamp().__floor__()
     await handle_transactions((
-        ('start_date', datetime.datetime.fromtimestamp(now - 5400).strftime('%Y-%m-%dT%H:%M:%SZ')),
+        ('start_date', datetime.datetime.fromtimestamp(now - 12600).strftime('%Y-%m-%dT%H:%M:%SZ')),
         ('end_date', datetime.datetime.fromtimestamp(now - 1800).strftime('%Y-%m-%dT%H:%M:%SZ')),
         ('transaction_status', 'S'),#Success
         ('fields', 'all'),
