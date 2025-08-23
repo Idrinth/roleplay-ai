@@ -2,7 +2,6 @@ import datetime
 import json
 import math
 
-from bson import json_util
 from bson.objectid import ObjectId
 from typing import Annotated
 import uuid
@@ -77,7 +76,7 @@ if PAYPAL_WEBHOOK_ENDPOINT and ENABLE_PAYPAL:
         transmission_sig = request.headers.get("PAYPAL-TRANSMISSION-SIG")
         if not all([transmission_id, transmission_time, cert_url, auth_algo]):
             raise HTTPException(status_code=400, detail="PayPal webhook endpoint incomplete")
-        if not await verify_paypal_signature(transmission_id, transmission_time, request.body, cert_url, transmission_sig, auth_algo):
+        if not await verify_paypal_signature(transmission_id, transmission_time, await request.body(), cert_url, transmission_sig, auth_algo):
             raise HTTPException(status_code=400, detail="PayPal event validation failed")
         now = event.resource.create_time.timestamp().__floor__()
         await handle_transactions((

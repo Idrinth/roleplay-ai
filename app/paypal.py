@@ -1,20 +1,29 @@
 import re
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from enum import Enum
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Optional
 import os
 import hashlib
 import base64
 import requests
 from cryptography import x509
-from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.exceptions import InvalidSignature
 from .functions import b64, is_uuid_like
 from .databases import sql_connection
 import aiohttp
 from .logger import log_warning, log_info, log_exception
+from cryptography.hazmat.primitives.asymmetric import (
+    dsa,
+    ec,
+    ed448,
+    ed25519,
+    rsa,
+    x448,
+    x25519,
+)
 
 PAYPAL_ENDPOINT = os.getenv('PAYPAL_ENDPOINT')
 PAYPAL_ITEMCODE_100MESSAGES = os.getenv('PAYPAL_ITEMCODE_100MESSAGES')
@@ -28,8 +37,6 @@ PAYPAL_WEBHOOK_ID = os.getenv('PAYPAL_WEBHOOK_ID')
 
 if ENABLE_PAYPAL and not all([PAYPAL_APP_SECRET, PAYPAL_APP_CLIENTID, PAYPAL_ITEMCODE_RECHARGELIMIT, PAYPAL_ITEMCODE_RECHARGEFREQUENCY, PAYPAL_ITEMCODE_100MESSAGES, PAYPAL_ENDPOINT]):
     raise Exception("Missing PAYPAL environment variables")
-
-PAYPAL_BASE_AUTH = b64(PAYPAL_APP_CLIENTID + ":" + PAYPAL_APP_SECRET)
 
 class PayPalAmountModel(BaseModel):
     currency_code: str
@@ -132,7 +139,9 @@ async def verify_paypal_signature(transmission_id: str, transmission_time, body:
         log_exception(e, "verify_paypal_signature")
         return False
 
-async def get_paypal_public_key(cert_url: str) -> PublicKey | None:
+async def get_paypal_public_key(cert_url: str) -> dsa.DSAPublicKey | rsa.RSAPublicKey | ec.EllipticCurvePublicKey | \
+                                                  ed25519.Ed25519PublicKey | ed448.Ed448PublicKey | \
+                                                  x25519.X25519PublicKey | x448.X448PublicKey | None:
     if not cert_url.startswith("https://"):
         return None
     if not re.match("^https://(.+\.)?paypal.com/", cert_url):
@@ -152,11 +161,12 @@ async def get_paypal_public_key(cert_url: str) -> PublicKey | None:
             return x509.load_pem_x509_certificate(response.content).public_key()
 
 async def login()->str:
+    paypal_base_auth = b64(PAYPAL_APP_CLIENTID + ":" + PAYPAL_APP_SECRET)
     async with aiohttp.ClientSession() as session:
         data = aiohttp.FormData()
         data.add_field('grant_type', 'client_credentials')
         async with session.post(f"https://{PAYPAL_ENDPOINT}/v1/oauth2/token", headers={
-            'Authorization': f"Basic {PAYPAL_BASE_AUTH}",
+            'Authorization': f"Basic {paypal_base_auth}",
             'Content-Type': 'application/x-www-form-urlencoded',
         }, data=data) as response:
             response.raise_for_status()
