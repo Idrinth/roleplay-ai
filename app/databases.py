@@ -40,3 +40,17 @@ sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.statistic
 sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.keywords "
     "(word varchar(255), count DECIMAL UNSIGNED NOT NULL DEFAULT 0, PRIMARY KEY(word)) "
     "charset=utf8;")
+try:
+    sql_connection.cursor().execute("ALTER TABLE chat_users.users"
+                                    " ADD COLUMN additional_remaining_messages INT(10) unsigned DEFAULT 0"
+                                    ";")
+except mariadb.Error as e:
+    pass
+
+sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.subscriptions"
+                         "  (aid BIGINT UNSIGNED AUTO_INCREMENT NOT NULL, user_id char(36), from_datetime TIMESTAMP, to_datetime TIMESTAMP, product VARCHAR(100), PRIMARY KEY(aid), INDEX user_id(user_id, product))"
+                         " charset=utf8;")
+
+sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.purchases"
+                         "  (aid BIGINT UNSIGNED AUTO_INCREMENT NOT NULL, user_id char(36), at_datetime TIMESTAMP, amount INT(10) unsigned, product VARCHAR(100), paypal_transaction_id VARCHAR(255), PRIMARY KEY(aid), INDEX user_id(user_id, product))"
+                         " charset=utf8;")

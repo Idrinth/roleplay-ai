@@ -30,7 +30,7 @@
       creditsAreEmpty = true;
       return;
     }
-    creditsAreEmpty = ((response as {remainingMessages?: number})['remainingMessages'] ?? 0) < 1;
+    creditsAreEmpty = ((response as {remainingMessages?: number})['remainingMessages'] ?? 0) + ((response as {additionalRemainingMessages?: number})['additionalRemainingMessages'] ?? 0) < 1;
     if (root.isObjectWithProperty(response, 'lastIncremented') && root.isObjectWithProperty(response, 'incrementEverySeconds')) {
       const nextInSeconds = (response['incrementEverySeconds'] as number) - (Date.now() / 1000 - (response['lastIncremented'] as number));
       if (nextInSeconds > 0) {
@@ -44,6 +44,10 @@
     const elementMessagesLeft = document.getElementById("messages-left");
     if (elementMessagesLeft) {
       elementMessagesLeft.innerText = response['remainingMessages'] as string;
+    }
+    const elementAdditionalMessagesRemaining = document.getElementById("additional-messages-remaining");
+    if (elementAdditionalMessagesRemaining) {
+      elementAdditionalMessagesRemaining.innerText = response['additionalRemainingMessages'] as string;
     }
     if (root.isObjectWithProperty(response, 'incrementEverySeconds') && elementMessagesLeft) {
       elementMessagesLeft.parentElement?.setAttribute('title', `Recharges by one every ${response['incrementEverySeconds']}seconds`)
