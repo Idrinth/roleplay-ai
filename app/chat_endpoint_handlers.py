@@ -133,18 +133,29 @@ async def post_proposals_internal(chat_id: str, user_id: str, starting_point: Ch
     if ENABLE_MESSAGE_LIMITS:
         cursor = sql_connection.cursor()
         cursor.execute(
-            "SELECT remaining_messages FROM chat_users.users WHERE user_id=?;",
+            "SELECT remaining_messages, additional_remaining_messages FROM chat_users.users WHERE user_id=?;",
             [user_id]
         )
         remaining_messages = 0
+        additional_remaining_messages = 0
         try:
             for user_row in list(cursor.fetchall()):
                 remaining_messages = int(user_row[0])
+                additional_remaining_messages = int(user_row[1])
         except mariadb.Error as e:
-            log_exception(e, "chat_message_internal")
-        if remaining_messages < 1:
+            log_exception(e, "post_proposals_internal")
+        if remaining_messages < 1 and additional_remaining_messages < 1:
             return {"success": False}
-        sql_connection.cursor().execute("UPDATE chat_users.users SET remaining_messages=IF(remaining_messages<1, 0, remaining_messages - 1) WHERE user_id=?;", [user_id])
+        if remaining_messages < 1:
+            sql_connection.cursor().execute(
+                "UPDATE chat_users.users SET additional_remaining_messages=IF(additional_remaining_messages < 1, 0, additional_remaining_messages - 1) WHERE user_id=?;",
+                [user_id]
+            )
+        else:
+            sql_connection.cursor().execute(
+                "UPDATE chat_users.users SET remaining_messages=IF(remaining_messages < 1, 0, remaining_messages - 1) WHERE user_id=?;",
+                [user_id]
+            )
     response = await ask_characterbuilder([
         {
             "role": "user",
@@ -175,23 +186,33 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
     if ENABLE_MESSAGE_LIMITS:
         cursor = sql_connection.cursor()
         cursor.execute(
-            "SELECT remaining_messages FROM chat_users.users WHERE user_id=?;",
+            "SELECT remaining_messages, additional_remaining_messages FROM chat_users.users WHERE user_id=?;",
             [user_id]
         )
         remaining_messages = 0
+        additional_remaining_messages = 0
         try:
             for user_row in list(cursor.fetchall()):
                 remaining_messages = int(user_row[0])
+                additional_remaining_messages = int(user_row[1])
         except mariadb.Error as e:
             log_exception(e, "chat_message_internal")
-        if remaining_messages < 1:
+        if remaining_messages < 1 and additional_remaining_messages < 1:
             return {"success": False}
-        sql_connection.cursor().execute("UPDATE chat_users.users SET remaining_messages=IF(remaining_messages<1, 0, remaining_messages - 1) WHERE user_id=?;", [user_id])
+        if remaining_messages < 1:
+            sql_connection.cursor().execute(
+                "UPDATE chat_users.users SET additional_remaining_messages=IF(additional_remaining_messages < 1, 0, additional_remaining_messages - 1) WHERE user_id=?;",
+                [user_id]
+            )
+        else:
+            sql_connection.cursor().execute(
+                "UPDATE chat_users.users SET remaining_messages=IF(remaining_messages < 1, 0, remaining_messages - 1) WHERE user_id=?;",
+                [user_id]
+            )
     long_term_summary = get_from_redis(user_id,chat_id, "long_summary")
     medium_term_summary = get_from_redis(user_id,chat_id, "medium_summary")
     short_term_summary = get_from_redis(user_id,chat_id, "short_summary")
-    world = get_from_redis(user_id, chat_id, "world", "[]")
-    world = json.loads(world)
+    world = json.loads(get_from_redis(user_id, chat_id, "world", "[]"))
     try:
         for keyword in world:
             sql_connection.cursor().execute(

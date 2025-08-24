@@ -206,7 +206,9 @@ async def handle_transactions(params: tuple):
             'Content-Type': 'application/json',
         }, params=params) as response:
             response.raise_for_status()
-            for transaction in (await response.json())['transactions']:
+            json = await response.json()
+            print(json)
+            for transaction in json['transactions']:
                 sql_connection.ping()
                 cursor = sql_connection.cursor()
                 cursor.execute("SELECT 1 FROM purchases WHERE paypal_transaction_id=?",
