@@ -215,6 +215,12 @@ for(const folder of readdirSync(process.cwd() + '/fonts', 'utf-8')) {
         readFileSync(`${process.cwd()}/fonts/${folder}/${file}`, 'binary'),
         'binary'
       );
+    } else if (file.endsWith('.txt')) {
+      writeFileSync(
+        `${process.cwd()}/dist/${folder}-license.txt`,
+        readFileSync(`${process.cwd()}/fonts/${folder}/${file}`, 'utf8'),
+        'utf8'
+      );
     }
   }
 }
