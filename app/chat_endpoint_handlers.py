@@ -191,7 +191,17 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
     medium_term_summary = get_from_redis(user_id,chat_id, "medium_summary")
     short_term_summary = get_from_redis(user_id,chat_id, "short_summary")
     world = get_from_redis(user_id, chat_id, "world", "[]")
-    world = ", ".join(json.loads(world))
+    world = json.loads(world)
+    try:
+        for keyword in world:
+            sql_connection.cursor().execute(
+                "INSERT INTO `chat_users`.`keywords` (word, count) VALUES (?, 1) "
+                "ON DUPLICATE KEY UPDATE count = count + 1;",
+                [keyword.lower()]
+            )
+    except Exception as e:
+        log_exception(e, "chat_message_internal.keywords")
+    world = ", ".join(world)
     characters = []
     try:
         characters = list(mongo[mongodb_name(user_id, chat_id)]["characters"].find())

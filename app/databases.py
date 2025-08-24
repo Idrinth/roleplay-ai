@@ -36,6 +36,10 @@ except mariadb.Error as e:
 sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.statistics"
                          " (label varchar(255), value DECIMAL UNSIGNED NOT NULL DEFAULT 0, PRIMARY KEY(label))"
                          " charset=utf8;")
+
+sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.keywords "
+    "(word varchar(255), count DECIMAL UNSIGNED NOT NULL DEFAULT 0, PRIMARY KEY(word)) "
+    "charset=utf8;")
 try:
     sql_connection.cursor().execute("ALTER TABLE chat_users.users"
                                     " ADD COLUMN additional_remaining_messages INT(10) unsigned DEFAULT 0"
