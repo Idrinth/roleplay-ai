@@ -195,6 +195,7 @@ async def login() -> str:
             access_token = (await response.json())['access_token']
             if not access_token:
                 raise Exception('Invalid access token')
+            print(access_token)
             return access_token
 
 
