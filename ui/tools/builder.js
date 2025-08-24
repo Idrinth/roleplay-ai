@@ -208,20 +208,19 @@ for(const file of readdirSync(process.cwd() + '/dist', 'utf-8')){
     );
   }
 }
-for(const folder of readdirSync(process.cwd() + '/fonts', 'utf-8')) {
-  for (const file of readdirSync(process.cwd() + '/fonts/'+folder, 'utf-8')) {
+for (const folder of readdirSync(process.cwd() + '/fonts', 'utf-8')) {
+  const safeBase = folder.replace(/[^A-Za-z0-9]/g, '');
+  for (const file of readdirSync(process.cwd() + '/fonts/' + folder, 'utf-8')) {
     if (file.endsWith('.ttf') || file.endsWith('.woff') || file.endsWith('.woff2')) {
-      writeFileSync(
-        `${process.cwd()}/dist/${file.replace(/-.*\.(.+)$/, '.$1')}`,
-        readFileSync(`${process.cwd()}/fonts/${folder}/${file}`, 'binary'),
-        'binary'
-      );
-    } else if (file.endsWith('.txt')) {
-      writeFileSync(
-        `${process.cwd()}/dist/${folder}-license.txt`,
-        readFileSync(`${process.cwd()}/fonts/${folder}/${file}`, 'utf8'),
-        'utf8'
-      );
+      const { name, ext } = path.parse(file);
+      const normalizedBase = name.replace(/-.*$/, '').replace(/_/g, '');
+      const outPath = `${process.cwd()}/dist/${normalizedBase}${ext}`;
+      writeFileSync(outPath, readFileSync(`${process.cwd()}/fonts/${folder}/${file}`));
+    } else if (file.toLowerCase() === 'ofl.txt' || file.toLowerCase() === 'license.txt') {
+      const dest = `${process.cwd()}/dist/${safeBase}-license.txt`;
+      if (!existsSync(dest)) {
+        writeFileSync(dest, readFileSync(`${process.cwd()}/fonts/${folder}/${file}`, 'utf8'), 'utf8');
+      }
     }
   }
 }
