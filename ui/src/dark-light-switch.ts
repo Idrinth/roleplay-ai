@@ -25,12 +25,8 @@
   } else if(prefersLight) {
     setMode('light');
   }
-  const logo = document.getElementById('logo');
-  if (!logo) {
-    return;
-  }
-  logo.onclick = () => {
+  document.getElementById('colormode')?.addEventListener('click', () => {
     prefersLight = !prefersLight;
     setMode(prefersLight ? 'light' : 'dark');
-  }
+  })
 })();

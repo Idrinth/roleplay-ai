@@ -1,3 +1,31 @@
+@font-face {
+  /*! License: /Birthstone-license.txt */
+  font-family: 'Birthstone';
+  font-style: normal;
+  font-weight: 400;
+  src: url(/Birthstone.woff2) format('woff2'), url(/Birthstone.woff) format('woff'), url(/Birthstone.ttf) format('ttf');
+}
+@font-face {
+  /*! License: /Cagliostro-license.txt */
+  font-family: 'Cagliostro';
+  font-style: normal;
+  font-weight: 400;
+  src: url(/Cagliostro.woff2) format('woff2'), url(/Cagliostro.woff) format('woff'), url(/Cagliostro.ttf) format('ttf');
+}
+@font-face {
+  /*! License: /MySoul-license.txt */
+  font-family: 'My Soul';
+  font-style: normal;
+  font-weight: 400;
+  src: url(/MySoul.woff2) format('woff2'), url(/MySoul.woff) format('woff'), url(/MySoul.ttf) format('ttf');
+}
+@font-face {
+  /*! License: /Festive-license.txt */
+  font-family: 'Festive';
+  font-style: normal;
+  font-weight: 400;
+  src: url(/Festive.woff2) format('woff2'), url(/Festive.woff) format('woff'), url(/Festive.ttf) format('ttf');
+}
 * {
   box-sizing: border-box;
 }
@@ -25,6 +53,23 @@
   --header-color: rgb(0, 75, 0);
   --modal-bg: rgba(255, 255, 255, 0.8);
 }
+:root.custom-fonts {
+  font-family: 'Cagliostro', sans-serif;
+  .button.call-to-action,
+  .button.call-to-action:active,
+  .button.call-to-action:visited,
+  button.call-to-action,
+  button.call-to-action:active,
+  button.call-to-action:visited {
+    font-family: "Birthstone", cursive, serif;
+  }
+  h2, h3, h4, h5, h6, h1, h1 > span {
+    font-family: "Festive", cursive, serif;
+  }
+  input, textarea, select {
+    font-family: "My Soul", monospace;
+  }
+}
 body, html {
   width: 100%;
   height: 100%;
@@ -38,7 +83,7 @@ body, html {
 }
 body {
   padding: 0;
-  grid-template-rows: 2em 3em calc(100% - 7em) 2em;
+  grid-template-rows: 3em 3em calc(100% - 8em) 2em;
   display: grid;
   background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0)),
   linear-gradient(to right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
@@ -174,7 +219,6 @@ textarea {
 #logo {
   width: 1.5em;
   height: 1.5em;
-  cursor: pointer;
   margin-top: -0.5em;
   margin-bottom: -0.5em;
 }
@@ -230,7 +274,7 @@ input, textarea, select {
   }
 }
 a[target="_blank"] {
-  padding-right:1em;
+  padding-right:1.15em;
   background-image:url('/external-link.light.svg');
   background-repeat: no-repeat;
   background-size: auto 100%;
@@ -467,11 +511,15 @@ nav, footer {
     }
   }
 }
+#send {
+  font-size: 2em;
+}
 @media screen and ((width < 800px) or (height < 450px)) {
   body {
     display: block;
     overflow-y: auto;
     padding-bottom: 3em;
+    font-size: 18px;
   }
   #statistics {
     display: grid;
