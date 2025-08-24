@@ -1,5 +1,30 @@
+@font-face {
+  font-family: 'Birthstone';
+  font-style: normal;
+  font-weight: 400;
+  src: url(/Birthstone.woff2) format('woff2'), url(/Birthstone.woff) format('woff'), url(/Birthstone.ttf) format('ttf');
+}
+@font-face {
+  font-family: 'Cagliostro';
+  font-style: normal;
+  font-weight: 400;
+  src: url(/Cagliostro.woff2) format('woff2'), url(/Cagliostro.woff) format('woff'), url(/Cagliostro.ttf) format('ttf');
+}
+@font-face {
+  font-family: 'My Soul';
+  font-style: normal;
+  font-weight: 400;
+  src: url(/MySoul.woff2) format('woff2'), url(/MySoul.woff) format('woff'), url(/MySoul.ttf) format('ttf');
+}
+@font-face {
+  font-family: 'Festive';
+  font-style: normal;
+  font-weight: 400;
+  src: url(/Festive.woff2) format('woff2'), url(/Festive.woff) format('woff'), url(/Festive.ttf) format('ttf');
+}
 * {
   box-sizing: border-box;
+  font-family: "Cagliostro", sans-serif;
 }
 :root {
   --main-color: #ddd;
@@ -52,6 +77,9 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0;
   padding-top: 0.5em;
   padding-bottom: 0.5em;
+}
+h2, h3, h4, h5, h6, h1, h1 > span {
+  font-family: "Festive", cursive, serif;
 }
 .content {
   padding: 0.5em 5%;
@@ -195,6 +223,7 @@ textarea {
 .button.call-to-action, .button.call-to-action:active, .button.call-to-action:visited, button.call-to-action, button.call-to-action:active, button.call-to-action:visited {
   background-color: var(--bar-background-color);
   color: var(--main-striking);
+  font-family: "Birthstone", cursive, serif;
   border-color: var(--bar-background-color);
 }
 .button:hover, button:hover, .button:focus, button:focus {
@@ -206,6 +235,7 @@ input, textarea, select {
   color: var(--main-striking);
   background: var(--main-bg);
   width: 100%;
+  font-family: "My Soul", monospace;
 }
 #chat, #footer, .aside {
   box-shadow: 1em 1em 1em var(--light-shadow);
@@ -230,7 +260,7 @@ input, textarea, select {
   }
 }
 a[target="_blank"] {
-  padding-right:1em;
+  padding-right:1.15em;
   background-image:url('/external-link.light.svg');
   background-repeat: no-repeat;
   background-size: auto 100%;
@@ -466,6 +496,9 @@ nav, footer {
       background-image: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.15), rgba(255,255,255,0));
     }
   }
+}
+#send {
+  font-size: 2em;
 }
 @media screen and ((width < 800px) or (height < 450px)) {
   body {

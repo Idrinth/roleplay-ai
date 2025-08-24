@@ -207,3 +207,14 @@ for(const file of readdirSync(process.cwd() + '/dist', 'utf-8')){
     );
   }
 }
+for(const folder of readdirSync(process.cwd() + '/fonts', 'utf-8')) {
+  for (const file of readdirSync(process.cwd() + '/fonts/'+folder, 'utf-8')) {
+    if (file.endsWith('.ttf') || file.endsWith('.woff') || file.endsWith('.woff2')) {
+      writeFileSync(
+        `${process.cwd()}/dist/${file.replace(/-.*\.(.+)$/, '.$1')}`,
+        readFileSync(`${process.cwd()}/fonts/${folder}/${file}`, 'binary'),
+        'binary'
+      );
+    }
+  }
+}

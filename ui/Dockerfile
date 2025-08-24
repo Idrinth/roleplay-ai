@@ -8,6 +8,7 @@ COPY ui/.minify.json ./
 COPY ui/tsconfig.json ./
 COPY ui/package.json ./
 COPY ui/package-lock.json ./
+COPY ui/fonts ./fonts
 COPY ui/tools ./tools
 COPY ui/public ./public
 COPY ui/src ./src
