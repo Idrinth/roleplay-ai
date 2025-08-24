@@ -20,6 +20,7 @@ const TO_MERGE = {
     'get-current-user.js',
     'button.js',
     'dark-light-switch.js',
+    'font-switch.js',
     'modals.js',
     'list-existing-chats-handler.js',
     'swipe.js',
