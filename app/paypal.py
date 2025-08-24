@@ -195,7 +195,6 @@ async def login() -> str:
             access_token = (await response.json())['access_token']
             if not access_token:
                 raise Exception('Invalid access token')
-            print(access_token)
             return access_token
 
 
@@ -208,7 +207,6 @@ async def handle_transactions(params: tuple):
         }, params=params) as response:
             response.raise_for_status()
             json = await response.json()
-            print(json)
             for transaction in json['transactions']:
                 sql_connection.ping()
                 cursor = sql_connection.cursor()
@@ -233,7 +231,7 @@ async def handle_transactions(params: tuple):
                         if item['item_quantity'] > 0:
                             sql_connection.ping()
                             if item['item_code'] == PAYPAL_ITEMCODE_100MESSAGES:
-                                log_info('FOUND 100MESSAGES in transaction')
+                                log_info('FOUND 100MESSAGES in transaction', "handle_transactions")
                                 sql_connection.cursor().execute(
                                     "INSERT INTO purchases (user_id, at_datetime, amount, product, paypal_transaction_id) VALUES (?, ? ,?, ?, ?)",
                                     [
@@ -248,7 +246,7 @@ async def handle_transactions(params: tuple):
                                         "UPDATE chat_users.users SET additional_remaining_messages=additional_remaining_messages+100 WHERE user_id=?",
                                         [user_id])
                             elif item['item_code'] == PAYPAL_ITEMCODE_RECHARGEFREQUENCY:
-                                log_info('FOUND RECHARGEFREQUENCY in transaction')
+                                log_info('FOUND RECHARGEFREQUENCY in transaction', "handle_transactions")
                                 sql_connection.cursor().execute(
                                     "INSERT INTO purchases (user_id, at_datetime, amount, product, paypal_transaction_id) VALUES (?, ? ,?, ?, ?)",
                                     [
@@ -263,7 +261,7 @@ async def handle_transactions(params: tuple):
                                         "INSERT INTO chat_users.subscriptions (user_id, product, from_datetime, to_datetime) VALUES (?, ?, Now(), NOW() + 86400*30)",
                                         [user_id, 'RECHARGEFREQUENCY'])
                             elif item['item_code'] == PAYPAL_ITEMCODE_RECHARGELIMIT:
-                                log_info('FOUND RECHARGELIMIT in transaction')
+                                log_info('FOUND RECHARGELIMIT in transaction', "handle_transactions")
                                 sql_connection.cursor().execute(
                                     "INSERT INTO purchases (user_id, at_datetime, amount, product, paypal_transaction_id) VALUES (?, ? ,?, ?, ?)",
                                     [
@@ -279,4 +277,6 @@ async def handle_transactions(params: tuple):
                                         [user_id, 'RECHARGELIMIT'])
                             else:
                                 log_warning(
-                                    f"Item {item['item_code']} not found for transaction {transaction['transaction_info']['transaction_id']}")
+                                    f"Item {item['item_code']} not found for transaction {transaction['transaction_info']['transaction_id']}",
+                                    "handle_transactions",
+                                )
