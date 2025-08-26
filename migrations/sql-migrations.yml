@@ -1,0 +1,307 @@
+# https://docs.liquibase.com/change-types/home.html
+databaseChangeLog:
+  - changeSet:
+      id: 1-set-table-charset
+      author: system
+      comment: Set charset=utf8mb4 for all tables
+      changes:
+        - sql:
+            sql: ALTER DATABASE chat_users CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+      rollback:
+        - sql:
+            sql: -- Charset conversion rollback not implemented
+
+  - changeSet:
+      id: 2-create-mapping-table
+      author: system
+      comment: Create chat_users.mapping table
+      changes:
+        - createTable:
+            tableName: mapping
+            schemaName: chat_users
+            columns:
+              - column:
+                  name: user_id
+                  type: char(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: chat_id
+                  type: char(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: chat_name
+                  type: varchar(255)
+        - addPrimaryKey:
+            tableName: mapping
+            schemaName: chat_users
+            columnNames: user_id, chat_id
+      rollback:
+        - dropTable:
+            tableName: mapping
+            schemaName: chat_users
+
+  - changeSet:
+      id: 3-create-users-table
+      author: system
+      comment: Create chat_users.users table
+      changes:
+        - createTable:
+            tableName: users
+            schemaName: chat_users
+            columns:
+              - column:
+                  name: aid
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: char(36)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: user_name
+                  type: varchar(255)
+              - column:
+                  name: password
+                  type: varchar(255)
+              - column:
+                  name: active
+                  type: tinyint(1)
+      rollback:
+        - dropTable:
+            tableName: users
+            schemaName: chat_users
+
+  - changeSet:
+      id: 4-alter-users-table-add-columns
+      author: system
+      comment: Add additional columns to users table
+      changes:
+        - addColumn:
+            tableName: users
+            schemaName: chat_users
+            columns:
+              - column:
+                  name: email
+                  type: text
+                  defaultValue: null
+              - column:
+                  name: remaining_messages
+                  type: INT(10) unsigned
+                  defaultValue: 10
+              - column:
+                  name: last_incremented
+                  type: INT(10) unsigned
+                  defaultValueComputed: UNIX_TIMESTAMP()
+              - column:
+                  name: increment_every_seconds
+                  type: INT(10) unsigned
+                  defaultValue: 1800
+              - column:
+                  name: maximum_remaining_messages
+                  type: INT(10) unsigned
+                  defaultValue: 25
+      rollback:
+        - dropColumn:
+            tableName: users
+            schemaName: chat_users
+            columnName: email
+        - dropColumn:
+            tableName: users
+            schemaName: chat_users
+            columnName: remaining_messages
+        - dropColumn:
+            tableName: users
+            schemaName: chat_users
+            columnName: last_incremented
+        - dropColumn:
+            tableName: users
+            schemaName: chat_users
+            columnName: increment_every_seconds
+        - dropColumn:
+            tableName: users
+            schemaName: chat_users
+            columnName: maximum_remaining_messages
+
+  - changeSet:
+      id: 5-create-statistics-table
+      author: system
+      comment: Create chat_users.statistics table
+      changes:
+        - createTable:
+            tableName: statistics
+            schemaName: chat_users
+            columns:
+              - column:
+                  name: label
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: value
+                  type: DECIMAL unsigned
+                  constraints:
+                    nullable: false
+                  defaultValue: 0
+      rollback:
+        - dropTable:
+            tableName: statistics
+            schemaName: chat_users
+
+  - changeSet:
+      id: 6-create-keywords-table
+      author: system
+      comment: Create chat_users.keywords table
+      changes:
+        - createTable:
+            tableName: keywords
+            schemaName: chat_users
+            columns:
+              - column:
+                  name: word
+                  type: varchar(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: count
+                  type: DECIMAL unsigned
+                  constraints:
+                    nullable: false
+                  defaultValue: 0
+      rollback:
+        - dropTable:
+            tableName: keywords
+            schemaName: chat_users
+
+  - changeSet:
+      id: 7-alter-users-add-additional-remaining-messages
+      author: system
+      comment: Add additional_remaining_messages column to users table
+      changes:
+        - addColumn:
+            tableName: users
+            schemaName: chat_users
+            columns:
+              - column:
+                  name: additional_remaining_messages
+                  type: INT(10) unsigned
+                  defaultValue: 0
+      rollback:
+        - dropColumn:
+            tableName: users
+            schemaName: chat_users
+            columnName: additional_remaining_messages
+
+  - changeSet:
+      id: 8-create-subscriptions-table
+      author: system
+      comment: Create chat_users.subscriptions table
+      changes:
+        - createTable:
+            tableName: subscriptions
+            schemaName: chat_users
+            columns:
+              - column:
+                  name: aid
+                  type: BIGINT unsigned
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: char(36)
+              - column:
+                  name: from_datetime
+                  type: TIMESTAMP
+              - column:
+                  name: to_datetime
+                  type: TIMESTAMP
+              - column:
+                  name: product
+                  type: VARCHAR(100)
+        - createIndex:
+            tableName: subscriptions
+            schemaName: chat_users
+            indexName: user_id
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: product
+      rollback:
+        - dropTable:
+            tableName: subscriptions
+            schemaName: chat_users
+
+  - changeSet:
+      id: 9-create-purchases-table
+      author: system
+      comment: Create chat_users.purchases table
+      changes:
+        - createTable:
+            tableName: purchases
+            schemaName: chat_users
+            columns:
+              - column:
+                  name: aid
+                  type: BIGINT unsigned
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: char(36)
+              - column:
+                  name: at_datetime
+                  type: TIMESTAMP
+              - column:
+                  name: amount
+                  type: INT(10) unsigned
+              - column:
+                  name: product
+                  type: VARCHAR(100)
+              - column:
+                  name: paypal_transaction_id
+                  type: VARCHAR(255)
+        - createIndex:
+            tableName: purchases
+            schemaName: chat_users
+            indexName: user_id
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: product
+      rollback:
+        - dropTable:
+            tableName: purchases
+            schemaName: chat_users
+
+  - changeSet:
+      id: 10-modify-remaining-messages-default
+      author: system
+      comment: Change remaining_messages default value to 25
+      changes:
+        - modifyDataType:
+            tableName: users
+            schemaName: chat_users
+            columnName: remaining_messages
+            newDataType: INT(10) unsigned
+            defaultValueNumeric: 25
+      rollback:
+        - modifyDataType:
+            tableName: users
+            schemaName: chat_users
+            columnName: remaining_messages
+            newDataType: INT(10) unsigned
+            defaultValueNumeric: 10
