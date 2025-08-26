@@ -1,15 +1,15 @@
 # https://docs.liquibase.com/change-types/home.html
 databaseChangeLog:
   - changeSet:
-      id: 1-create-chat-users-database
+      id: 1-set-table-charset
       author: system
-      comment: Create the main chat_users database
+      comment: Set charset=utf8mb4 for all tables
       changes:
         - sql:
-            sql: CREATE DATABASE `chat_users`
+            sql: ALTER DATABASE chat_users CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
       rollback:
         - sql:
-            sql: DROP DATABASE `chat_users`
+            sql: -- Charset conversion rollback not implemented
 
   - changeSet:
       id: 2-create-mapping-table
@@ -63,6 +63,7 @@ databaseChangeLog:
                   type: char(36)
                   constraints:
                     unique: true
+                    nullable: false
               - column:
                   name: user_name
                   type: varchar(255)
@@ -295,27 +296,12 @@ databaseChangeLog:
             tableName: users
             schemaName: chat_users
             columnName: remaining_messages
-            newDataType: INT(10) unsigned DEFAULT 25
+            newDataType: INT(10) unsigned
+            defaultValueNumeric: 25
       rollback:
         - modifyDataType:
             tableName: users
             schemaName: chat_users
             columnName: remaining_messages
-            newDataType: INT(10) unsigned DEFAULT 10
-
-  - changeSet:
-      id: 11-set-table-charset
-      author: system
-      comment: Set charset=utf8 for all tables
-      changes:
-        - sql:
-            sql: |
-              ALTER TABLE chat_users.mapping CONVERT TO CHARACTER SET utf8mb4;
-              ALTER TABLE chat_users.users CONVERT TO CHARACTER SET utf8mb4;
-              ALTER TABLE chat_users.statistics CONVERT TO CHARACTER SET utf8mb4;
-              ALTER TABLE chat_users.keywords CONVERT TO CHARACTER SET utf8mb4;
-              ALTER TABLE chat_users.subscriptions CONVERT TO CHARACTER SET utf8mb4;
-              ALTER TABLE chat_users.purchases CONVERT TO CHARACTER SET utf8mb4;
-      rollback:
-        - sql:
-            sql: -- Charset conversion rollback not implemented
+            newDataType: INT(10) unsigned
+            defaultValueNumeric: 10
