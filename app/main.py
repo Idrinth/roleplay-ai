@@ -11,7 +11,7 @@ from fastapi import Cookie, BackgroundTasks, Response, Request, HTTPException
 from fastapi.responses import FileResponse
 import mariadb
 from fastapi_utils.tasks import repeat_every
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
 from .logger import log_exception
 from .llm_wrapper import prewarm_characterbuilder
