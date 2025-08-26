@@ -135,7 +135,7 @@
         doc.appendChild(root.button('[D]', 'Delete document', async (event: MouseEvent) => {
           event.stopPropagation();
           if (await root.confirm("Do you want to delete this document?")) {
-            await root.getFromAPI(`chat/${chat.id}/characters/${md_document.id}/delete`, 'POST');
+            await root.getFromAPI(`chat/${chat.id}/documents/${md_document.id}/delete`, 'POST');
             await updateDocuments();
           }
         }));
