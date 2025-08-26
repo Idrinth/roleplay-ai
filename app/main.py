@@ -55,7 +55,7 @@ async def poll_paypal():
 async def process_subscriptions():
     if not ENABLE_PAYPAL:
         return
-    now = datetime.datetime.now(datetime.timezone.utc).timestamp().__floor__()
+    now = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
     sql_connection.ping()
     sql_connection.cursor().execute("UPDATE chat_users.users SET maximum_remaining_messages=(SELECT COUNT(aid)+25 FROM chat_users.subscriptions WHERE subscriptions.user_id=users.user_id AND ? BETWEEN subscriptions.from_datetime AND subscriptions.to_datetime AND subscriptions.product IN('RECHARGELIMIT', 'REWARD_RECHARGELIMIT'))", [now])
     sql_connection.cursor().execute("UPDATE chat_users.users SET increment_every_seconds=(SELECT 1800 - COUNT(aid)*180 FROM chat_users.subscriptions WHERE subscriptions.user_id=users.user_id AND ? BETWEEN subscriptions.from_datetime AND subscriptions.to_datetime AND subscriptions.product IN('RECHARGEFREQUENCY', 'REWARD_RECHARGEFREQUENCY'))", [now])
