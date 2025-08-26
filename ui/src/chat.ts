@@ -244,7 +244,7 @@
         listElement.classList.add(message.role);
         listElement.scrollIntoView({ behavior: 'smooth' });
       }
-      if (((json as {messages?: []})?.messages ?? [])?.length === 0 && !chatEntry.value && await root.confirm('Do you want help with your beginning scene?')) {
+      if (((json as {messages?: []})?.messages ?? [])?.length === 0 && !chatEntry.value && await root.confirm('Do you want help with your beginning scene? This will use up one of your messages.')) {
         const keywords = await root.prompt("What is the world like? Please provide keywords separated by comma.");
         world.value = keywords;
         world.dispatchEvent(new Event('change'));

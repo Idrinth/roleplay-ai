@@ -54,3 +54,9 @@ sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.subscript
 sql_connection.cursor().execute("CREATE TABLE IF NOT EXISTS chat_users.purchases"
                          "  (aid BIGINT UNSIGNED AUTO_INCREMENT NOT NULL, user_id char(36), at_datetime TIMESTAMP, amount INT(10) unsigned, product VARCHAR(100), paypal_transaction_id VARCHAR(255), PRIMARY KEY(aid), INDEX user_id(user_id, product))"
                          " charset=utf8;")
+try:
+    sql_connection.cursor().execute("ALTER TABLE chat_users.users"
+                                    " CHANGE COLUMN remaining_messages remaining_messages INT(10) unsigned DEFAULT 25"
+                                    ";")
+except mariadb.Error as e:
+    pass
