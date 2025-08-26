@@ -4,18 +4,7 @@ include:
 volumes:
   grafana_storage: {}
   prometheus_storage: {}
-  promtail_log: {}
 services:
-  promtail:
-    image: grafana/promtail:latest
-    volumes:
-      - promtail_log:/var/log
-    restart: always
-    healthcheck:
-      test: [ "CMD", "echo", "0" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
   grafana:
     build:
       dockerfile: grafana/Dockerfile

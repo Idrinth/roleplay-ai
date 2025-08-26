@@ -5,7 +5,18 @@ volumes:
   mongodata_db: {}
   mongodata_config: {}
   redis: {}
+  promtail_log: {}
 services:
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - promtail_log:/var/log
+    restart: always
+    healthcheck:
+      test: [ "CMD", "echo", "0" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   loki:
     build:
       dockerfile: loki/Dockerfile
@@ -87,6 +98,9 @@ services:
     depends_on:
       loki:
         condition: service_healthy
+    post_start:
+      - command: mariadb -p example -e "CREATE DATABASE IF NOT EXISTS chat_users;"
+        user: root
   mongo:
     image: mongo
     deploy:
