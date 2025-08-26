@@ -159,3 +159,12 @@ services:
         condition: service_healthy
       app:
         condition: service_healthy
+  migrations:
+    build:
+      dockerfile: migrations/Dockerfile
+      no_cache: true
+    deploy:
+      replicas: 1
+    depends_on:
+      mariadb:
+        condition: service_healthy
