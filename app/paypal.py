@@ -1,7 +1,7 @@
 import re
 from pydantic import BaseModel
 from enum import Enum
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 import os
 import hashlib
@@ -257,9 +257,11 @@ async def handle_transactions(params: tuple):
                                         transaction['transaction_info']['transaction_id']
                                     ])
                                 for i in range(item['item_quantity']):
+                                    now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+                                    end = datetime.fromtimestamp(datetime.now().timestamp() + 86400*30).strftime('%Y-%m-%d %H:%M:%S')
                                     sql_connection.cursor().execute(
-                                        "INSERT INTO chat_users.subscriptions (user_id, product, from_datetime, to_datetime) VALUES (?, ?, Now(), NOW() + 86400*30)",
-                                        [user_id, 'RECHARGEFREQUENCY'])
+                                        "INSERT INTO chat_users.subscriptions (user_id, product, from_datetime, to_datetime) VALUES (?, ?, ?, ?)",
+                                        [user_id, 'RECHARGEFREQUENCY', now, end])
                             elif item['item_code'] == PAYPAL_ITEMCODE_RECHARGELIMIT:
                                 log_info('FOUND RECHARGELIMIT in transaction', "handle_transactions")
                                 sql_connection.cursor().execute(
@@ -272,9 +274,11 @@ async def handle_transactions(params: tuple):
                                         transaction['transaction_info']['transaction_id']
                                     ])
                                 for i in range(item['item_quantity']):
+                                    now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+                                    end = datetime.fromtimestamp(datetime.now().timestamp() + 86400*30).strftime('%Y-%m-%d %H:%M:%S')
                                     sql_connection.cursor().execute(
-                                        "INSERT INTO chat_users.subscriptions (user_id, product, from_datetime, to_datetime) VALUES (?, ?, Now(), NOW() + 86400*30)",
-                                        [user_id, 'RECHARGELIMIT'])
+                                        "INSERT INTO chat_users.subscriptions (user_id, product, from_datetime, to_datetime) VALUES (?, ?, ?, ?)",
+                                        [user_id, 'RECHARGELIMIT', now, end])
                             else:
                                 log_warning(
                                     f"Item {item['item_code']} not found for transaction {transaction['transaction_info']['transaction_id']}",
