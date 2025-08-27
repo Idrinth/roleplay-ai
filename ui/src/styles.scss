@@ -242,25 +242,31 @@ textarea {
   border-color: var(--bar-background-color);
 }
 .button.delete, button.delete {
-  background-image: url("/delete.light.svg"),
+  background-image: url("/delete.dark.svg"),
     linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
     linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
   color: transparent;
 }
 .button.edit, button.edit {
-  background-image: url("/edit.light.svg"),
+  background-image: url("/edit.dark.svg"),
     linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
     linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
   color: transparent;
 }
 .inverted-colors {
   .button.edit, button.edit {
-    background-image: url("/edit.dark.svg"),
+    background-image: url("/edit.light.svg"),
       linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
       linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
   }
   .button.delete, button.delete {
-    background-image: url("/delete.dark.svg"),
+    background-image: url("/delete.light.svg"),
       linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
       linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
   }
