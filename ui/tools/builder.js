@@ -1,9 +1,10 @@
-import {readdirSync, writeFileSync, readFileSync, mkdirSync, existsSync, rmSync} from 'node:fs';
+import {readdirSync, writeFileSync, readFileSync, mkdirSync, existsSync, rmSync, createReadStream, createWriteStream} from 'node:fs';
 import {minify} from 'minify';
 import { hash } from 'node:crypto';
 import {compile} from 'sass';
 import sharp from 'sharp';
 import * as path from "node:path";
+import { createGzip } from 'node:zlib';
 
 if (existsSync(process.cwd() + '/dist')) {
   rmSync(process.cwd() + '/dist', {recursive: true});
@@ -221,6 +222,28 @@ for (const folder of readdirSync(process.cwd() + '/fonts', 'utf-8')) {
       if (!existsSync(dest)) {
         writeFileSync(dest, readFileSync(`${process.cwd()}/fonts/${folder}/${file}`, 'utf8'), 'utf8');
       }
+    }
+  }
+}
+for(const file of readdirSync(process.cwd() + '/dist', 'utf-8')){
+  if (
+    file.endsWith('.html') || file.endsWith('.txt') || file.endsWith('.js') || file.endsWith('.css') ||
+    file.endsWith('.json') || file.endsWith('.yml') || file.endsWith('.yaml') || file.endsWith('.xml')
+  ) {
+    const readStream = createReadStream(process.cwd() + '/dist/' + file);
+    const writeStream = createWriteStream(process.cwd() + '/dist/' + file + '.gz');
+    const gzip = createGzip({ level: 9 });
+
+    try {
+      await new Promise((resolve, reject) => {
+        readStream
+          .pipe(gzip)
+          .pipe(writeStream)
+          .on('finish', resolve)
+          .on('error', reject);
+      });
+    } catch(err) {
+      console.error(err);
     }
   }
 }
