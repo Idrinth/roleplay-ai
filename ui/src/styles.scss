@@ -241,6 +241,22 @@ textarea {
   color: var(--main-striking);
   border-color: var(--bar-background-color);
 }
+.button.delete, .button.delete {
+  background-image: url("/delete.light.svg");
+  color: transparent;
+}
+.button.edit, .button.edit {
+  background-image: url("/edit.light.svg");
+  color: transparent;
+}
+.inverted-colors {
+  .button.edit, .button.edit {
+    background-image: url("/edit.dark.svg");
+  }
+  .button.delete, .button.delete {
+    background-image: url("/delete.dark.svg");
+  }
+}
 .button:hover, button:hover, .button:focus, button:focus {
   box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
 }
@@ -489,7 +505,7 @@ nav, footer {
     background-color: #FF4500;
   }
   .copy-share button {
-      background-color: #2196F3;
+    background-color: #2196F3;
   }
 }
 .hero-list {
