@@ -11,6 +11,7 @@
     return new Promise(resolve => {
       const prmt = createModal(text, true);
       const input = document.createElement('input');
+      input.focus();
       input.onkeyup = (event: KeyboardEvent) => {
         if (event.key === 'Enter') {
           if (!input.value) {
