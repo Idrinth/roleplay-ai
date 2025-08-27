@@ -21,6 +21,8 @@
         <meta name="twitter:creator" content="@idrinth" />
         <link rel="dns-prefetch" href="https://peerlist.io"/>
         <link rel="dns-prefetch" href="https://api.producthunt.com"/>
+        <link rel="preconnect" href="https://peerlist.io"/>
+        <link rel="preconnect" href="https://api.producthunt.com"/>
     </head>
     <body class="index">
         <nav class="skiplinks">
@@ -61,7 +63,7 @@
                         <picture class="highlight" data-video="https://www.youtube-nocookie.com/embed/NVCZu-0UfHc?si=J0ycFBNnv2JSor2l">
                             <source srcset="/youtube-play.avif" type="image/avif">
                             <source srcset="/youtube-play.webp" type="image/webp">
-                            <img loading="lazy" src="/youtube-play.jpg" alt="Video of a roleplay session with Wolfgang AI" title="Video of a roleplay session with Wolfgang AI" />
+                            <img loading="eager" fetchpriority="high" src="/youtube-play.jpg" alt="Video of a roleplay session with Wolfgang AI" title="Video of a roleplay session with Wolfgang AI" />
                         </picture>
                     </div>
                 </section>
