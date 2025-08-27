@@ -60,6 +60,34 @@ services:
     depends_on:
       loki:
         condition: service_healthy
+  characterbuilder:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    restart: always
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: 15
+    healthcheck:
+      test: [ "CMD", "echo", "0" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: "-hf idrinth/characterbuilderai-gguf --port 8000 -n 16384"
+    env_file:
+      - .env
+    volumes:
+      - llama:/models
+    logging:
+      driver: loki
+      options:
+        loki-url: http://127.0.0.1:3100/loki/api/v1/push
+        mode: non-blocking
+        max-buffer-size: 4m
+        loki-retries: "3"
+    depends_on:
+      loki:
+        condition: service_healthy
   app:
     deploy:
       replicas: 1
