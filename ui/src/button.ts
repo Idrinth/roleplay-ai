@@ -1,6 +1,11 @@
 ((root) => {
   root.button = (text: string, title: string, callback: (ev: MouseEvent) => void, useActualButton: boolean = false): HTMLButtonElement|HTMLSpanElement => {
     const button = document.createElement(useActualButton ? 'button' : 'span');
+    if (text === '[E]') {
+      button.classList.add('edit');
+    } else if (text === '[D]') {
+      button.classList.add('delete');
+    }
     button.appendChild(document.createTextNode(text));
     button.setAttribute('title', title);
     if (! useActualButton) {
