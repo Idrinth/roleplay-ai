@@ -241,19 +241,19 @@ textarea {
   color: var(--main-striking);
   border-color: var(--bar-background-color);
 }
-.button.delete, .button.delete {
+.button.delete, button.delete {
   background-image: url("/delete.light.svg");
   color: transparent;
 }
-.button.edit, .button.edit {
+.button.edit, button.edit {
   background-image: url("/edit.light.svg");
   color: transparent;
 }
 .inverted-colors {
-  .button.edit, .button.edit {
+  .button.edit, button.edit {
     background-image: url("/edit.dark.svg");
   }
-  .button.delete, .button.delete {
+  .button.delete, button.delete {
     background-image: url("/delete.dark.svg");
   }
 }
