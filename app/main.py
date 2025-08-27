@@ -377,6 +377,8 @@ async def chat_copy(chat_id: str, copy : ChatCopy, user_jwt: Annotated[str | Non
 
 @app.get("/whoami")
 async def whoami(user_jwt: Annotated[str | None, Cookie()] = None):
+    if not user_jwt:
+        return {"error": "Login Required"}
     user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         return {"error": "Login Required"}
