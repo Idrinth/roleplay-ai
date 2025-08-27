@@ -11,6 +11,7 @@
     return new Promise(resolve => {
       const prmt = createModal(text, true);
       const input = document.createElement('input');
+      
       input.onkeyup = (event: KeyboardEvent) => {
         if (event.key === 'Enter') {
           if (!input.value) {
@@ -22,6 +23,7 @@
       }
       prmt.appendChild(input);
       input.value = defaultText;
+     
       prmt.appendChild(root.button('Send', 'Send changes', () => {
         if (!input.value) {
           return;
@@ -30,6 +32,7 @@
         resolve(input.value);
       }, true));
       document.body.appendChild(prmt);
+       input.focus();
     });
   }
   root.confirm = async (text: string): Promise<boolean> => {
