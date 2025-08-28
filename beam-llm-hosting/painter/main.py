@@ -6,12 +6,24 @@ from shared.enable_snapshotting import ENABLE_SNAPSHOTTING
 
 NAME = 'painter'
 
-with open('./rules.md', 'r', encoding="utf-8") as md_file:
-    rules = md_file.read()
+with open('./blacklist.md', 'r', encoding="utf-8") as md_file:
+    blacklist = md_file.read()
+
+with open('./whitelist.md', 'r', encoding="utf-8") as md_file:
+    whitelist = md_file.read()
 
 def download_models():
-    from shared.download_models import download_model
-    return download_model(f"Idrinth/{NAME}ai")
+    from diffusers import DiffusionPipeline
+    from huggingface_hub import login
+    import torch
+    import os
+
+    login(
+        token=os.getenv("HUGGINGFACE_TOKEN", "") or "",
+        new_session=False,
+    )
+
+    return DiffusionPipeline.from_pretrained("Qwen/Qwen-Image", torch_dtype=torch.bfloat16).to("cuda")
 
 @endpoint(
     secrets=["HUGGINGFACE_TOKEN"],
@@ -38,16 +50,20 @@ def download_models():
     ),
 )
 def answer(context, **params):
-    from shared.answer_from_model import answer_from_model
-    model, tokenizer = context.on_start_value
-    messages = [
-        {
-           "role": "system",
-           "content": rules,
-        },
-    ]
-    for message in params["messages"]:
-        messages.append(message)
+    import torch
+    image_pipe = context.on_start_value
+    image = image_pipe(
+        prompt=params.get("description") + " " + params.get("world") + ", " + whitelist,
+        negative_prompt=blacklist,
+        width=1664,
+        height=928,
+        num_inference_steps=50,
+        true_cfg_scale=4.0,
+        generator=torch.Generator(device="cuda").manual_seed(42)
+    ).images[0]
+
+    image.save("example.jpg")
+
     return {
-        "answer": answer_from_model(model, tokenizer, messages, 1100)
+        "image": ""
     }
