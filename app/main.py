@@ -333,7 +333,7 @@ async def chat_character_add(chat_id: str, character: Character, user_jwt: Annot
                 "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
                 ['Character Sheets']
             )
-        except mariadb.Error as error:
+        except mariadb.Error:
             pass
     return character_sheet
 
