@@ -51,6 +51,8 @@ def download_models():
 )
 def answer(context, **params):
     import torch
+    import uuid
+    import base64
     image_pipe = context.on_start_value
     image = image_pipe(
         prompt=params.get("description") + " " + params.get("world") + ", " + whitelist,
@@ -62,8 +64,9 @@ def answer(context, **params):
         generator=torch.Generator(device="cuda").manual_seed(42)
     ).images[0]
 
-    image.save("example.jpg")
-
-    return {
-        "image": ""
-    }
+    name = str(uuid.uuid4()) + ".jpg"
+    image.save(name)
+    with open(name, "rb") as image_file:
+        return {
+            "image": base64.b64encode(image_file.read()),
+        }
