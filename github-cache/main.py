@@ -15,11 +15,20 @@ GITHUB_API_KEY = os.environ.get("GITHUB_API_KEY")
 BASE_PATH = "/tmp/contributors"
 app = FastAPI(root_path="/github/v1", title="Gamemaster AI Github-Proxy")
 
+def save_image(image: Image):
+    for ext, fmt, kwargs in [
+        (".png", "PNG", {"method": 9}),
+        (".webp", "WebP", {"quality": 85, "method": 6}),
+        (".avif", "AVIF", {"quality": 85}),
+    ]:
+        tmp = f"{BASE_PATH}{ext}.tmp"
+        out = f"{BASE_PATH}{ext}"
+        image.save(tmp, fmt, **kwargs)
+        os.replace(tmp, out)
+
 if not exists(f"{BASE_PATH}.png"):
     image = Image.new("RGBA", (1, 1))
-    image.save(f"{BASE_PATH}.png", 'PNG', method=9)
-    image.save(f"{BASE_PATH}.webp", 'WebP', quality=85, method=6)
-    image.save(f"{BASE_PATH}.avif", 'AVIF', quality=85)
+    save_image(image)
 
 async def fetch_contributors() -> list:
     headers = {}
@@ -27,7 +36,7 @@ async def fetch_contributors() -> list:
         headers["Authorization"] = f"token {GITHUB_API_KEY}"
 
     async with aiohttp.ClientSession() as session:
-        async with session.get("https://api.github.com/repos/bjoern-buettner/roleplay-ai/contributors", headers=headers) as response:
+        async with session.get("https://api.github.com/repos/bjoern-buettner/roleplay-ai/contributors", headers=headers, timeout=aiohttp.ClientTimeout(total=30, connect=5)) as response:
             response.raise_for_status()
             return await response.json()
 
@@ -47,7 +56,7 @@ def write_login(image: Image.Image, login: str, size: int):
 async def download_avatar(session: aiohttp.ClientSession, avatar_url: str|None, login: str, avatar_size: int) -> Image.Image:
     if avatar_url:
         try:
-            async with session.get(avatar_url) as response:
+            async with session.get(avatar_url, timeout=aiohttp.ClientTimeout(total=60, connect=5)) as response:
                 response.raise_for_status()
                 image_data = await response.read()
                 avatar = Image.open(BytesIO(image_data)).convert('RGBA')
@@ -77,6 +86,9 @@ async def process_contributors():
     try:
         contributors = await fetch_contributors()
 
+        if len(contributors) == 0:
+            return
+
         avatar_size = 120
         padding = 10
         avatars_per_row = min(6, len(contributors))
@@ -99,9 +111,7 @@ async def process_contributors():
 
                 image.paste(avatar, (x, y), avatar)
 
-        image.save(f"{BASE_PATH}.png", 'PNG', method=9)
-        image.save(f"{BASE_PATH}.webp", 'WebP', quality=85, method=6)
-        image.save(f"{BASE_PATH}.avif", 'AVIF', quality=85)
+            save_image(image)
     except Exception as e:
         print(e)
         pass
