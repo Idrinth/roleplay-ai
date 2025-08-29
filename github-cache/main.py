@@ -1,5 +1,7 @@
 import math
+import traceback
 from io import BytesIO
+from os.path import exists
 
 from fastapi.responses import FileResponse
 from fastapi_utils.tasks import repeat_every
@@ -10,8 +12,14 @@ import os
 import asyncio
 
 GITHUB_API_KEY = os.environ.get("GITHUB_API_KEY")
+BASE_PATH = "/tmp/contributors"
 app = FastAPI(root_path="/github/v1", title="Gamemaster AI Github-Proxy")
 
+if not exists(f"{BASE_PATH}.png"):
+    image = Image.new("RGBA", (1, 1))
+    image.save(f"{BASE_PATH}.png", 'PNG', method=9)
+    image.save(f"{BASE_PATH}.webp", 'WebP', quality=85, method=6)
+    image.save(f"{BASE_PATH}.avif", 'AVIF', quality=85)
 
 async def fetch_contributors() -> list:
     headers = {}
@@ -66,34 +74,37 @@ async def download_avatar(session: aiohttp.ClientSession, avatar_url: str|None, 
 @app.on_event("startup")
 @repeat_every(seconds=3600)
 async def process_contributors():
-    contributors = await fetch_contributors()
+    try:
+        contributors = await fetch_contributors()
 
-    avatar_size = 60
-    padding = 10
-    avatars_per_row = min(10, len(contributors))
-    rows = (len(contributors) + avatars_per_row - 1) // avatars_per_row
+        avatar_size = 120
+        padding = 10
+        avatars_per_row = min(6, len(contributors))
+        rows = (len(contributors) + avatars_per_row - 1) // avatars_per_row
 
-    width = avatars_per_row * (avatar_size + padding) - padding + 20
-    height = rows * (avatar_size + 20 + padding) - padding + 20
+        width = avatars_per_row * (avatar_size + padding) - padding + 20
+        height = rows * (avatar_size + 20 + padding) - padding + 20
 
-    image = Image.new('RGBA', (width, height), (255, 255, 255, 0))
+        image = Image.new('RGBA', (width, height), (255, 255, 255, 0))
 
-    async with aiohttp.ClientSession() as session:
-        tasks = [download_avatar(session, contributor['avatar_url'], contributor['login'], avatar_size) for contributor in contributors]
-        avatars = await asyncio.gather(*tasks)
+        async with aiohttp.ClientSession() as session:
+            tasks = [download_avatar(session, contributor['avatar_url'], contributor['login'], avatar_size) for contributor in contributors]
+            avatars = await asyncio.gather(*tasks)
 
-        for i, avatar in enumerate(avatars):
-            row = i // avatars_per_row
-            col = i % avatars_per_row
-            x = 10 + col * (avatar_size + padding)
-            y = 10 + row * (avatar_size + 20 + padding)
+            for i, avatar in enumerate(avatars):
+                row = i // avatars_per_row
+                col = i % avatars_per_row
+                x = 10 + col * (avatar_size + padding)
+                y = 10 + row * (avatar_size + 20 + padding)
 
-            image.paste(avatar, (x, y), avatar)
+                image.paste(avatar, (x, y), avatar)
 
-    base_path = "/tmp/contributors"
-    image.save(f"{base_path}.png", 'PNG', method=9)
-    image.save(f"{base_path}.webp", 'WebP', quality=85, method=6)
-    image.save(f"{base_path}.avif", 'AVIF', quality=85)
+        image.save(f"{BASE_PATH}.png", 'PNG', method=9)
+        image.save(f"{BASE_PATH}.webp", 'WebP', quality=85, method=6)
+        image.save(f"{BASE_PATH}.avif", 'AVIF', quality=85)
+    except Exception as e:
+        print(e)
+        pass
 
 @app.get('/')
 async def root():
@@ -101,12 +112,12 @@ async def root():
 
 @app.get('/contributors.png')
 async def contributors_pmg():
-    return FileResponse('/tmp/contributors.png', media_type='image/png')
+    return FileResponse(f"{BASE_PATH}.png", media_type='image/png')
 
 @app.get('/contributors.webp')
 async def contributors_webp():
-    return FileResponse('/tmp/contributors.webp', media_type='image/webp')
+    return FileResponse(f"{BASE_PATH}.webp", media_type='image/webp')
 
 @app.get('/contributors.avif')
 async def contributors_avif():
-    return FileResponse('/tmp/contributors.avif', media_type='image/avif')
+    return FileResponse(f"{BASE_PATH}.avif", media_type='image/avif')
