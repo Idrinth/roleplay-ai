@@ -6,6 +6,7 @@ volumes:
   mongodata_config: {}
   redis: {}
   promtail_log: {}
+  github_cache: {}
 services:
   promtail:
     image: grafana/promtail:latest
@@ -148,6 +149,8 @@ services:
         condition: service_healthy
       app:
         condition: service_healthy
+      github-cache:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "http://0.0.0.0"]
       interval: 10s
@@ -173,6 +176,8 @@ services:
         condition: service_healthy
       app:
         condition: service_healthy
+      github-cache:
+        condition: service_healthy
   migrations:
     build:
       dockerfile: migrations/Dockerfile
@@ -181,4 +186,28 @@ services:
       replicas: 1
     depends_on:
       mariadb:
+        condition: service_healthy
+  github-cache:
+    deploy:
+      replicas: 1
+    build:
+      dockerfile: github-cache/Dockerfile
+      no_cache: true
+    env_file:
+      - .env
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "http://0.0.0.0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: loki
+      options:
+        loki-url: http://127.0.0.1:3100/loki/api/v1/push
+        mode: non-blocking
+        max-buffer-size: 4m
+        loki-retries: "3"
+    depends_on:
+      loki:
         condition: service_healthy
