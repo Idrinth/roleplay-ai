@@ -138,38 +138,13 @@ def statistics():
         sql_connection.ping()
         cursor = sql_connection.cursor()
         cursor.execute("SELECT `label`, `value` FROM `chat_users`.`statistics`")
-        return {label: value for (label, value) in cursor}
+        data = {label: value for (label, value) in cursor}
+        cursor.execute("SELECT `word`, `count` FROM `chat_users`.`keywords`")
+        data['keywords'] = {word: count for (word, count) in cursor}
+        return data
     except mariadb.Error as e:
         log_exception(e, "statistics")
     return {}
-
-@app.get('/statistics.jpg')
-def statistics_jpg():
-    try:
-        texts = []
-        sql_connection.ping()
-        cursor = sql_connection.cursor()
-        cursor.execute("SELECT `label`, `value` FROM `chat_users`.`statistics` WHERE `value` > 0 ORDER BY `value` DESC")
-        for (label, value) in cursor:
-            texts.append(f"{label}: {value}")
-        height = 10 * len(texts) + 20
-        logo = Image.open("./logo.png", "r")
-        logo_width = math.ceil(height/logo.height * logo.width)
-        image = Image.new("RGB", (logo_width + 100, height), "black")
-        logo = logo.resize((logo_width, height))
-        image.paste(logo, (0, 0), logo)
-        draw = ImageDraw.Draw(image)
-        pos = 1
-        for text in texts:
-            draw.text((logo_width + 10, 10 * pos), text, fill="white")
-            pos += 1
-        image.save("./statistics.jpg")
-        return FileResponse("./statistics.jpg")
-    except mariadb.Error as e:
-        log_exception(e, "statistics")
-    except Exception as e:
-        log_exception(e, "statistics")
-    return FileResponse("/logo.png")
 
 @app.get("/ratelimits")
 async def remaining_messages(user_jwt: Annotated[str | None, Cookie()] = None):
