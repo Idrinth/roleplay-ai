@@ -1,6 +1,5 @@
 import datetime
 import json
-import math
 
 from bson.objectid import ObjectId
 from typing import Annotated
@@ -8,18 +7,15 @@ import uuid
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from fastapi import Cookie, BackgroundTasks, Response, Request, HTTPException
-from fastapi.responses import FileResponse
 import mariadb
 from fastapi_utils.tasks import repeat_every
-from PIL import Image, ImageDraw
 
 from .logger import log_exception
 from .llm_wrapper import prewarm_characterbuilder
 from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint, User, ChatCopy
 from .functions import is_uuid_like, mariadb_name, mongodb_name, to_mongo_compatible, user_id_from_jwt, \
                         set_login_cookie
-from .paypal import handle_transactions,PayPalWebhookEvent, ENABLE_PAYPAL, PAYPAL_WEBHOOK_ENDPOINT, \
-                    verify_paypal_signature
+from .paypal import PayPalWebhookEvent, ENABLE_PAYPAL, PAYPAL_WEBHOOK_ENDPOINT, verify_paypal_signature
 from .databases import sql_connection, mongo, qdrant, redis
 from .app import app
 from .chat_auth_wrapper import wrap
@@ -36,20 +32,6 @@ async def refill_tokens():
     sql_connection.cursor().execute("UPDATE chat_users.users SET last_incremented=? WHERE remaining_messages >= maximum_remaining_messages", [now])
     sql_connection.cursor().execute("UPDATE chat_users.users SET remaining_messages=maximum_remaining_messages WHERE remaining_messages > maximum_remaining_messages")
     sql_connection.cursor().execute("UPDATE chat_users.users SET last_incremented=last_incremented+increment_every_seconds, remaining_messages=remaining_messages+1 WHERE remaining_messages < maximum_remaining_messages AND last_incremented + increment_every_seconds < ?", [now])
-
-@app.on_event("startup")
-@repeat_every(seconds=900)
-async def poll_paypal():
-    return
-    if not ENABLE_PAYPAL:
-        return
-    now = datetime.datetime.now(datetime.timezone.utc).timestamp().__floor__()
-    await handle_transactions((
-        ('start_date', datetime.datetime.fromtimestamp(now - 12600).strftime('%Y-%m-%dT%H:%M:%SZ')),
-        ('end_date', datetime.datetime.fromtimestamp(now - 300).strftime('%Y-%m-%dT%H:%M:%SZ')),
-        ('transaction_status', 'S'),#Success
-        ('fields', 'all'),
-    ))
 
 @app.on_event("startup")
 @repeat_every(seconds=60)
