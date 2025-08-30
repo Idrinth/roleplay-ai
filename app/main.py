@@ -80,7 +80,7 @@ if PAYPAL_WEBHOOK_ENDPOINT and ENABLE_PAYPAL:
         if not await verify_paypal_signature(transmission_id, transmission_time, await request.body(), cert_url, transmission_sig, auth_algo):
             raise HTTPException(status_code=400, detail="PayPal event validation failed")
         now = event.resource.create_time.timestamp().__floor__()
-
+        print(event)
         return {"success": True}
 
 @app.post('/login')
