@@ -40,6 +40,7 @@ async def refill_tokens():
 @app.on_event("startup")
 @repeat_every(seconds=900)
 async def poll_paypal():
+    return
     if not ENABLE_PAYPAL:
         return
     now = datetime.datetime.now(datetime.timezone.utc).timestamp().__floor__()
@@ -79,13 +80,7 @@ if PAYPAL_WEBHOOK_ENDPOINT and ENABLE_PAYPAL:
         if not await verify_paypal_signature(transmission_id, transmission_time, await request.body(), cert_url, transmission_sig, auth_algo):
             raise HTTPException(status_code=400, detail="PayPal event validation failed")
         now = event.resource.create_time.timestamp().__floor__()
-        await handle_transactions((
-            ('transaction_id', event.resource.supplementary_data.related_ids.order_id),#special case mentioned in the docs
-            ('start_date', datetime.datetime.fromtimestamp(now - 1800).strftime('%Y-%m-%dT%H:%M:%SZ')),
-            ('end_date', datetime.datetime.fromtimestamp(now + 1800).strftime('%Y-%m-%dT%H:%M:%SZ')),
-            ('transaction_status', 'S'),#Success
-            ('fields', 'all'),
-        ))
+        print(event)
         return {"success": True}
 
 @app.post('/login')
