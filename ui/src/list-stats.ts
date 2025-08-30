@@ -6,7 +6,7 @@
   const statistics = document.getElementById('statistics');
   if (statistics) {
     for (const statistic of Object.keys(data)) {
-      if (root.isObjectWithProperty(data, statistic) && data[statistic] as number > 0) {
+      if (root.isObjectWithProperty(data, statistic) && typeof data[statistic] === 'number' && data[statistic] as number > 0) {
         const statisticElement = document.createElement('li');
         const label = document.createElement('span');
         label.innerText = statistic;
