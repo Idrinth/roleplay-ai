@@ -548,6 +548,9 @@ nav, footer {
   color: transparent;
   width: 2em;
   height: 2em;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100%;
 }
 #fontmode {
   background-image: url("/font.dark.svg"),
