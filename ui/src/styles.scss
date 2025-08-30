@@ -544,6 +544,33 @@ nav, footer {
 #send {
   font-size: 2em;
 }
+#fontmode, #colormode {
+  color: transparent;
+  width: 2em;
+  height: 2em;
+}
+#fontmode {
+  background-image: url("/font.dark.svg"),
+      linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
+      linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
+}
+#colormode {
+  background-image: url("/sun.dark.svg"),
+      linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
+      linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
+}
+.inverted-colors {
+  #fontmode {
+    background-image: url("/font.light.svg"),
+        linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
+        linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
+  }
+  #colormode {
+    background-image: url("/moon.light.svg"),
+        linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
+        linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
+  }
+}
 @media screen and ((width < 800px) or (height < 450px)) {
   body {
     display: block;
