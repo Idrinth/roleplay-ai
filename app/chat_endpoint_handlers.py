@@ -44,6 +44,7 @@ def update_history_dbs(chat_id:str, user_id, action: str, result: str, previous_
         collection_name=f"{user_id}-{chat_id}",
         documents=[previous_response + "\n\n" + action + "\n\n" + result],
     )
+    sql_connection.ping()
     sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.messages (`creator`, `content`) VALUES ('user', ?);", [action])
     sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.messages (`creator`, `content`) VALUES ('agent', ?);", [result])
 
