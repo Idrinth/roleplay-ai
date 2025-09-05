@@ -62,7 +62,10 @@
       }
       if (!found) {
         const keywordElement = document.createElement('li');
-        keywordElement.appendChild(root.button(keyword, 'Click to remove', () => {
+        keywordElement.appendChild(root.button(keyword, 'Click to remove', async() => {
+          if (!await root.confirm(`Do you want to delete '${keyword}'?`)) {
+            return;
+          }
           if (worldKeywords.includes(keyword)) {
             worldKeywords.splice(worldKeywords.indexOf(keyword), 1);
           }
@@ -72,6 +75,7 @@
             keywords: worldKeywords,
           });
         }));
+        keywordElement.firstElementChild?.classList.add('delete');
         keywordList.appendChild(keywordElement);
       }
     }
