@@ -5,8 +5,9 @@
   }
   const statistics = document.getElementById('statistics');
   if (statistics) {
+    const isAllowedNumber = (a: unknown) => Number.isInteger(a) && !Number.isNaN(a) && a as number > 0;
     for (const statistic of Object.keys(data)) {
-      if (root.isObjectWithProperty(data, statistic) && data[statistic] as number > 0) {
+      if (root.isObjectWithProperty(data, statistic) && isAllowedNumber(data[statistic])) {
         const statisticElement = document.createElement('li');
         const label = document.createElement('span');
         label.innerText = statistic;

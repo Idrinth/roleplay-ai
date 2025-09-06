@@ -1,6 +1,5 @@
 import datetime
 import json
-import math
 
 from bson.objectid import ObjectId
 from typing import Annotated
@@ -8,18 +7,15 @@ import uuid
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from fastapi import Cookie, BackgroundTasks, Response, Request, HTTPException
-from fastapi.responses import FileResponse
 import mariadb
 from fastapi_utils.tasks import repeat_every
-from PIL import Image, ImageDraw
 
 from .logger import log_exception
 from .llm_wrapper import prewarm_characterbuilder
 from .models import World, Action, Chat, Character, Document, Login, Register, ChatStartingPoint, User, ChatCopy
 from .functions import is_uuid_like, mariadb_name, mongodb_name, to_mongo_compatible, user_id_from_jwt, \
                         set_login_cookie
-from .paypal import handle_transactions,PayPalWebhookEvent, ENABLE_PAYPAL, PAYPAL_WEBHOOK_ENDPOINT, \
-                    verify_paypal_signature
+from .paypal import PayPalWebhookEvent, ENABLE_PAYPAL, PAYPAL_WEBHOOK_ENDPOINT, verify_paypal_signature
 from .databases import sql_connection, mongo, qdrant, redis
 from .app import app
 from .chat_auth_wrapper import wrap
@@ -38,19 +34,6 @@ async def refill_tokens():
     sql_connection.cursor().execute("UPDATE chat_users.users SET last_incremented=last_incremented+increment_every_seconds, remaining_messages=remaining_messages+1 WHERE remaining_messages < maximum_remaining_messages AND last_incremented + increment_every_seconds < ?", [now])
 
 @app.on_event("startup")
-@repeat_every(seconds=900)
-async def poll_paypal():
-    if not ENABLE_PAYPAL:
-        return
-    now = datetime.datetime.now(datetime.timezone.utc).timestamp().__floor__()
-    await handle_transactions((
-        ('start_date', datetime.datetime.fromtimestamp(now - 12600).strftime('%Y-%m-%dT%H:%M:%SZ')),
-        ('end_date', datetime.datetime.fromtimestamp(now - 300).strftime('%Y-%m-%dT%H:%M:%SZ')),
-        ('transaction_status', 'S'),#Success
-        ('fields', 'all'),
-    ))
-
-@app.on_event("startup")
 @repeat_every(seconds=60)
 async def process_subscriptions():
     if not ENABLE_PAYPAL:
@@ -67,6 +50,7 @@ async def root():
 if PAYPAL_WEBHOOK_ENDPOINT and ENABLE_PAYPAL:
     @app.post(f"/paypal/{PAYPAL_WEBHOOK_ENDPOINT}")
     async def paypal_webhook(request: Request, event: PayPalWebhookEvent):
+        print(event)
         if event.event_type != 'PAYMENT.CAPTURE.COMPLETED':
             raise HTTPException(status_code=400, detail="Unsupported event type")
         transmission_id = request.headers.get("PAYPAL-TRANSMISSION-ID")
@@ -79,13 +63,6 @@ if PAYPAL_WEBHOOK_ENDPOINT and ENABLE_PAYPAL:
         if not await verify_paypal_signature(transmission_id, transmission_time, await request.body(), cert_url, transmission_sig, auth_algo):
             raise HTTPException(status_code=400, detail="PayPal event validation failed")
         now = event.resource.create_time.timestamp().__floor__()
-        await handle_transactions((
-            ('transaction_id', event.resource.supplementary_data.related_ids.order_id),#special case mentioned in the docs
-            ('start_date', datetime.datetime.fromtimestamp(now - 1800).strftime('%Y-%m-%dT%H:%M:%SZ')),
-            ('end_date', datetime.datetime.fromtimestamp(now + 1800).strftime('%Y-%m-%dT%H:%M:%SZ')),
-            ('transaction_status', 'S'),#Success
-            ('fields', 'all'),
-        ))
         return {"success": True}
 
 @app.post('/login')
@@ -143,38 +120,13 @@ def statistics():
         sql_connection.ping()
         cursor = sql_connection.cursor()
         cursor.execute("SELECT `label`, `value` FROM `chat_users`.`statistics`")
-        return {label: value for (label, value) in cursor}
+        data = {label: value for (label, value) in cursor}
+        cursor.execute("SELECT `word`, `count` FROM `chat_users`.`keywords`")
+        data['keywords'] = {word: count for (word, count) in cursor}
+        return data
     except mariadb.Error as e:
         log_exception(e, "statistics")
     return {}
-
-@app.get('/statistics.jpg')
-def statistics_jpg():
-    try:
-        texts = []
-        sql_connection.ping()
-        cursor = sql_connection.cursor()
-        cursor.execute("SELECT `label`, `value` FROM `chat_users`.`statistics` WHERE `value` > 0 ORDER BY `value` DESC")
-        for (label, value) in cursor:
-            texts.append(f"{label}: {value}")
-        height = 10 * len(texts) + 20
-        logo = Image.open("./logo.png", "r")
-        logo_width = math.ceil(height/logo.height * logo.width)
-        image = Image.new("RGB", (logo_width + 100, height), "black")
-        logo = logo.resize((logo_width, height))
-        image.paste(logo, (0, 0), logo)
-        draw = ImageDraw.Draw(image)
-        pos = 1
-        for text in texts:
-            draw.text((logo_width + 10, 10 * pos), text, fill="white")
-            pos += 1
-        image.save("./statistics.jpg")
-        return FileResponse("./statistics.jpg")
-    except mariadb.Error as e:
-        log_exception(e, "statistics")
-    except Exception as e:
-        log_exception(e, "statistics")
-    return FileResponse("/logo.png")
 
 @app.get("/ratelimits")
 async def remaining_messages(user_jwt: Annotated[str | None, Cookie()] = None):

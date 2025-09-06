@@ -169,8 +169,6 @@ for (const library of [
   writeFileSync(process.cwd() + '/dist/'+library.replace(/\\/g, '/').split('/').pop(), readFileSync(library, 'utf8'), 'utf8');
 }
 
-writeFileSync(process.cwd() + '/dist/contributors.svg', await(await fetch('https://contrib.rocks/image?repo=bjoern-buettner/roleplay-ai')).text(), 'utf8')
-
 for (const target of Object.keys(TO_MERGE)) {
   let out = [];
   for (const file of TO_MERGE[target]) {
