@@ -556,6 +556,12 @@ nav, footer {
 }
 #send {
   font-size: 2em;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
 }
 #fontmode, #colormode {
   color: transparent;
