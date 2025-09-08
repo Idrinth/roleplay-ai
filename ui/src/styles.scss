@@ -358,6 +358,16 @@ nav, footer {
 .skiplinks {
   display: none;
 }
+#music-select {
+  padding-left: 1.1em;
+  background-image: url(/music.light.svg);
+  background-repeat: no-repeat;
+  background-size: auto 1em;
+  background-position: left center;
+}
+.inverted-colors #music-select {
+  background-image: url(/music.dark.svg);
+}
 .chat {
   .content {
     transition-property: grid-template-rows;
