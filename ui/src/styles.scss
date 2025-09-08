@@ -294,8 +294,10 @@ input, textarea, select {
   height: 100%;
   position: absolute;
   left: 0;
+  top: 0;
   bottom: 0;
-  background: var(--medium-shadow);
+  z-index: var(--overlay-z-index);
+  background: var(--modal-bg);
 
   > img {
     display: block;
