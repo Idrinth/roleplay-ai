@@ -108,7 +108,6 @@ if PAYPAL_WEBHOOK_ENDPOINT and ENABLE_PAYPAL:
             func_name="paypal_webhook",
         )
 
-        # print(event)
         if event.event_type != "PAYMENT.CAPTURE.COMPLETED":
 
             log_warning(
@@ -150,10 +149,6 @@ if PAYPAL_WEBHOOK_ENDPOINT and ENABLE_PAYPAL:
             func_name="paypal_webhook",
         )
         return {"success": True}
-
-
-# ######################################################################
-# ######################################################################
 
 
 @app.post("/login")
