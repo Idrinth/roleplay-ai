@@ -268,6 +268,7 @@
             world: keywords,
           });
           chatEntry.value = root.isObjectWithProperty(value, 'message') ? (value as { message: string })?.message : '';
+          await updateCharacters();
           return;
         }
         await root.alert('You are currently out of messages, please wait a bit and try again by reloading the page.')
