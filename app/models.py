@@ -30,7 +30,7 @@ class ChatStartingPoint(BaseModel):
     mood: str
     wear: str
     gender: str
-    race: str
+    heritage: str
     profession: str
     world: str
     genre: str

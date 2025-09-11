@@ -256,7 +256,7 @@
         if (await root.maySendMessage()) {
           const value = await root.getFromAPI(`chat/${chat.id}/starting-point-proposal`, 'POST', {
             name: await root.prompt("What is your character's name?"),
-            race: await root.prompt("What is your character's race?"),
+            heritage: await root.prompt("What is your character's heritage(race, species etc.)?"),
             gender: await root.prompt("What is your character's gender?"),
             wear: await root.prompt("What does your character wear?"),
             profession: await root.prompt("What is your character's profession?"),

@@ -157,12 +157,31 @@ async def post_proposals_internal(chat_id: str, user_id: str, starting_point: Ch
                 "UPDATE chat_users.users SET remaining_messages=IF(remaining_messages < 1, 0, remaining_messages - 1) WHERE user_id=?;",
                 [user_id]
             )
+    sex = "other"
+    if starting_point.gender.lower() == "male":
+        sex = "male"
+    elif starting_point.gender.lower() == "female":
+        sex = "female"
+    elif starting_point.gender.lower() == "none":
+        sex = "none"
+
+    mongo[mongodb_name(user_id, chat_id)]["characters"].insert_one({
+        "name": starting_point.name,
+        "heritage": starting_point.heritage,
+        "description": starting_point.wear,
+        "profession": starting_point.profession,
+        "languages": {},
+        "sex": sex,
+        "facts": {},
+        "relationships": {}
+    })
+
     response = await ask_characterbuilder([
         {
             "role": "user",
             "content": f"Name: {starting_point.name}\n"
                 f"Gender: {starting_point.gender}\n"
-                f"Race: {starting_point.race}\n"
+                f"Heritage: {starting_point.heritage}\n"
                 f"Wear/Clothing: {starting_point.wear}\n"
                 f"Profession: {starting_point.profession}\n"
                 f"location: {starting_point.location}\n"
