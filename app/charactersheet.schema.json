@@ -32,7 +32,7 @@
       "patternProperties": {
         ".+": {
           "type": "object",
-          "required": ["spoken", "read", "write"],
+          "required": ["speak", "read", "write"],
           "properties": {
             "speak": {
               "type": "boolean"
