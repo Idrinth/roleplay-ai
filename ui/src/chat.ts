@@ -151,17 +151,17 @@
       }
     }
     if (root.isObjectWithProperty(json, 'characters') && Array.isArray(json['characters'])) {
-      for (const character of (json as { characters: {id: string, name: {taken: string}}[] }).characters) {
+      for (const character of (json as { characters: {id: string, name: string}[] }).characters) {
         const characterElement = document.createElement('li');
         characterElement.setAttribute('class', 'name-edit-delete');
         characters.appendChild(characterElement);
         characterElement.appendChild(document.createElement('span'));
-        characterElement.lastElementChild?.appendChild(document.createTextNode(character.name.taken));
+        characterElement.lastElementChild?.appendChild(document.createTextNode(character.name));
         characterElement.appendChild(root.button('[E]', 'Edit character', async (event: MouseEvent) => {
           event.stopPropagation();
           const el = document.createElement('textarea');
           el.setAttribute('id', 'character')
-          const char = {...character} as {id?: string, name: {taken: string}};
+          const char = {...character} as {id?: string, name: string};
           delete char['id'];
           el.setAttribute('data-id', character.id);
           el.value = window?.jsyaml?.dump(char) ?? '';
