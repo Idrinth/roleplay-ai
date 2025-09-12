@@ -157,13 +157,14 @@ async def post_proposals_internal(chat_id: str, user_id: str, starting_point: Ch
                 "UPDATE chat_users.users SET remaining_messages=IF(remaining_messages < 1, 0, remaining_messages - 1) WHERE user_id=?;",
                 [user_id]
             )
-    sex = "other"
-    if starting_point.gender.lower() == "male":
-        sex = "male"
-    elif starting_point.gender.lower() == "female":
-        sex = "female"
-    elif starting_point.gender.lower() == "none":
-        sex = "none"
+    gender = (starting_point.gender or "").strip().casefold()
+    sex_map = {
+        "m": "male", "male": "male", "man": "male", "boy": "male",
+        "f": "female", "female": "female", "woman": "female", "girl": "female",
+        "none": "none", "n/a": "none", "na": "none", "unspecified": "none",
+        "non-binary": "other", "nonbinary": "other", "nb": "other", "other": "other", "intersex": "other",
+    }
+    sex = sex_map.get(gender, "other")
 
     mongo[mongodb_name(user_id, chat_id)]["characters"].insert_one({
         "name": starting_point.name,
