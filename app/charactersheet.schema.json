@@ -90,6 +90,8 @@
     "description",
     "relationships",
     "facts",
+    "sex",
+    "profession",
     "languages"
   ]
 }
