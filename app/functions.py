@@ -69,12 +69,12 @@ def get_system_prompt(characters, world: str, short_term_summary: str, medium_te
             "## Character Sheet Schema:\n```json\n" + schema + "\n```\n"
     if len(world) > 0:
         out += "# World:\n" + world + "\n"
-    if short_term_summary != "":
-        out += "# Short Term Summary:\n" + short_term_summary +"\n"
-    if medium_term_summary != "":
-        out += "# Medium Term Summary:\n" + medium_term_summary +"\n"
     if long_term_summary != "":
-        out += "# Long Term Summary:\n" + long_term_summary +"\n"
+        out += "# Long Term Summary:\nThis is for reference only, messages are newer.\n\n" + long_term_summary +"\n"
+    if medium_term_summary != "":
+        out += "# Medium Term Summary:\nThis is for reference only, messages are newer.\n\n" + medium_term_summary +"\n"
+    if short_term_summary != "":
+        out += "# Short Term Summary:\nThis is for reference only, messages are newer.\n\n" + short_term_summary +"\n"
     if len(vectordb_results) > 0:
         out += "# Potentially Related Information:\n```json\n" + json.dumps(vectordb_results) + "\n```"
     return out.strip()
