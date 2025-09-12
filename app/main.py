@@ -153,9 +153,13 @@ if PAYPAL_WEBHOOK_ENDPOINT and ENABLE_PAYPAL:
 
 @app.post("/login")
 async def login(response: Response, login_data: Login):
+    log_info(f"Login attempt for user_id: {login_data.user_id}", func_name="login")
+
     if not is_uuid_like(login_data.user_id):
+        log_warning("Login failed: invalid user_id format.", func_name="login")
         return {"error": "Login failed"}
     if not login_data.password:
+        log_warning("Login failed: password field is empty.", func_name="login")
         return {"error": "Login failed"}
     try:
         cursor = sql_connection.cursor()
@@ -165,12 +169,23 @@ async def login(response: Response, login_data: Login):
         )
         chatuser = cursor.fetchone()
         if not chatuser:
+            log_warning(
+                f"Login failed: user not found with user_id: {login_data.user_id}",
+                func_name="login",
+            )
             return {"error": "Login failed"}
         try:
             PasswordHasher().verify(chatuser[1], login_data.password)
         except VerifyMismatchError as e:
+            log_warning(
+                f"Login failed: incorrect password for user_id: {login_data.user_id}",
+                func_name="login",
+            )
             return {"error": "Login failed"}
         set_login_cookie(response, login_data.user_id)
+        log_info(
+            f"Login successful for user_id: {login_data.user_id}", func_name="login"
+        )
         return {"success": True}
     except mariadb.Error as e:
         log_exception(e, "login")
@@ -179,34 +194,49 @@ async def login(response: Response, login_data: Login):
 
 @app.post("/me")
 async def me(user: User, user_jwt: Annotated[str | None, Cookie()] = None):
+    log_info("Profile update attempt.", func_name="me")
     user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
+        log_warning("Profile update failed: invalid user_id format.", func_name="me")
         return {"error": "Not a valid User"}
     cursor = sql_connection.cursor()
     cursor.execute("SELECT * FROM `chat_users`.`users` WHERE `user_id` = ?", [user_id])
     chatuser = cursor.fetchone()
     if not chatuser:
+        log_warning(
+            f"Profile update failed: user not found with user_id: {user_id}",
+            func_name="me",
+        )
         return {"error": "Not a valid User"}
     if user.password and user.username:
+        log_info(
+            f"Updating password and username for user_id: {user_id}", func_name="me"
+        )
         sql_connection.cursor().execute(
             "UPDATE `chat_users`.`users` SET password = ?, user_name= ? WHERE `user_id` = ?",
             [PasswordHasher().hash(user.password), user.username, user_id],
         )
     elif user.password:
+        log_info(f"Updating password for user_id: {user_id}", func_name="me")
         sql_connection.cursor().execute(
             "UPDATE `chat_users`.`users` SET password = ? WHERE `user_id` = ?",
             [PasswordHasher().hash(user.password), user_id],
         )
     elif user.username:
+        log_info(f"Updating username for user_id: {user_id}", func_name="me")
         sql_connection.cursor().execute(
             "UPDATE `chat_users`.`users` SET user_name = ? WHERE `user_id` = ?",
             [user.username, user_id],
         )
+    log_info(
+        f"User profile successfully updated for user_id: {user_id}", func_name="me"
+    )
     return True
 
 
 @app.get("/statistics")
 def statistics():
+    log_info("Fetching application statistics.", func_name="statistics")
     try:
         sql_connection.ping()
         cursor = sql_connection.cursor()
@@ -214,6 +244,7 @@ def statistics():
         data = {label: value for (label, value) in cursor}
         cursor.execute("SELECT `word`, `count` FROM `chat_users`.`keywords`")
         data["keywords"] = {word: count for (word, count) in cursor}
+        log_info("Statistics data retrieved successfully.", func_name="statistics")
         return data
     except mariadb.Error as e:
         log_exception(e, "statistics")
@@ -342,6 +373,9 @@ async def update_world(
 async def chat_document_list(
     chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None
 ):
+    log_info(
+        f"Listing documents for chat_id: {chat_id}", func_name="chat_document_list"
+    )
     return await wrap(chat_id, user_jwt, chat_document_list_success)
 
 
@@ -424,13 +458,29 @@ async def chat_character_update(
 async def chat_character_delete(
     chat_id: str, character_id: str, user_jwt: Annotated[str | None, Cookie()] = None
 ):
+    log_info(
+        f"Attempting to delete character '{character_id}' from chat '{chat_id}'",
+        func_name="chat_character_delete",
+    )
     user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
+        log_warning(
+            "Character deletion failed: Not a valid user_id.",
+            func_name="chat_character_delete",
+        )
         return {"error": "Not a valid User"}
     if not is_uuid_like(chat_id):
+        log_warning(
+            "Character deletion failed: Not a valid chat_id.",
+            func_name="chat_character_delete",
+        )
         return {"error": "Not a valid Chat"}
     mongo[mongodb_name(user_id, chat_id)]["characters"].delete_one(
         {"_id": ObjectId(character_id)}
+    )
+    log_info(
+        f"Successfully deleted character_id: {character_id} from chat_id: {chat_id}",
+        func_name="chat_character_delete",
     )
     return True
 
@@ -439,16 +489,21 @@ async def chat_character_delete(
 async def chat_characters(
     chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None
 ):
+    log_info(f"Fetching characters for chat_id: {chat_id}", func_name="chat_characters")
     return await wrap(chat_id, user_jwt, chat_characters_success)
 
 
 @app.get("/chat/{chat_id}/active")
 async def chat_active(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
+    log_info(
+        f"Checking if chat is active for chat_id: {chat_id}", func_name="chat_active"
+    )
     return await wrap(chat_id, user_jwt, chat_active_success)
 
 
 @app.post("/chat/{chat_id}/delete")
 async def chat_delete(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
+    log_info(f"Deleting chat with ID: {chat_id}", func_name="chat_delete")
     return await wrap(chat_id, user_jwt, chat_delete_success)
 
 
@@ -496,6 +551,10 @@ async def whoami(user_jwt: Annotated[str | None, Cookie()] = None):
 
 @app.get("/chat/{chat_id}")
 async def chat_history(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
+    log_info(
+        f"Fetching chat history for chat_id: {chat_id}, user_jwt: {user_jwt}",
+        func_name="chat_history",
+    )
     return await wrap(chat_id, user_jwt, chat_history_success)
 
 
@@ -503,6 +562,10 @@ async def chat_history(chat_id: str, user_jwt: Annotated[str | None, Cookie()] =
 async def chat_name(
     chat_id: str, chat_data: Chat, user_jwt: Annotated[str | None, Cookie()] = None
 ):
+    log_info(
+        f"Chat name updated for chat_id: {chat_id}, new name: {chat_data.name}",
+        func_name="chat_name",
+    )
     return await wrap(chat_id, user_jwt, chat_name_success, chat_data)
 
 
