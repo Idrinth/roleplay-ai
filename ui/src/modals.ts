@@ -54,7 +54,6 @@
         }
       }
       prmt.appendChild(select);
-      select.value = defaultText;
       prmt.appendChild(root.button('Send', 'Send changes', () => {
         if (!select.value) {
           return;
