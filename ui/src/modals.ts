@@ -43,11 +43,10 @@
           resolve(select.value);
         }
       }
-      options.unshift('');
-      for (const option of options) {
+      for (const option of ['', ...options]) {
         const opt = document.createElement('option');
         opt.value = option;
-        opt.appendChild(document.createTextNode(text));
+        opt.appendChild(document.createTextNode(option));
         select.appendChild(opt);
         if (defaultText === option) {
           opt.selected = true;
