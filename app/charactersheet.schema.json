@@ -63,7 +63,7 @@
         "[a-z0-9'A-Z -]+": {
           "type": "object",
           "description": "relationship information with between the character with the name of the property and the character of this sheet",
-          "required": ["relation", "events"],
+          "required": ["description", "events"],
           "additionalProperties": false,
           "properties": {
             "description": {
