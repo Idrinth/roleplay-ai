@@ -77,6 +77,7 @@ def get_system_prompt(characters, world: str, short_term_summary: str, medium_te
         out += "# Short Term Summary:\nThis is for reference only, messages are newer.\n\n" + short_term_summary +"\n"
     if len(vectordb_results) > 0:
         out += "# Potentially Related Information:\n```json\n" + json.dumps(vectordb_results) + "\n```"
+    out += "\n**IMPORTANT: Focus primarily on the user's current action. Use background context only when directly relevant.**\n"
     return out.strip()
 
 def user_id_from_jwt(encoded_jwt: str) -> str|None:
