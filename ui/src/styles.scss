@@ -357,6 +357,13 @@ nav, footer {
   background-color: var(--bar-background-color);
   background-image: linear-gradient(to bottom, rgba(255,255, 255, 0.05), rgba(255,255, 255, 0.1), rgba(255,255, 255, 0));
 }
+#mainnav ul {
+  align-items: center;
+
+  li:last-of-type {
+    display: flex;
+  }
+}
 .skiplinks {
   display: none;
 }
