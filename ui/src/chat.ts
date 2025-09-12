@@ -1,5 +1,4 @@
 (async (root) => {
-  const characterFiller = await (await fetch('/char-template.yaml')).text();
   // if the purifier is not there, the only one suffering is the user themselves
   const purifier = window.DOMPurify?.sanitize ?? ((html: string) => {return html;});
   const user = await (async () => {
@@ -222,7 +221,23 @@
     event.stopPropagation();
     const el = document.createElement('textarea');
     el.setAttribute('id', 'character');
-    el.value = characterFiller;
+    el.value = 'name: ""\n' +
+      'heritage: human\n' +
+      'description: ""\n' +
+      'profession: ""\n' +
+      'languages:\n' +
+      '  english:\n' +
+      '    speak: true\n' +
+      '    read: true\n' +
+      '    write: true\n' +
+      'sex: male, female, other or none\n' +
+      'facts:\n' +
+      '  likes blue: This unnamed character likes the color blue\n' +
+      'relationships:\n' +
+      '  mom:\n' +
+      '    description: ""\n' +
+      '    events:\n' +
+      '    - Raised me\n';
     document.body.appendChild(el);
   });
   await updateDocuments();
