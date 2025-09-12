@@ -294,8 +294,10 @@ input, textarea, select {
   height: 100%;
   position: absolute;
   left: 0;
+  top: 0;
   bottom: 0;
-  background: var(--medium-shadow);
+  z-index: var(--overlay-z-index);
+  background: var(--modal-bg);
 
   > img {
     display: block;
@@ -357,6 +359,16 @@ nav, footer {
 }
 .skiplinks {
   display: none;
+}
+#music-select {
+  padding-left: 1.1em;
+  background-image: url(/music.light.svg);
+  background-repeat: no-repeat;
+  background-size: auto 1em;
+  background-position: left center;
+}
+.inverted-colors #music-select {
+  background-image: url(/music.dark.svg);
 }
 .chat {
   .content {
@@ -546,6 +558,12 @@ nav, footer {
 }
 #send {
   font-size: 2em;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
 }
 #fontmode, #colormode {
   color: transparent;
