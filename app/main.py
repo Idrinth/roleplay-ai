@@ -397,7 +397,7 @@ async def chat_character_add(
                 "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
                 ["Character Sheets"],
             )
-        except mariadb.Error as error:
+        except mariadb.Error:
             pass
     return character_sheet
 

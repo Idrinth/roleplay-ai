@@ -13,7 +13,7 @@ from .databases import redis
 
 from .logger import log_exception
 
-with open('./app/character-sheet.schema.json', 'r') as schema_file:
+with open('./app/charactersheet.schema.json', 'r') as schema_file:
     schema = json.dumps(json.load(schema_file))
 
 def b64(s: str)->str:
