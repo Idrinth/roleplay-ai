@@ -8,7 +8,8 @@
   root.getWorldKeywords = (): string[] => {
     return worldKeywords;
   }
-  const setWorldKeywordsTitle = (element: Element|null, keywords: string[]) => {
+  const setWorldKeywordsTitle = () => {
+    const keywords = root.getWorldKeywords();
     const expandedKeywords = [...keywords];
     for (const pos in keywords) {
       const keyword = keywords[pos] as string;
@@ -17,7 +18,7 @@
         expandedKeywords[pos] = keyword + '\n  ' + matchingSongs.length + ' songs';
       }
     }
-    element?.setAttribute('title', expandedKeywords.join("\n"))
+    world.setAttribute('title', expandedKeywords.join("\n"))
   }
   const addWorldKeywords = () => {
     const keywords = world.value
@@ -44,7 +45,7 @@
     if (keywords.join() === worldKeywords.join()) {
       return;
     }
-    setWorldKeywordsTitle(world, keywords);
+    setWorldKeywordsTitle();
     await root.getFromAPI(`chat/${chatId}/world`, 'PUT', {
       worldKeywords,
     });
@@ -70,7 +71,7 @@
             worldKeywords.splice(worldKeywords.indexOf(keyword), 1);
           }
           keywordList.removeChild(keywordElement);
-          setWorldKeywordsTitle(world, worldKeywords);
+          setWorldKeywordsTitle();
           root.getFromAPI(`chat/${chatId}/world`, 'PUT', {
             keywords: worldKeywords,
           });
@@ -92,8 +93,8 @@
       return;
     }
     const keywords = (response as {world: string[]}).world;
-    setWorldKeywordsTitle(world, keywords);
-    world.value = keywords.join(", ")
+    world.value = keywords.join(", ");
     world.dispatchEvent(new Event('change'));
+    setWorldKeywordsTitle();
   })();
 })(window.bjoernbuettner)
