@@ -194,7 +194,6 @@ async def login(response: Response, login_data: Login):
 
 @app.post("/me")
 async def me(user: User, user_jwt: Annotated[str | None, Cookie()] = None):
-    log_info("Profile update attempt.", func_name="me")
     user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         log_warning("Profile update failed: invalid user_id format.", func_name="me")
@@ -236,7 +235,6 @@ async def me(user: User, user_jwt: Annotated[str | None, Cookie()] = None):
 
 @app.get("/statistics")
 def statistics():
-    log_info("Fetching application statistics.", func_name="statistics")
     try:
         sql_connection.ping()
         cursor = sql_connection.cursor()
@@ -373,9 +371,6 @@ async def update_world(
 async def chat_document_list(
     chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None
 ):
-    log_info(
-        f"Listing documents for chat_id: {chat_id}", func_name="chat_document_list"
-    )
     return await wrap(chat_id, user_jwt, chat_document_list_success)
 
 
@@ -458,10 +453,6 @@ async def chat_character_update(
 async def chat_character_delete(
     chat_id: str, character_id: str, user_jwt: Annotated[str | None, Cookie()] = None
 ):
-    log_info(
-        f"Attempting to delete character '{character_id}' from chat '{chat_id}'",
-        func_name="chat_character_delete",
-    )
     user_id = user_id_from_jwt(user_jwt)
     if not is_uuid_like(user_id):
         log_warning(
@@ -551,10 +542,6 @@ async def whoami(user_jwt: Annotated[str | None, Cookie()] = None):
 
 @app.get("/chat/{chat_id}")
 async def chat_history(chat_id: str, user_jwt: Annotated[str | None, Cookie()] = None):
-    log_info(
-        f"Fetching chat history for chat_id: {chat_id}, user_jwt: {user_jwt}",
-        func_name="chat_history",
-    )
     return await wrap(chat_id, user_jwt, chat_history_success)
 
 
