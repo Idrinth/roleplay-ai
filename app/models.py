@@ -6,7 +6,7 @@ class Action(BaseModel):
     description: str | None = None
 
 class MakeImage(BaseModel):
-    messageId: int | None = None
+    message_id: int | None = None
 
 class Login(BaseModel):
     user_id: str | None = None
