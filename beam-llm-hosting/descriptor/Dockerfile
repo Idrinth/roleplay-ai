@@ -10,7 +10,7 @@ WORKDIR /beam/shared
 COPY beam-llm-hosting/shared/*.py ./
 
 WORKDIR /beam
-COPY beam-llm-hosting/descriptor/requirements.remote.txt ./
+COPY beam-llm-hosting/shared/requirements.remote.txt ./
 COPY system-prompts/descriptor.md ./rules.md
 COPY beam-llm-hosting/descriptor/main.py ./
 
