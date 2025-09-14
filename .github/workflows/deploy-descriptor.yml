@@ -1,0 +1,18 @@
+name: Descriptor Deployment
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - the-one
+    paths:
+    - beam-llm-hosting/shared/*.py
+    - beam-llm-hosting/descriptor/*.py
+    - beam-llm-hosting/descriptor/*.txt
+    - beam-llm-hosting/descriptor/Dockerfile
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Run Docker-Image
+      run: docker buildx build --build-arg BEAM_TOKEN=${{secrets.BEAM_TOKEN}} --tag=todeploy -f ./beam-llm-hosting/descriptor/Dockerfile . && docker run todeploy
