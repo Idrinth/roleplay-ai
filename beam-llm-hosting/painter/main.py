@@ -37,7 +37,7 @@ def download_models():
         max_containers=5,
         tasks_per_container=1,
     ),
-    keep_warm_seconds=90,
+    keep_warm_seconds=30,
     authorized=True,
     checkpoint_enabled=ENABLE_SNAPSHOTTING,
     image=Image(

@@ -13,7 +13,7 @@ WORKDIR /beam
 COPY beam-llm-hosting/painter/requirements.remote.txt ./
 COPY system-prompts/painter-whitelist.md ./whitelist.md
 COPY system-prompts/painter-blacklist.md ./blacklist.md
-COPY beam-llm-hosting/characterbuilder/main.py ./
+COPY beam-llm-hosting/painter/main.py ./
 
 RUN beam deploy main.py:answer
 
