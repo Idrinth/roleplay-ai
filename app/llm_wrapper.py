@@ -8,11 +8,14 @@ llm_model = os.getenv('LLM_MODEL')
 beam_gamemaster_url = os.getenv('BEAM_GAMEMASTER_DEPLOYMENT_URL')
 beam_characterbuilder_url = os.getenv('BEAM_CHARACTERBUILDER_DEPLOYMENT_URL')
 beam_storysummariser_url = os.getenv('BEAM_SUMMARISER_DEPLOYMENT_URL')
+beam_painter_url = os.getenv('BEAM_PAINTER_DEPLOYMENT_URL')
+beam_descriptor_url = os.getenv('BEAM_DESCRIPTOR_DEPLOYMENT_URL')
 beam_key = os.getenv('BEAM_API_KEY')
 llm_to_use = os.getenv('LLM_TO_USE')
 gamemaster_rules = ""
 characterbuilder_rules = ""
 storysummariser_rules = ""
+descriptor_rules = ""
 if llm_to_use == "local":
     with open('./gamemaster.md', 'r', encoding="utf-8") as rules_file:
         gamemaster_rules = rules_file.read()
@@ -20,6 +23,8 @@ if llm_to_use == "local":
         characterbuilder_rules = rules_file.read()
     with open('./storysummariser.md', 'r', encoding="utf-8") as rules_file:
         storysummariser_rules = rules_file.read()
+    with open('./descriptor.md', 'r', encoding="utf-8") as rules_file:
+        descriptor_rules = rules_file.read()
 elif llm_to_use == "beam":
     if not beam_gamemaster_url:
         raise Exception("Beam gamemaster deployment URL not set.")
@@ -27,6 +32,10 @@ elif llm_to_use == "beam":
         raise Exception("Beam characterbuilder deployment URL not set.")
     if not beam_storysummariser_url:
         raise Exception("Beam storysummariser deployment URL not set.")
+    if not beam_descriptor_url:
+        raise Exception("Beam descriptor deployment URL not set.")
+    if not beam_painter_url:
+        raise Exception("Beam painter deployment URL not set.")
     if not beam_key:
         raise Exception("Beam key deployment URL not set.")
 else:
@@ -102,6 +111,15 @@ async def ask_gamemaster(messages: List[Dict[str, str]]):
 
     raise ValueError("Could not get response from LLM")
 
+async def ask_painter(messages: List[Dict[str, str]]):
+    if llm_to_use == "beam":
+        description = await ask_beam(messages, beam_descriptor_url)
+        return await ask_beam([{"role": "user", "content": description}], beam_painter_url)
+    elif llm_to_use == "local":
+        return ""
+
+    raise ValueError("Could not get response from LLM")
+
 async def ask_characterbuilder(messages: List[Dict[str, str]]):
     if llm_to_use == "beam":
         return await ask_beam(messages, beam_characterbuilder_url)
@@ -125,6 +143,11 @@ async def ask_storysummarizer(messages: List[Dict[str, str]]):
 async def prewarm_gamemaster():
     if llm_to_use == "beam":
         asyncio.create_task(prewarm_beam(beam_gamemaster_url))
+
+async def prewarm_painter():
+    if llm_to_use == "beam":
+        asyncio.create_task(prewarm_beam(beam_descriptor_url))
+        asyncio.create_task(prewarm_beam(beam_painter_url))
 
 async def prewarm_characterbuilder():
     if llm_to_use == "beam":

@@ -7,8 +7,16 @@ import os
 import mariadb
 
 from .logger import log_exception
-from .llm_wrapper import ask_characterbuilder, ask_storysummarizer, ask_gamemaster, prewarm_gamemaster, prewarm_storysummarizer
-from .models import World, Character, Document, ChatStartingPoint, Action, Chat, ChatCopy
+from .llm_wrapper import (
+    ask_characterbuilder,
+    ask_storysummarizer,
+    ask_gamemaster,
+    prewarm_gamemaster,
+    prewarm_storysummarizer,
+    prewarm_painter,
+    ask_painter
+)
+from .models import World, Character, Document, ChatStartingPoint, Action, Chat, ChatCopy, MakeImage
 from .databases import sql_connection, mongo, qdrant, redis
 from .functions import mariadb_name, mongodb_name, to_mongo_compatible, get_system_prompt, simplify_result, get_from_redis
 from .chat_active import chat_is_in_use,remove_chat_from_use
@@ -259,13 +267,11 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
         f"SELECT * FROM (SELECT creator, content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid DESC LIMIT 20) as a ORDER BY aid;")
     old_messages = cursor.fetchall()
     previous_response = ""
-    old_message_count = 0
     for message in old_messages:
         messages.append({
             "role": message[0],
             "content": message[1],
         })
-        old_message_count += 1
         previous_response = message[1]
     vectordb_results = []
     if qdrant.collection_exists(f"{user_id}-{chat_id}"):
@@ -297,6 +303,78 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
             f"{user_id}-{chat_id}.{window}"
         )
     return {"message": response}
+
+async def chat_image_internal(chat_id: str, user_id: str, make_image: MakeImage, background_tasks: BackgroundTasks):
+    await prewarm_painter()
+    if ENABLE_MESSAGE_LIMITS:
+        cursor = sql_connection.cursor()
+        cursor.execute(
+            "SELECT remaining_messages, additional_remaining_messages FROM chat_users.users WHERE user_id=?;",
+            [user_id]
+        )
+        remaining_messages = 0
+        additional_remaining_messages = 0
+        try:
+            for user_row in list(cursor.fetchall()):
+                remaining_messages = int(user_row[0])
+                additional_remaining_messages = int(user_row[1])
+        except mariadb.Error as e:
+            log_exception(e, "chat_message_internal")
+        if remaining_messages < 1 and additional_remaining_messages < 1:
+            return {"success": False}
+        if remaining_messages < 1:
+            sql_connection.cursor().execute(
+                "UPDATE chat_users.users SET additional_remaining_messages=IF(additional_remaining_messages < 1, 0, additional_remaining_messages - 1) WHERE user_id=?;",
+                [user_id]
+            )
+        else:
+            sql_connection.cursor().execute(
+                "UPDATE chat_users.users SET remaining_messages=IF(remaining_messages < 1, 0, remaining_messages - 1) WHERE user_id=?;",
+                [user_id]
+            )
+    long_term_summary = get_from_redis(user_id,chat_id, "long_summary")
+    medium_term_summary = get_from_redis(user_id,chat_id, "medium_summary")
+    short_term_summary = get_from_redis(user_id,chat_id, "short_summary")
+    world = json.loads(get_from_redis(user_id, chat_id, "world", "[]"))
+    world = ", ".join(world)
+    characters = []
+    try:
+        characters = list(mongo[mongodb_name(user_id, chat_id)]["characters"].find())
+    except Exception as e:
+        log_exception(e, "chat_endpoint_handlers.chat_message_internal")
+    messages = [{
+        "role": "system",
+        "content": ""
+    }]
+    sql_connection.ping()
+    cursor = sql_connection.cursor()
+    cursor.execute(
+        f"SELECT * FROM (SELECT creator, content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid DESC LIMIT 20) as a ORDER BY aid;")
+    old_messages = cursor.fetchall()
+    previous_response = ""
+    aid_max = -1
+    for message in old_messages:
+        messages.append({
+            "role": message[0],
+            "content": message[1],
+        })
+        previous_response = message[1]
+        aid_max = max(aid_max, message[2])
+    vectordb_results = []
+    if qdrant.collection_exists(f"{user_id}-{chat_id}"):
+        search_result = qdrant.query(
+            collection_name=f"{user_id}-{chat_id}",
+            query_text=previous_response,
+            limit=10
+        )
+        for res in search_result:
+            vectordb_results.append(simplify_result(res))
+    system_prompt = get_system_prompt(characters, world, short_term_summary, medium_term_summary, long_term_summary,
+                                      vectordb_results)
+    if system_prompt:
+        messages[0]["content"] += "\n\n" + system_prompt
+    response = await ask_painter(messages)
+    return {"image": response}
 
 async def chat_name_success(chat_id: str, user_id: str, chat_data: Chat):
     if not chat_data.name:

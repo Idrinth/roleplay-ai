@@ -5,6 +5,9 @@ from typing import Dict, List, Optional
 class Action(BaseModel):
     description: str | None = None
 
+class MakeImage(BaseModel):
+    message_id: int | None = None
+
 class Login(BaseModel):
     user_id: str | None = None
     password: str | None = None
