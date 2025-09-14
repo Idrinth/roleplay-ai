@@ -9,19 +9,27 @@ NAME = "descriptor"
 
 def callback(data):
     dataset_list = []
-    for response in data["answers"]:
+    for response in data["descriptions"]:
         dataset_list.append({
             "messages": [
                 {
                     "role": "user",
-                    "content": data["prompt"],
+                    "content": data["messages"][0],
+                },
+                {
+                    "role": "assistant",
+                    "content": data["messages"][1],
+                },
+                {
+                    "role": "user",
+                    "content": "Create a detailed description of the situation described for Image Generation.",
                 },
                 {
                     "role": "assistant",
                     "content": response,
                 }
             ],
-            "text": ">>> User: " + data["prompt"] + "\n>>> Assistant: " + response + "\n"
+            "text": ">>> User: " + data["messages"][0] + "\n>>> Assistant: " + data["messages"][1] + "\n>>> User: Create a detailed description of the situation described for Image Generation.\n>>> Assistant: " + response + "\n"
         })
     return dataset_list
 
@@ -37,7 +45,7 @@ def callback(data):
 )
 def train():
     model, tokenizer = load_model_tokenizer(
-        "You are a GAME MASTER. React to provided actions with in character responses of NPCs."
+        "Create an image description for the situation described in the user messages taking the information in this message into account."
     )
 
     dataset = load_dataset(callback)
