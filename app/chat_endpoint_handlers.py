@@ -6,7 +6,6 @@ from fastapi import BackgroundTasks
 import os
 import mariadb
 
-from models import MakeImage
 from .logger import log_exception
 from .llm_wrapper import (
     ask_characterbuilder,
@@ -17,7 +16,7 @@ from .llm_wrapper import (
     prewarm_painter,
     ask_painter
 )
-from .models import World, Character, Document, ChatStartingPoint, Action, Chat, ChatCopy
+from .models import World, Character, Document, ChatStartingPoint, Action, Chat, ChatCopy, MakeImage
 from .databases import sql_connection, mongo, qdrant, redis
 from .functions import mariadb_name, mongodb_name, to_mongo_compatible, get_system_prompt, simplify_result, get_from_redis
 from .chat_active import chat_is_in_use,remove_chat_from_use
