@@ -304,7 +304,7 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
         )
     return {"message": response}
 
-async def chat_image_internal(chat_id: str, user_id: str, make_image: MakeImage, background_tasks: BackgroundTasks):
+async def chat_image_internal(chat_id: str, user_id: str):
     await prewarm_painter()
     if ENABLE_MESSAGE_LIMITS:
         cursor = sql_connection.cursor()
