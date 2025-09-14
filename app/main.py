@@ -22,7 +22,7 @@ from .models import (
     Register,
     ChatStartingPoint,
     User,
-    ChatCopy,
+    ChatCopy, MakeImage,
 )
 from .functions import (
     is_uuid_like,
@@ -54,7 +54,7 @@ from .chat_endpoint_handlers import (
     post_proposals_internal,
     chat_message_internal,
     chat_name_success,
-    chat_copy_success,
+    chat_copy_success, chat_image_internal,
 )
 
 
@@ -575,6 +575,25 @@ async def chat(
         except mariadb.Error as error:
             pass
     return chat_message
+
+@app.get("/chat/{chat_id}/image/{image_id}")
+async def chat_image(
+    chat_id: str,
+    image_id: str,
+    user_jwt: Annotated[str | None, Cookie()] = None,
+):
+    chat_image = await wrap(
+        chat_id, user_jwt, chat_image_internal
+    )
+    if chat_image and "image" in chat_image:
+        try:
+            sql_connection.cursor().execute(
+                "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
+                ["Images Generated"],
+            )
+        except mariadb.Error as error:
+            pass
+    return chat_image
 
 
 @app.post("/chat/{chat_id}/starting-point-proposal")
