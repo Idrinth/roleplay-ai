@@ -343,7 +343,7 @@ async def new_chat(user_jwt: Annotated[str | None, Cookie()] = None):
         f"INSERT INTO chat_users.mapping (chat_id, user_id, chat_name) VALUES (?, ?, ?);",
         [chat_id, user_id, chat_id],
     )
-    redis.set(f"{user_id}-{chat_id}.world", json.dumps(["fantasy", "high magic"]))
+    redis.set(f"{user_id}-{chat_id}.world", json.dumps([]))
     try:
         sql_connection.cursor().execute(
             "INSERT INTO `chat_users`.`statistics` (label, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value +1;",
