@@ -1,5 +1,4 @@
 (async (root) => {
-  const characterFiller = await (await fetch('/char-template.yaml')).text();
   // if the purifier is not there, the only one suffering is the user themselves
   const purifier = window.DOMPurify?.sanitize ?? ((html: string) => {return html;});
   const user = await (async () => {
@@ -151,17 +150,17 @@
       }
     }
     if (root.isObjectWithProperty(json, 'characters') && Array.isArray(json['characters'])) {
-      for (const character of (json as { characters: {id: string, name: {taken: string}}[] }).characters) {
+      for (const character of (json as { characters: {id: string, name: string}[] }).characters) {
         const characterElement = document.createElement('li');
         characterElement.setAttribute('class', 'name-edit-delete');
         characters.appendChild(characterElement);
         characterElement.appendChild(document.createElement('span'));
-        characterElement.lastElementChild?.appendChild(document.createTextNode(character.name.taken));
+        characterElement.lastElementChild?.appendChild(document.createTextNode(character.name));
         characterElement.appendChild(root.button('[E]', 'Edit character', async (event: MouseEvent) => {
           event.stopPropagation();
           const el = document.createElement('textarea');
           el.setAttribute('id', 'character')
-          const char = {...character} as {id?: string, name: {taken: string}};
+          const char = {...character} as {id?: string, name: string};
           delete char['id'];
           el.setAttribute('data-id', character.id);
           el.value = window?.jsyaml?.dump(char) ?? '';
@@ -222,7 +221,23 @@
     event.stopPropagation();
     const el = document.createElement('textarea');
     el.setAttribute('id', 'character');
-    el.value = characterFiller;
+    el.value = 'name: ""\n' +
+      'heritage: human\n' +
+      'description: ""\n' +
+      'profession: ""\n' +
+      'languages:\n' +
+      '  english:\n' +
+      '    speak: true\n' +
+      '    read: true\n' +
+      '    write: true\n' +
+      'sex: male, female, other or none\n' +
+      'facts:\n' +
+      '  likes blue: This unnamed character likes the color blue\n' +
+      'relationships:\n' +
+      '  mom:\n' +
+      '    description: ""\n' +
+      '    events:\n' +
+      '    - Raised me\n';
     document.body.appendChild(el);
   });
   await updateDocuments();
@@ -256,8 +271,8 @@
         if (await root.maySendMessage()) {
           const value = await root.getFromAPI(`chat/${chat.id}/starting-point-proposal`, 'POST', {
             name: await root.prompt("What is your character's name?"),
-            race: await root.prompt("What is your character's race?"),
-            gender: await root.prompt("What is your character's gender?"),
+            heritage: await root.prompt("What is your character's heritage(race, species etc.)?"),
+            gender: await root.selectFrom("What is your character's gender?", ['male', 'female', 'other', 'none']),
             wear: await root.prompt("What does your character wear?"),
             profession: await root.prompt("What is your character's profession?"),
             location: await root.prompt("Where is your character?"),
@@ -268,6 +283,7 @@
             world: keywords,
           });
           chatEntry.value = root.isObjectWithProperty(value, 'message') ? (value as { message: string })?.message : '';
+          await updateCharacters();
           return;
         }
         await root.alert('You are currently out of messages, please wait a bit and try again by reloading the page.')

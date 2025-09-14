@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Wolfgang AI Character Sheet",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the character",
+      "minLength": 1
+    },
+    "heritage": {
+      "type": "string",
+      "description": "A name for the race or species of the character",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "description": "A short text describing the character's major features",
+      "minLength": 1
+    },
+    "profession": {
+      "type": "string",
+      "description": "A short text describing the character's profession(s)",
+      "minLength": 1
+    },
+    "sex": {
+      "type": "string",
+      "enum": ["male", "female", "none", "other"]
+    },
+    "languages": {
+      "type": "object",
+      "patternProperties": {
+        ".+": {
+          "type": "object",
+          "required": ["speak", "read", "write"],
+          "properties": {
+            "speak": {
+              "type": "boolean"
+            },
+            "read": {
+              "type": "boolean"
+            },
+            "write": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "facts": {
+      "type": "object",
+      "description": "A list of facts about the character with a short explanation",
+      "patternProperties": {
+        ".+": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "relationships": {
+      "type": "object",
+      "patternProperties": {
+        "[a-z0-9'A-Z -]+": {
+          "type": "object",
+          "description": "relationship information with between the character with the name of the property and the character of this sheet",
+          "required": ["description", "events"],
+          "additionalProperties": false,
+          "properties": {
+            "description": {
+              "type": "string",
+              "minLength": 1,
+              "description": "A short description of the characters' relationship"
+            },
+            "events": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "heritage",
+    "description",
+    "relationships",
+    "facts",
+    "sex",
+    "profession",
+    "languages"
+  ]
+}

@@ -44,6 +44,7 @@ def update_history_dbs(chat_id:str, user_id, action: str, result: str, previous_
         collection_name=f"{user_id}-{chat_id}",
         documents=[previous_response + "\n\n" + action + "\n\n" + result],
     )
+    sql_connection.ping()
     sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.messages (`creator`, `content`) VALUES ('user', ?);", [action])
     sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.messages (`creator`, `content`) VALUES ('agent', ?);", [result])
 
@@ -156,12 +157,32 @@ async def post_proposals_internal(chat_id: str, user_id: str, starting_point: Ch
                 "UPDATE chat_users.users SET remaining_messages=IF(remaining_messages < 1, 0, remaining_messages - 1) WHERE user_id=?;",
                 [user_id]
             )
+    gender = (starting_point.gender or "").strip().casefold()
+    sex_map = {
+        "m": "male", "male": "male", "man": "male", "boy": "male",
+        "f": "female", "female": "female", "woman": "female", "girl": "female",
+        "none": "none", "n/a": "none", "na": "none", "unspecified": "none",
+        "non-binary": "other", "nonbinary": "other", "nb": "other", "other": "other", "intersex": "other",
+    }
+    sex = sex_map.get(gender, "other")
+
+    mongo[mongodb_name(user_id, chat_id)]["characters"].insert_one({
+        "name": starting_point.name,
+        "heritage": starting_point.heritage,
+        "description": starting_point.wear,
+        "profession": starting_point.profession,
+        "languages": {},
+        "sex": sex,
+        "facts": {},
+        "relationships": {}
+    })
+
     response = await ask_characterbuilder([
         {
             "role": "user",
             "content": f"Name: {starting_point.name}\n"
                 f"Gender: {starting_point.gender}\n"
-                f"Race: {starting_point.race}\n"
+                f"Heritage: {starting_point.heritage}\n"
                 f"Wear/Clothing: {starting_point.wear}\n"
                 f"Profession: {starting_point.profession}\n"
                 f"location: {starting_point.location}\n"

@@ -33,6 +33,37 @@
       input.focus();
     });
   }
+  root.selectFrom = async (text: string, options: string[], defaultText: string = ''): Promise<string> => {
+    return new Promise(resolve => {
+      const prmt = createModal(text, true);
+      const select = document.createElement('select');
+      select.onchange = (event: Event) => {
+        if (select.value) {
+          document.body.removeChild(prmt);
+          resolve(select.value);
+        }
+      }
+      for (const option of ['', ...options]) {
+        const opt = document.createElement('option');
+        opt.value = option;
+        opt.appendChild(document.createTextNode(option));
+        select.appendChild(opt);
+        if (defaultText === option) {
+          opt.selected = true;
+        }
+      }
+      prmt.appendChild(select);
+      prmt.appendChild(root.button('Send', 'Send changes', () => {
+        if (!select.value) {
+          return;
+        }
+        document.body.removeChild(prmt);
+        resolve(select.value);
+      }, true));
+      document.body.appendChild(prmt);
+      select.focus();
+    });
+  }
   root.confirm = async (text: string): Promise<boolean> => {
     return new Promise(resolve => {
       const prmt = createModal(text);
