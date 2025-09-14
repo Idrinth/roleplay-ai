@@ -106,7 +106,12 @@ async def process_contributors():
             for i, avatar in enumerate(avatars):
                 row = i // avatars_per_row
                 col = i % avatars_per_row
-                x = 10 + col * (avatar_size + padding)
+                
+                avatars_in_this_row = avatars_per_row if (row < rows -1) else (len(avatars) % avatars_per_row or avatars_per_row)
+                row_width = avatars_in_this_row * (avatar_size + padding) - padding
+                offset_x = (width - row_width) // 2
+
+                x = offset_x + col * (avatar_size + padding)
                 y = 10 + row * (avatar_size + 20 + padding)
 
                 image.paste(avatar, (x, y), avatar)
