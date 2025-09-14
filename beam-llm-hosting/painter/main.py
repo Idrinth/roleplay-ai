@@ -51,7 +51,7 @@ def download_models():
 )
 def answer(context, **params):
     import torch
-    import uuid
+    from io import BytesIO
     import base64
     image_pipe = context.on_start_value
     image = image_pipe(
@@ -64,9 +64,9 @@ def answer(context, **params):
         generator=torch.Generator(device="cuda").manual_seed(42)
     ).images[0]
 
-    name = str(uuid.uuid4()) + ".jpg"
-    image.save(name)
-    with open(name, "rb") as image_file:
-        return {
-            "image": base64.b64encode(image_file.read()),
-        }
+    buf = BytesIO()
+    image.save(buf, format="JPEG", quality=90, optimize=True)
+    image_b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+    return {
+        "image": image_b64,
+    }
