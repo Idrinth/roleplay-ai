@@ -39,6 +39,7 @@ def download_models():
     ),
     keep_warm_seconds=30,
     authorized=True,
+    timeout=720,
     checkpoint_enabled=ENABLE_SNAPSHOTTING,
     image=Image(
         python_version="python3.11",
