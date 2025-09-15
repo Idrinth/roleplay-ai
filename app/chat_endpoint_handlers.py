@@ -306,6 +306,8 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
 
 async def chat_image_internal(chat_id: str, user_id: str):
     await prewarm_painter()
+    sql_connection.cursor().execute(
+        f"CREATE TABLE IF NOT EXISTS `{mariadb_name(user_id, chat_id)}`.`image` (id char(36) NOT NULL,content TEXT,PRIMARY KEY(id)) charset=utf8;")
     if ENABLE_MESSAGE_LIMITS:
         cursor = sql_connection.cursor()
         cursor.execute(
@@ -399,6 +401,9 @@ async def chat_copy_success(chat_id: str, user_id: str, copy: ChatCopy):
     sql_connection.cursor().execute(
         f"CREATE TABLE IF NOT EXISTS `{mariadb_name(user_id, new_chat_id)}`.documents (id char(36) NOT NULL, document_name varchar(255),"
         "content text, PRIMARY KEY(id)) charset=utf8;"
+    )
+    sql_connection.cursor().execute(
+        f"CREATE TABLE IF NOT EXISTS `{mariadb_name(user_id, chat_id)}`.`image` (id char(36) NOT NULL, message_id BIGINT NOT NULL,content TEXT,PRIMARY KEY(id)) charset=utf8;"
     )
     sql_connection.cursor().execute(
         f"INSERT INTO chat_users.mapping (chat_id, user_id, chat_name) VALUES (?, ?, ?);",
