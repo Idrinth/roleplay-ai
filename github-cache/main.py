@@ -5,7 +5,7 @@ from os.path import exists
 
 from fastapi.responses import FileResponse
 from fastapi_utils.tasks import repeat_every
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 import aiohttp
 from fastapi import FastAPI
 import os
@@ -42,16 +42,37 @@ async def fetch_contributors() -> list:
 
 def write_login(image: Image.Image, login: str, size: int):
     draw = ImageDraw.Draw(image)
-    text_length = math.ceil(draw.textlength(login))
-    if text_length > size:
-        login_first = login[:math.floor(len(login) / 2)]
-        login_second = login[math.floor(len(login) / 2):]
-        draw.text((size / 2 - math.ceil(draw.textlength(login_first)) / 2, size), login_first,
-                  fill=(0, 75, 0))
-        draw.text((size / 2 - math.ceil(draw.textlength(login_second)) / 2, size + 10), login_second,
-                  fill=(0, 75, 0))
-    else:
-        draw.text((size / 2 - text_length / 2, size), login, fill=(0, 75, 0))
+
+    font_size = max(14, size // 5)
+    try:
+        font = ImageFont.truetype("DejaVuSans-Bold.ttf", font_size)
+    except:
+        font = ImageFont.load_default()
+
+        text_width = draw.textlength(login, font=font)
+
+        if text_width > size:
+            mid = len(login) // 2
+            login_first = login[:mid]
+            login_second = login[mid:]
+
+            text_width1 = draw.textlength(login_first, font=font)
+            text_x1 = size / 2 - text_width1 / 2
+            text_y1 = size + 2 
+            draw.text((text_x1, text_y1), login_first, font=font,
+                      fill=(0, 75, 0), stroke_width=2, stroke_fill=(255, 255, 255))
+            
+            text_width2 = draw.textlength(login_second, font=font)
+            text_x2 = size / 2 - text_width2 / 2
+            text_y2 = size + font_size + 2
+            draw.text((text_x2, text_y2), login_second, font=font, 
+                      fill=(0, 75, 0), stroke_width=2, stroke_fill=(255, 255, 255))
+            
+        else:
+            text_x = size / 2 - text_width / 2
+            text_y = size + 2
+            draw.text((text_x, text_y), login, font=font, 
+                      fill=(0, 75, 0), stroke_width=2, stroke_fill=(255, 255, 255))
 
 async def download_avatar(session: aiohttp.ClientSession, avatar_url: str|None, login: str, avatar_size: int) -> Image.Image:
     if avatar_url:
