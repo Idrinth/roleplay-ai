@@ -1,0 +1,90 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "pip"
+    directory: "/app"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "pip"
+    directory: "/beam-llm-hosting/shared"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "pip"
+    directory: "/beam-llm-hosting/painter"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "pip"
+    directory: "/beam-llm-training/shared"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "pip"
+    directory: "/github-cache"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/app"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/beam-llm-hosting/characterbuilder"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/beam-llm-hosting/descriptor"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/beam-llm-hosting/gamemaster"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/beam-llm-hosting/painter"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/beam-llm-hosting/storysummariser"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/beam-llm-training/characterbuilder"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/beam-llm-training/descriptor"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/beam-llm-training/gamemaster"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/beam-llm-training/storysummariser"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/github-cache"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/grafana"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/loki"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/migrations"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/prometheus"
+    schedule:
+        interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/reverse-proxy"
+    schedule:
+        interval: "weekly"
