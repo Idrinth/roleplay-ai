@@ -31,14 +31,33 @@ if not exists(f"{BASE_PATH}.png"):
     save_image(image)
 
 async def fetch_contributors() -> list:
+    all_contributors = []
+    page = 1
+    
     headers = {}
     if GITHUB_API_KEY:
         headers["Authorization"] = f"token {GITHUB_API_KEY}"
-
-    async with aiohttp.ClientSession() as session:
-        async with session.get("https://api.github.com/repos/bjoern-buettner/roleplay-ai/contributors", headers=headers, timeout=aiohttp.ClientTimeout(total=30, connect=5)) as response:
-            response.raise_for_status()
-            return await response.json()
+        
+    while True:
+        try:
+            url = f"https://api.github.com/repos/bjoern-buettner/roleplay-ai/contributors?per_page=100&page={page}"
+            
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=30, connect=5)) as response:
+                    response.raise_for_status()
+                    contributors = await response.json()
+                    
+                    if not contributors:
+                        break
+                    
+                    all_contributors.extend(contributors)
+                    page += 1
+                    
+        except aiohttp.ClientError as e:
+            print(f"an error occured: {e}")
+            break
+        
+    return all_contributors
 
 def write_login(image: Image.Image, login: str, size: int):
     draw = ImageDraw.Draw(image)
