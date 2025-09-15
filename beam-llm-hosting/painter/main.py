@@ -1,6 +1,5 @@
 from beam import endpoint, Image, QueueDepthAutoscaler
 from shared.download_models import CACHE_PATH
-from shared.allowed_gpus import ALL_POSSIBLE_GPUS
 from shared.volumes import VOLUMES
 from shared.enable_snapshotting import ENABLE_SNAPSHOTTING
 
@@ -31,7 +30,7 @@ def download_models():
     on_start=download_models,
     volumes=VOLUMES,
     cpu=2,
-    gpu=ALL_POSSIBLE_GPUS,
+    gpu=["A100-40"],
     memory="6Gi",
     autoscaler=QueueDepthAutoscaler(
         max_containers=5,
