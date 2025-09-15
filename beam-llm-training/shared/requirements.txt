@@ -1,1 +1,1 @@
-beam-client~=0.2.176
+beam-client~=0.2.178
