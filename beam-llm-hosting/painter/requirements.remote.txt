@@ -1,4 +1,4 @@
-torch~=2.7.1
+torch~=2.8.0
 huggingface_hub[hf-transfer]~=0.34.4
 diffusers~=0.35.1
 transformers~=4.54.1
