@@ -1,4 +1,4 @@
-FROM grafana/grafana-oss:12.0.2
+FROM grafana/grafana-oss:12.1.1
 
 USER root
 
