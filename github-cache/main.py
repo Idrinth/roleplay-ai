@@ -43,7 +43,7 @@ async def fetch_contributors() -> list:
 def write_login(image: Image.Image, login: str, size: int):
     draw = ImageDraw.Draw(image)
 
-    font_size = 10
+    font_size = 12
     try:
         font = ImageFont.truetype("DejaVuSans-Bold.ttf", font_size)
     except Exception:
