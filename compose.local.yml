@@ -9,9 +9,6 @@ services:
     restart: always
     deploy:
       replicas: 1
-      resources:
-        limits:
-          cpus: 15
     healthcheck:
       test: [ "CMD", "echo", "0" ]
       interval: 10s
@@ -37,9 +34,6 @@ services:
     restart: always
     deploy:
       replicas: 1
-      resources:
-        limits:
-          cpus: 15
     healthcheck:
       test: [ "CMD", "echo", "0" ]
       interval: 10s
@@ -65,9 +59,6 @@ services:
     restart: always
     deploy:
       replicas: 1
-      resources:
-        limits:
-          cpus: 15
     healthcheck:
       test: [ "CMD", "echo", "0" ]
       interval: 10s

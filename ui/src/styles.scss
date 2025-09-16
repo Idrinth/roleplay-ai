@@ -697,3 +697,16 @@ nav, footer {
     display: block;
   }
 }
+
+@media screen and (width < 600px) {
+  #prompt {
+    padding: calc(50vh - 100px) calc(50vw - 150px);
+    display: grid;
+    grid-template-rows: 1fr 1fr 1fr;
+    grid-template-columns: 1fr;
+    > label, > p {
+      grid-column-start: unset;
+      grid-column-end: unset;
+    }
+  }
+}
