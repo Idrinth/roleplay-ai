@@ -160,7 +160,7 @@ services:
     deploy:
       replicas: 1
     build:
-      dockerfile: reverse_proxy/Dockerfile
+      dockerfile: reverse-proxy/Dockerfile
       no_cache: true
     logging:
       driver: loki
