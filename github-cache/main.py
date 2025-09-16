@@ -44,6 +44,7 @@ def write_login(image: Image.Image, login: str, size: int):
     draw = ImageDraw.Draw(image)
 
     font_size = 12
+
     try:
         font = ImageFont.truetype("DejaVuSans-Bold.ttf", font_size)
     except Exception:
