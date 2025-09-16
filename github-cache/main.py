@@ -43,11 +43,11 @@ async def fetch_contributors() -> list:
 def write_login(image: Image.Image, login: str, size: int):
     draw = ImageDraw.Draw(image)
 
-    font_size = max(14, size // 5)
+    font_size = 13
     try:
         font = ImageFont.truetype("DejaVuSans-Bold.ttf", font_size)
     except Exception:
-        font = ImageFont.load_default()
+        font = ImageFont.load_default(font_size)
 
     text_width = draw.textlength(login, font=font)
 
@@ -116,7 +116,7 @@ async def process_contributors():
         rows = (len(contributors) + avatars_per_row - 1) // avatars_per_row
 
         width = avatars_per_row * (avatar_size + padding) - padding + 20
-        height = rows * (avatar_size + 20 + padding) - padding + 20
+        height = rows * (avatar_size + 50 + padding) - padding + 20
 
         image = Image.new('RGBA', (width, height), (255, 255, 255, 0))
 
@@ -133,7 +133,7 @@ async def process_contributors():
                 offset_x = (width - row_width) // 2
 
                 x = offset_x + col * (avatar_size + padding)
-                y = 10 + row * (avatar_size + 20 + padding)
+                y = 10 + row * (avatar_size + 50 + padding)
 
                 image.paste(avatar, (x, y), avatar)
 
