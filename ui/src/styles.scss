@@ -241,23 +241,28 @@ textarea {
   color: var(--main-striking);
   border-color: var(--bar-background-color);
 }
+.button.edit, button.edit,
+.button.wizard, button.wizard,
 .button.delete, button.delete {
-  background-image: url("/delete.dark.svg"),
-    linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
-    linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
   background-size: 100%;
   background-repeat: no-repeat;
   background-position: center;
   color: transparent;
 }
+.button.delete, button.delete {
+  background-image: url("/delete.dark.svg"),
+    linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
+    linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
+}
 .button.edit, button.edit {
   background-image: url("/edit.dark.svg"),
     linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
     linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
-  background-size: 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  color: transparent;
+}
+.button.wizard, button.wizard {
+  background-image: url("/wizard.dark.svg"),
+    linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
+    linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
 }
 .inverted-colors {
   .button.edit, button.edit {
@@ -267,6 +272,11 @@ textarea {
   }
   .button.delete, button.delete {
     background-image: url("/delete.light.svg"),
+      linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
+      linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
+  }
+  .button.wizard, button.wizard {
+    background-image: url("/wizard.light.svg"),
       linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
       linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
   }
@@ -430,6 +440,13 @@ nav, footer {
 .name-edit-delete {
   display: grid;
   grid-template-columns: auto 2.25em 2.25em;
+  span {
+    align-self: center;
+  }
+}
+.name-edit-delete-wizard {
+  display: grid;
+  grid-template-columns: auto 2.25em 2.25em 2.25em;
   span {
     align-self: center;
   }

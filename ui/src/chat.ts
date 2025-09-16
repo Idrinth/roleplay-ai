@@ -1,3 +1,28 @@
+interface CharSheet {
+  id: string,
+  name: string,
+  sex: 'male'|'female'|'other'|'none',
+  description: string,
+  heritage: string,
+  profession: string,
+  facts: {
+    [name: string]: string,
+  },
+  relationships: {
+    [name: string]: {
+      description: string,
+      events: string[],
+    },
+  },
+  languages: {
+    [name: string]: {
+      read: boolean,
+      write: boolean,
+      speak: boolean,
+    }
+  }
+}
+
 (async (root) => {
   // if the purifier is not there, the only one suffering is the user themselves
   const purifier = window.DOMPurify?.sanitize ?? ((html: string) => {return html;});
@@ -20,7 +45,7 @@
       return await root.getFromAPI(`whoami`, 'GET');
     }
     const uuid = (await root.getFromAPI(`register`, 'POST', {
-        password: await root.prompt("Enter a password for your account.", root.password())
+        password: await root.prompt("Enter a password for your new account.", root.password())
       }, 10000) as {user?: string}).user ?? false;
     if (uuid === false) {
       await root.alert("Registration failed!");
@@ -150,13 +175,13 @@
       }
     }
     if (root.isObjectWithProperty(json, 'characters') && Array.isArray(json['characters'])) {
-      for (const character of (json as { characters: {id: string, name: string}[] }).characters) {
+      for (const character of (json as { characters: CharSheet[] }).characters) {
         const characterElement = document.createElement('li');
-        characterElement.setAttribute('class', 'name-edit-delete');
+        characterElement.setAttribute('class', 'name-edit-delete-wizard');
         characters.appendChild(characterElement);
         characterElement.appendChild(document.createElement('span'));
         characterElement.lastElementChild?.appendChild(document.createTextNode(character.name));
-        characterElement.appendChild(root.button('[E]', 'Edit character', async (event: MouseEvent) => {
+        const edit = async (event: MouseEvent) => {
           event.stopPropagation();
           const el = document.createElement('textarea');
           el.setAttribute('id', 'character')
@@ -166,12 +191,31 @@
           el.value = window?.jsyaml?.dump(char) ?? '';
           el.setAttribute('data-raw', el.value);
           document.body.appendChild(el);
-        }));
+        };
+        characterElement.appendChild(root.button('[E]', 'Edit character', edit));
         characterElement.appendChild(root.button('[D]', 'Delete character', async (event: MouseEvent) => {
           event.stopPropagation();
           if (await root.confirm("Do you want to delete this character sheet?")) {
             await root.getFromAPI(`chat/${chat.id}/characters/${character.id}/delete`, 'POST');
             await updateCharacters();
+          }
+        }));
+        characterElement.appendChild(root.button('[W]', 'Wizard-Edit character', async (event: MouseEvent) => {
+          event.stopPropagation();
+          const charData = {
+            name: await root.prompt("What is your character's name?", character.name),
+            heritage: await root.prompt("What is your character's heritage(race, species etc.)?", character.heritage),
+            sex: await root.selectFrom("What is your character's gender?", ['male', 'female', 'other', 'none'], character.sex),
+            description: await root.prompt("What does your character look like?", character.description),
+            profession: await root.prompt("What is your character's profession?", character.profession),
+            facts: character.facts,
+            relationships: character.relationships,
+            languages: character.languages,
+          };
+          await edit(event)
+          const output = document.getElementById('character') as HTMLTextAreaElement|null;
+          if (output) {
+            output.value = window?.jsyaml?.dump(charData) ?? '';
           }
         }));
       }

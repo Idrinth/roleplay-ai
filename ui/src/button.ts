@@ -5,6 +5,8 @@
       button.classList.add('edit');
     } else if (text === '[D]') {
       button.classList.add('delete');
+    } else if (text === '[W]') {
+      button.classList.add('wizard');
     }
     button.appendChild(document.createTextNode(text));
     button.setAttribute('title', title);
