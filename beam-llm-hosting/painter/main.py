@@ -22,7 +22,9 @@ def download_models():
         new_session=False,
     )
 
-    return DiffusionPipeline.from_pretrained("ovedrive/qwen-image-4bit", torch_dtype=torch.bfloat16).to("cuda")
+    return (DiffusionPipeline
+            .from_pretrained("ovedrive/qwen-image-4bit", torch_dtype=torch.bfloat16)
+            .to("cuda:0"))
 
 @endpoint(
     secrets=["HUGGINGFACE_TOKEN"],
@@ -59,7 +61,7 @@ def answer(context, **params):
         negative_prompt=blacklist,
         width=1664,
         height=928,
-        num_inference_steps=50,
+        num_inference_steps=15,
         true_cfg_scale=4.0,
         generator=torch.Generator(device="cuda").manual_seed(42)
     ).images[0]
