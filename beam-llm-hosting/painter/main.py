@@ -63,7 +63,7 @@ def answer(context, **params):
         height=928,
         num_inference_steps=15,
         true_cfg_scale=4.0,
-        generator=torch.Generator(device="cuda").manual_seed(42)
+        generator=torch.Generator(device="cuda:0").manual_seed(42)
     ).images[0]
 
     buf = BytesIO()

@@ -261,7 +261,7 @@ interface CharSheet {
     }
   }
   await updateCharacters();
-  document.getElementById('add-character')?.addEventListener('click', async (event) => {
+  const newChar = async (event: MouseEvent) => {
     event.stopPropagation();
     const el = document.createElement('textarea');
     el.setAttribute('id', 'character');
@@ -283,6 +283,24 @@ interface CharSheet {
       '    events:\n' +
       '    - Raised me\n';
     document.body.appendChild(el);
+  };
+  document.getElementById('add-character')?.addEventListener('click', newChar);
+  document.getElementById('add-character-wizard')?.addEventListener('click', async (event) => {
+    const charData = {
+      name: await root.prompt("What is your character's name?"),
+      heritage: await root.prompt("What is your character's heritage(race, species etc.)?"),
+      sex: await root.selectFrom("What is your character's gender?", ['male', 'female', 'other', 'none']),
+      description: await root.prompt("What does your character look like?"),
+      profession: await root.prompt("What is your character's profession?"),
+      facts: {},
+      relationships: {},
+      languages: {},
+    };
+    await newChar(event)
+    const output = document.getElementById('character') as HTMLTextAreaElement|null;
+    if (output) {
+      output.value = window?.jsyaml?.dump(charData) ?? '';
+    }
   });
   await updateDocuments();
   document.getElementById('add-document')?.addEventListener('click', async (event) => {
