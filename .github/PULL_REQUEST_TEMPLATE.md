@@ -71,6 +71,9 @@ If not applicable (e.g., docs-only), state: N/A
 - [ ] No secrets or sensitive data are present in code, logs, or screenshots
 - [ ] For UI changes: I have considered accessibility (a11y) and provided alt text
 - [ ] If breaking changes exist, I have documented them above
+- [ ] I understand that this is a **volunteer project** with **no employment relationship**
+- [ ] I agree that **payment is never guaranteed** and is **invite-only**, based on prior contributions and urgent need
+- [ ] I will **not** ask maintainers about budgets, solvency, or payment unless explicitly invited to do so
 
 ---
 
