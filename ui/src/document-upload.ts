@@ -8,6 +8,12 @@
       return;
     }
     const upload = async() => {
+      try {
+        await getBody(element);
+      } catch (e) {
+        await root.alert(`Failed to upload: ${e}`);
+        return;
+      }
       const id = element.getAttribute('data-id');
       if (id) {
         if (element.value && element.getAttribute('data-raw') !== element.value && await root.confirm(`Do you want to save this modified ${resource}?`)) {
