@@ -429,7 +429,7 @@ async def chat_copy_success(chat_id: str, user_id: str, copy: ChatCopy):
         except mariadb.Error as error:
             pass
     cursor3 = sql_connection.cursor()
-    cursor3.execute(f"SELECT content, creator FROM `{mariadb_name(user_id, chat_id)}`.messages WHERE aid <= {copy.max_autoincrement} ORDER BY aid;")
+    cursor3.execute(f"SELECT content, creator FROM `{mariadb_name(user_id, chat_id)}`.messages WHERE aid <= ? ORDER BY aid;", [copy.max_autoincrement])
     replies = 0
     for (content, creator) in cursor3.fetchall():
         sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, new_chat_id)}`.messages (content, creator) VALUES (?, ?);", [content, creator])
