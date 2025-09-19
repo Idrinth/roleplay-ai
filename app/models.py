@@ -78,4 +78,4 @@ class Character(BaseModel):
         use_enum_values = True
 
 class ChatCopy(BaseModel):
-    num_messages: int = Field(ge=0)
+    max_autoincrement: int = Field(ge=0)

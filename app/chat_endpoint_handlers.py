@@ -134,6 +134,7 @@ async def chat_history_success(chat_id, user_id):
         messages.append({
             "role": message[0],
             "content": message[1],
+            "aid": message[2],
         })
     await prewarm_gamemaster()
     return {"messages": messages}
@@ -428,7 +429,7 @@ async def chat_copy_success(chat_id: str, user_id: str, copy: ChatCopy):
         except mariadb.Error as error:
             pass
     cursor3 = sql_connection.cursor()
-    cursor3.execute(f"SELECT content, creator FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid ASC LIMIT {copy.num_messages * 2};")
+    cursor3.execute(f"SELECT content, creator FROM `{mariadb_name(user_id, chat_id)}`.messages WHERE aid <= {copy.max_autoincrement} ORDER BY aid;")
     replies = 0
     for (content, creator) in cursor3.fetchall():
         sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, new_chat_id)}`.messages (content, creator) VALUES (?, ?);", [content, creator])
