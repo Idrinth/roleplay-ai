@@ -221,26 +221,29 @@ interface CharSheet {
       }
     }
   }
+  const addChatElement = async (text: string, isFromAgent: boolean) => {
+      const element = document.createElement('li');
+      chatWrapper.appendChild(element);
+      element.innerHTML = (isFromAgent ? '<span class="gamemaster"></span>' : '') + purifier(converter.makeHtml(text));
+      element.classList.add('agent');
+      element.scrollIntoView({ behavior: 'smooth' });
+      element.setAttribute('id', `message-${chatWrapper.childElementCount + 1}`);
+  }
   sendButton.addEventListener('click', async function () {
     const value = chatEntry.value;
     if (!await root.maySendMessage() || !value || !value.trim()) {
       return;
     }
     chatEntry.value = '';
-    const chatElement = document.createElement('li');
-    chatWrapper.appendChild(chatElement);
-    chatElement.innerHTML = purifier(converter.makeHtml(value));
-    chatElement.classList.add('user');
-    chatElement.scrollIntoView({ behavior: 'smooth' });
     const json = await root.getFromAPI(`chat/${chat.id}`, 'POST', {description: value}, 75000) as {message?: string, error?: string, exception?: string};
     if (typeof json === 'object' && Object.hasOwn(json, 'message')) {
       const message = (json as {message: string}).message;
-      const reply = document.createElement('li');
-      chatWrapper.appendChild(reply);
-      reply.innerHTML = '<span class="gamemaster"></span>' + purifier(converter.makeHtml(message));
-      reply.classList.add('agent');
-      reply.scrollIntoView({ behavior: 'smooth' });
+      await addChatElement(value, false);
+      await addChatElement(message, true);
+      return;
     }
+    await root.alert('There was an unexpected error trying to send the message. Please reload the page and try again if that doesn\'t fix it.');
+    chatEntry.value = value;
   });
   let handlingClick = false;
   document.body.onclick = async (event) => {
@@ -314,12 +317,7 @@ interface CharSheet {
     const json = await root.getFromAPI(`chat/${chat.id}`, 'GET');
     if (typeof json === 'object' && json !== null && Object.hasOwn(json, 'messages') && Array.isArray((json as {messages: []}).messages)) {
       for (const message of (json as {messages: {role: string, content: string}[]}).messages) {
-        const listElement = document.createElement('li');
-        chatWrapper.appendChild(listElement);
-        const newHTML = converter.makeHtml(message.content);
-        listElement.innerHTML = (message.role === 'agent' ? '<span class="gamemaster"></span>' : '') + purifier(newHTML);
-        listElement.classList.add(message.role);
-        listElement.scrollIntoView({ behavior: 'smooth' });
+        await addChatElement(message.content, message.role === 'agent');
       }
       if (((json as {messages?: []})?.messages ?? [])?.length === 0 && !chatEntry.value && await root.confirm('Do you want help with your beginning scene? This will use up one of your messages.')) {
         const keywords = await root.prompt("What is the world like? Please provide keywords separated by comma.");
