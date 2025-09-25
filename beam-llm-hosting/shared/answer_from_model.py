@@ -1,3 +1,5 @@
+from unittest import result
+
 import torch
 from typing import List, Dict
 
@@ -24,13 +26,23 @@ def answer_from_model(model, tokenizer, incoming_messages: List[Dict[str, str]],
         max_new_tokens=max_tokens,
         pad_token_id=tokenizer.eos_token_id,
     )
-    result = tokenizer.batch_decode(
+    llm_result = tokenizer.batch_decode(
         generated,
         skip_special_tokens=True,
         clean_up_tokenization_spaces=True,
     )[0]
 
-    outputs = result.split("\n assistant\n")
-    output = outputs[len(outputs) - 1]
-    outputs = output.split(incoming_messages[len(incoming_messages) - 1]["content"])
+    if llm_result == "":
+        raise Exception("No answer from model")
+    last_message = incoming_messages[len(incoming_messages) - 1]["content"]
+    outputs = llm_result.split(last_message)
+    strpos = 0
+    while len(outputs) == 1:
+        # something was changed in the last message, likely dot or comma placement corrections
+        strpos += 1
+        if strpos >= len(last_message):
+            raise Exception("Can't find last message in output.")
+        outputs = llm_result.split(last_message[strpos:])
+    if outputs[len(outputs) - 1] == "":
+        raise Exception("No answer from model")
     return outputs[len(outputs) - 1]
