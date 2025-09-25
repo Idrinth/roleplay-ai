@@ -34,7 +34,7 @@ def answer_from_model(model, tokenizer, incoming_messages: List[Dict[str, str]],
 
     if llm_result == "":
         raise Exception("No answer from model")
-    last_message = incoming_messages[len(incoming_messages) - 1]["content"]
+    last_message = incoming_messages[len(incoming_messages) - 1]["content"].strip()
     outputs = llm_result.split(last_message)
     strip_position = 0
     while len(outputs) == 1:
@@ -43,6 +43,7 @@ def answer_from_model(model, tokenizer, incoming_messages: List[Dict[str, str]],
         if strip_position >= len(last_message) - 3:
             raise Exception("Can't find last message in output.")
         outputs = llm_result.split(last_message[strip_position:])
-    if outputs[len(outputs) - 1] == "":
+    output = outputs[len(outputs) - 1].strip()
+    if output == "":
         raise Exception("No answer from model")
-    return outputs[len(outputs) - 1]
+    return output
