@@ -36,13 +36,13 @@ def answer_from_model(model, tokenizer, incoming_messages: List[Dict[str, str]],
         raise Exception("No answer from model")
     last_message = incoming_messages[len(incoming_messages) - 1]["content"]
     outputs = llm_result.split(last_message)
-    strpos = 0
+    strip_position = 0
     while len(outputs) == 1:
         # something was changed in the last message, likely dot or comma placement corrections
-        strpos += 1
-        if strpos >= len(last_message):
+        strip_position += 1
+        if strip_position >= len(last_message) - 3:
             raise Exception("Can't find last message in output.")
-        outputs = llm_result.split(last_message[strpos:])
+        outputs = llm_result.split(last_message[strip_position:])
     if outputs[len(outputs) - 1] == "":
         raise Exception("No answer from model")
     return outputs[len(outputs) - 1]
