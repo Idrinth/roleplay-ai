@@ -114,7 +114,11 @@ async def ask_gamemaster(messages: List[Dict[str, str]]):
 async def ask_painter(messages: List[Dict[str, str]]):
     if llm_to_use == "beam":
         description = await ask_beam(messages, beam_descriptor_url)
-        return await ask_beam([{"role": "user", "content": description}], beam_painter_url)
+        image = await ask_beam([{"role": "user", "content": description}], beam_painter_url)
+        return {
+            "image": image,
+            "content": description,
+        }
     elif llm_to_use == "local":
         return ""
 

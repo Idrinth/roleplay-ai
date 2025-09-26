@@ -377,7 +377,7 @@ async def chat_image_internal(chat_id: str, user_id: str):
     if system_prompt:
         messages[0]["content"] += "\n\n" + system_prompt
     response = await ask_painter(messages)
-    return {"image": response}
+    return {"image": response["image"], "alt": response["content"]}
 
 async def chat_name_success(chat_id: str, user_id: str, chat_data: Chat):
     if not chat_data.name:
