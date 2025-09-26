@@ -25,6 +25,10 @@
   }, 2500);
   let updateTimeout: null|number = null;
   const checkCredits = async () => {
+    if (updateTimeout) {
+      clearTimeout(updateTimeout);
+      updateTimeout = null;
+    }
     const response = await root.getFromAPI('ratelimits', 'GET');
     if (!root.isObjectWithProperty(response, 'remainingMessages')) {
       creditsAreEmpty = true;

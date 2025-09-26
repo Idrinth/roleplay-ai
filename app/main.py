@@ -576,10 +576,9 @@ async def chat(
             pass
     return chat_message
 
-@app.get("/chat/{chat_id}/image/{image_id}")
+@app.post("/chat/{chat_id}/image")
 async def chat_image(
     chat_id: str,
-    image_id: str,
     user_jwt: Annotated[str | None, Cookie()] = None,
 ):
     chat_image = await wrap(
@@ -594,6 +593,33 @@ async def chat_image(
         except mariadb.Error as error:
             pass
     return chat_image
+
+@app.get("/chat/{chat_id}/image/{image_id}")
+async def chat_image(
+    chat_id: str,
+    image_id: str,
+    user_jwt: Annotated[str | None, Cookie()] = None,
+):
+    if not user_jwt:
+        return {"error": "Login Required"}
+    user_id = user_id_from_jwt(user_jwt)
+    if not is_uuid_like(user_id):
+        return {"error": "Login Required"}
+    if not is_uuid_like(image_id):
+        return {"error": "Image invalid"}
+    sql_connection.ping()
+    sql_connection.cursor().execute(
+        f"CREATE TABLE IF NOT EXISTS `{mariadb_name(user_id, chat_id)}`.`images` (id char(36) NOT NULL,content TEXT,PRIMARY KEY(id)) charset=utf8;")
+    sql_connection.cursor().execute(f"ALTER TABLE `{mariadb_name(user_id, chat_id)}`.`images` ADD COLUMN IF NOT EXISTS alt TEXT;")
+    cursor = sql_connection.cursor()
+    cursor.execute(f"SELECT content, alt FROM `{mariadb_name(user_id, chat_id)}`.`images` WHERE id=?", (image_id,))
+    for image in cursor.fetchall():
+        return {
+            "image": image[0],
+            "alt": image[1],
+        }
+    return {"error": "Image not found"}
+
 
 
 @app.post("/chat/{chat_id}/starting-point-proposal")
