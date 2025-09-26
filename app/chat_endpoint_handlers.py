@@ -125,16 +125,22 @@ async def chat_delete_success(chat_id, user_id):
 async def chat_history_success(chat_id, user_id):
     messages = []
     sql_connection.ping()
+    try:
+        sql_connection.cursor().execute(f"ALTER TABLE `{mariadb_name(user_id, chat_id)}`.messages ADD COLUMN IF NOT EXISTS image char(36) DEFAULT NULL;")
+    except mariadb.Error as e:
+        log_exception(e, "chat_history_success")
+        return {"messages": []}
     cursor = sql_connection.cursor()
     cursor.execute(
-        f"SELECT creator, content, aid FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid;"
+        f"SELECT creator, content, image, aid FROM `{mariadb_name(user_id, chat_id)}`.messages ORDER BY aid;"
     )
     old_messages = cursor.fetchall()
     for message in old_messages:
         messages.append({
             "role": message[0],
             "content": message[1],
-            "aid": message[2],
+            "image": message[2],
+            "aid": message[3],
         })
     await prewarm_gamemaster()
     return {"messages": messages}
@@ -213,6 +219,7 @@ CHAT_SUMMARY_WINDOWS = {
 
 async def chat_message_internal(chat_id: str, user_id: str, action: Action, background_tasks: BackgroundTasks):
     await prewarm_gamemaster()
+    sql_connection.ping()
     if ENABLE_MESSAGE_LIMITS:
         cursor = sql_connection.cursor()
         cursor.execute(
@@ -307,8 +314,10 @@ async def chat_message_internal(chat_id: str, user_id: str, action: Action, back
 
 async def chat_image_internal(chat_id: str, user_id: str):
     await prewarm_painter()
+    sql_connection.ping()
     sql_connection.cursor().execute(
-        f"CREATE TABLE IF NOT EXISTS `{mariadb_name(user_id, chat_id)}`.`image` (id char(36) NOT NULL,content TEXT,PRIMARY KEY(id)) charset=utf8;")
+        f"CREATE TABLE IF NOT EXISTS `{mariadb_name(user_id, chat_id)}`.`images` (id char(36) NOT NULL,content TEXT,PRIMARY KEY(id)) charset=utf8;")
+    sql_connection.cursor().execute(f"ALTER TABLE `{mariadb_name(user_id, chat_id)}`.`images` ADD COLUMN IF NOT EXISTS alt TEXT;")
     if ENABLE_MESSAGE_LIMITS:
         cursor = sql_connection.cursor()
         cursor.execute(
@@ -377,6 +386,9 @@ async def chat_image_internal(chat_id: str, user_id: str):
     if system_prompt:
         messages[0]["content"] += "\n\n" + system_prompt
     response = await ask_painter(messages)
+    image_id = str(uuid.uuid4())
+    sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.images (id, content, alt) VALUES (?, ?, ?);", (image_id, response["content"], response["alt"]))
+    sql_connection.cursor().execute(f"UPDATE `{mariadb_name(user_id, chat_id)}`.messages SET image=? WHERE aid=?;", (image_id, aid_max))
     return {"image": response["image"], "alt": response["content"]}
 
 async def chat_name_success(chat_id: str, user_id: str, chat_data: Chat):

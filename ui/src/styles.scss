@@ -243,7 +243,9 @@ textarea {
 }
 .button.edit, button.edit,
 .button.wizard, button.wizard,
-.button.delete, button.delete {
+.button.delete, button.delete,
+.button.load-image, button.load-image,
+.button.generate-image, button.generate-image {
   background-size: 100%;
   background-repeat: no-repeat;
   background-position: center;
@@ -264,6 +266,16 @@ textarea {
     linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
     linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
 }
+.button.load-image, button.load-image {
+  background-image: url("/load-image.dark.svg"),
+    linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
+    linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
+}
+.button.generate-image, button.generate-image {
+  background-image: url("/generate-image.dark.svg"),
+    linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
+    linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
+}
 .inverted-colors {
   .button.edit, button.edit {
     background-image: url("/edit.light.svg"),
@@ -277,6 +289,16 @@ textarea {
   }
   .button.wizard, button.wizard {
     background-image: url("/wizard.light.svg"),
+      linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
+      linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
+  }
+  .button.load-image, button.load-image {
+    background-image: url("/load-image.light.svg"),
+      linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
+      linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
+  }
+  .button.generate-image, button.generate-image {
+    background-image: url("/generate-image.light.svg"),
       linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,0)),
       linear-gradient(to right, rgba(255,255,255,0.005), rgba(255,255,255,0.015), rgba(255,255,255,00));
   }

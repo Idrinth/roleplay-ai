@@ -221,13 +221,33 @@ interface CharSheet {
       }
     }
   }
-  const addChatElement = async (text: string, isFromAgent: boolean) => {
+  const addChatElement = async (text: string, isFromAgent: boolean, image: null|string) => {
       const element = document.createElement('li');
       chatWrapper.appendChild(element);
       element.innerHTML = (isFromAgent ? '<span class="gamemaster"></span>' : '') + purifier(converter.makeHtml(text));
       element.classList.add('agent');
       element.scrollIntoView({ behavior: 'smooth' });
       element.setAttribute('id', `message-${chatWrapper.childElementCount + 1}`);
+      if (isFromAgent) {
+        const old = document.getElementById('generate-image');
+        if (old) {
+          old.parentElement?.removeChild(old);
+        }
+        element.appendChild(root.button(image ? '[L]' : '[G]', image ? 'Load Image' : 'Generate Image', async(ev: MouseEvent) => {
+          const data = await (image ? root.getFromAPI(`chat/${chat.id}/image/${image}`, 'GET') : root.getFromAPI(`chat/${chat.id}/image`, 'POST')) as {alt?: string, image?: string, error?: string};
+          if (root.isObjectWithProperty(data, 'error')) {
+            await root.prompt(data.error as string);
+            return;
+          }
+          const img = document.createElement('img');
+          img.setAttribute('src', 'data:image/jpeg;base64,' + data['image']);
+          img.setAttribute('alt', data['alt']);
+          element.replaceChild(img, element.lastChild as Node);
+        }));
+        if (!image) {
+          element.lastElementChild?.setAttribute('id', 'generate-image');
+        }
+      }
   }
   sendButton.addEventListener('click', async function () {
     const value = chatEntry.value;
@@ -238,8 +258,8 @@ interface CharSheet {
     const json = await root.getFromAPI(`chat/${chat.id}`, 'POST', {description: value}, 75000) as {message?: string, error?: string, exception?: string};
     if (typeof json === 'object' && Object.hasOwn(json, 'message')) {
       const message = (json as {message: string}).message;
-      await addChatElement(value, false);
-      await addChatElement(message, true);
+      await addChatElement(value, false, null);
+      await addChatElement(message, true, null);
       return;
     }
     await root.alert('There was an unexpected error trying to send the message. Please reload the page and try again if that doesn\'t fix it.');
@@ -316,8 +336,8 @@ interface CharSheet {
   await (async () => {
     const json = await root.getFromAPI(`chat/${chat.id}`, 'GET');
     if (typeof json === 'object' && json !== null && Object.hasOwn(json, 'messages') && Array.isArray((json as {messages: []}).messages)) {
-      for (const message of (json as {messages: {role: string, content: string}[]}).messages) {
-        await addChatElement(message.content, message.role === 'agent');
+      for (const message of (json as {messages: {role: string, content: string, image?: string|null}[]}).messages) {
+        await addChatElement(message.content, message.role === 'agent', message.image ?? null);
       }
       if (((json as {messages?: []})?.messages ?? [])?.length === 0 && !chatEntry.value && await root.confirm('Do you want help with your beginning scene? This will use up one of your messages.')) {
         const keywords = await root.prompt("What is the world like? Please provide keywords separated by comma.");

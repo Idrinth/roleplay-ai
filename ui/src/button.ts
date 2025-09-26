@@ -7,6 +7,10 @@
       button.classList.add('delete');
     } else if (text === '[W]') {
       button.classList.add('wizard');
+    } else if (text === '[L]') {
+      button.classList.add('load-image');
+    }else if (text === '[G]') {
+      button.classList.add('generate-image');
     }
     button.appendChild(document.createTextNode(text));
     button.setAttribute('title', title);
