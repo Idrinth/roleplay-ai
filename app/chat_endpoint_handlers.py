@@ -387,6 +387,7 @@ async def chat_image_internal(chat_id: str, user_id: str):
         messages[0]["content"] += "\n\n" + system_prompt
     response = await ask_painter(messages)
     image_id = str(uuid.uuid4())
+    sql_connection.ping()
     sql_connection.cursor().execute(f"INSERT INTO `{mariadb_name(user_id, chat_id)}`.images (id, content, alt) VALUES (?, ?, ?);", (image_id, response["content"], response["alt"]))
     sql_connection.cursor().execute(f"UPDATE `{mariadb_name(user_id, chat_id)}`.messages SET image=? WHERE aid=?;", (image_id, aid_max))
     return {"image": response["image"], "alt": response["content"]}
