@@ -234,7 +234,7 @@ interface CharSheet {
           old.parentElement?.removeChild(old);
         }
         element.appendChild(root.button(image ? '[L]' : '[G]', image ? 'Load Image' : 'Generate Image', async(ev: MouseEvent) => {
-          const data = await (image ? root.getFromAPI(`chat/${chat.id}/image/${image}`, 'GET') : root.getFromAPI(`chat/${chat.id}/image`, 'POST')) as {alt?: string, image?: string, error?: string};
+          const data = (image ? await root.getFromAPI(`chat/${chat.id}/image/${image}`, 'GET') : await root.getFromAPI(`chat/${chat.id}/image`, 'POST')) as {alt?: string, image?: string, error?: string};
           if (root.isObjectWithProperty(data, 'error')) {
             await root.prompt(data.error as string);
             return;
