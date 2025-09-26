@@ -70,5 +70,5 @@ def answer(context, **params):
     image.save(buf, format="JPEG", quality=90, optimize=True)
     image_b64 = base64.b64encode(buf.getvalue()).decode("ascii")
     return {
-        "image": image_b64,
+        "answer": image_b64,
     }
