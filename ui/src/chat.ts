@@ -228,12 +228,20 @@ interface CharSheet {
       element.classList.add('agent');
       element.scrollIntoView({ behavior: 'smooth' });
       element.setAttribute('id', `message-${chatWrapper.childElementCount + 1}`);
+      let imageRequested = false;
       if (isFromAgent) {
         const old = document.getElementById('generate-image');
         if (old) {
           old.parentElement?.removeChild(old);
         }
         element.appendChild(root.button(image ? '[L]' : '[G]', image ? 'Load Image' : 'Generate Image', async(ev: MouseEvent) => {
+          if (imageRequested) {
+            return;
+          }
+          if (!image && !(await root.prompt("Do you want to spent a message on image generation?"))) {
+            return;
+          }
+          imageRequested = true;
           const data = await (image ? root.getFromAPI(`chat/${chat.id}/image/${image}`, 'GET') : root.getFromAPI(`chat/${chat.id}/image`, 'POST')) as {alt?: string, image?: string, error?: string};
           if (root.isObjectWithProperty(data, 'error')) {
             await root.prompt(data.error as string);
