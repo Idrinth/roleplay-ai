@@ -242,7 +242,7 @@ interface CharSheet {
             imageRequested = true;
             const data = await root.getFromAPI(`chat/${chat.id}/image/${image}`, 'GET') as {alt?: string, image?: string, error?: string};
             if (root.isObjectWithProperty(data, 'error')) {
-              await root.prompt(data.error as string);
+              await root.alert(data.error as string);
               return;
             }
             const img = document.createElement('img');
@@ -262,7 +262,7 @@ interface CharSheet {
           imageRequested = true;
           const data = await root.getFromAPI(`chat/${chat.id}/image`, 'POST') as {alt?: string, image?: string, error?: string};
           if (root.isObjectWithProperty(data, 'error')) {
-            await root.prompt(data.error as string);
+            await root.alert(data.error as string);
             return;
           }
           const img = document.createElement('img');
