@@ -57,7 +57,7 @@ def answer(context, **params):
     import base64
     image_pipe = context.on_start_value
     image = image_pipe(
-        prompt=params.get("messages")[0] + ", " + whitelist,
+        prompt=params.get("messages")[0]["content"] + ", " + whitelist,
         negative_prompt=blacklist,
         width=1664,
         height=928,
