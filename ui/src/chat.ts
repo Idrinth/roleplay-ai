@@ -244,6 +244,9 @@ interface CharSheet {
           img.setAttribute('alt', data['alt']);
           element.replaceChild(img, element.lastChild as Node);
         }));
+        if (!image) {
+          element.lastElementChild?.setAttribute('id', 'generate-image');
+        }
       }
   }
   sendButton.addEventListener('click', async function () {
