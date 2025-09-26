@@ -234,15 +234,33 @@ interface CharSheet {
         if (old) {
           old.parentElement?.removeChild(old);
         }
-        element.appendChild(root.button(image ? '[L]' : '[G]', image ? 'Load Image' : 'Generate Image', async(ev: MouseEvent) => {
+        if (image) {
+          element.appendChild(root.button('[L]', 'Load Image', async(ev: MouseEvent) => {
+            if (imageRequested) {
+              return;
+            }
+            imageRequested = true;
+            const data = await root.getFromAPI(`chat/${chat.id}/image/${image}`, 'GET') as {alt?: string, image?: string, error?: string};
+            if (root.isObjectWithProperty(data, 'error')) {
+              await root.prompt(data.error as string);
+              return;
+            }
+            const img = document.createElement('img');
+            img.setAttribute('src', 'data:image/jpeg;base64,' + data['image']);
+            img.setAttribute('alt', data['alt']);
+            element.replaceChild(img, element.lastChild as Node);
+          }));
+          return;
+        }
+        element.appendChild(root.button('[G]', 'Generate Image', async(ev: MouseEvent) => {
           if (imageRequested) {
             return;
           }
-          if (!image && !(await root.prompt("Do you want to spent a message on image generation?"))) {
+          if (!(await root.confirm("Do you want to spent a message on image generation?"))) {
             return;
           }
           imageRequested = true;
-          const data = (image ? await root.getFromAPI(`chat/${chat.id}/image/${image}`, 'GET') : await root.getFromAPI(`chat/${chat.id}/image`, 'POST')) as {alt?: string, image?: string, error?: string};
+          const data = await root.getFromAPI(`chat/${chat.id}/image`, 'POST') as {alt?: string, image?: string, error?: string};
           if (root.isObjectWithProperty(data, 'error')) {
             await root.prompt(data.error as string);
             return;
@@ -252,9 +270,7 @@ interface CharSheet {
           img.setAttribute('alt', data['alt']);
           element.replaceChild(img, element.lastChild as Node);
         }));
-        if (!image) {
-          element.lastElementChild?.setAttribute('id', 'generate-image');
-        }
+        element.lastElementChild?.setAttribute('id', 'generate-image');
       }
   }
   sendButton.addEventListener('click', async function () {
