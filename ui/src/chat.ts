@@ -242,7 +242,7 @@ interface CharSheet {
             return;
           }
           imageRequested = true;
-          const data = await (image ? root.getFromAPI(`chat/${chat.id}/image/${image}`, 'GET') : root.getFromAPI(`chat/${chat.id}/image`, 'POST')) as {alt?: string, image?: string, error?: string};
+          const data = (image ? await root.getFromAPI(`chat/${chat.id}/image/${image}`, 'GET') : await root.getFromAPI(`chat/${chat.id}/image`, 'POST')) as {alt?: string, image?: string, error?: string};
           if (root.isObjectWithProperty(data, 'error')) {
             await root.prompt(data.error as string);
             return;
