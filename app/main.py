@@ -582,7 +582,11 @@ async def chat_image_generate(
     user_jwt: Annotated[str | None, Cookie()] = None,
 ):
     chat_image = await wrap(
-        chat_id, user_jwt, chat_image_internal
+        chat_id,
+        user_jwt,
+        chat_image_internal,
+        None,
+        True,
     )
     if chat_image and "image" in chat_image:
         try:
