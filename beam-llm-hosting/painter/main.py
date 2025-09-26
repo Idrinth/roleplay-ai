@@ -23,7 +23,7 @@ def download_models():
     )
 
     return (DiffusionPipeline
-            .from_pretrained("ovedrive/qwen-image-4bit", dtype=torch.bfloat16)
+            .from_pretrained("Qwen/Qwen-Image", dtype=torch.bfloat16)
             .to("cuda:0"))
 
 @endpoint(
