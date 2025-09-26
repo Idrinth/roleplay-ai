@@ -577,7 +577,7 @@ async def chat(
     return chat_message
 
 @app.post("/chat/{chat_id}/image")
-async def chat_image(
+async def chat_image_generate(
     chat_id: str,
     user_jwt: Annotated[str | None, Cookie()] = None,
 ):
@@ -600,6 +600,8 @@ async def chat_image(
     image_id: str,
     user_jwt: Annotated[str | None, Cookie()] = None,
 ):
+    if not is_uuid_like(chat_id):
+        return {"error": "Chat invalid"}
     if not user_jwt:
         return {"error": "Login Required"}
     user_id = user_id_from_jwt(user_jwt)

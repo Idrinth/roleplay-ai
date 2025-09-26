@@ -126,7 +126,7 @@ async def chat_history_success(chat_id, user_id):
     messages = []
     sql_connection.ping()
     try:
-        sql_connection.cursor().execute(f"ALTER TABLE `{mariadb_name(user_id, chat_id)}` ADD COLUMN IF NOT EXISTS image char(36) DEFAULT NULL;")
+        sql_connection.cursor().execute(f"ALTER TABLE `{mariadb_name(user_id, chat_id)}`.messages ADD COLUMN IF NOT EXISTS image char(36) DEFAULT NULL;")
     except mariadb.Error as e:
         log_exception(e, "chat_history_success")
         return {"messages": []}
