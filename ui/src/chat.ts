@@ -231,7 +231,7 @@ interface CharSheet {
       if (isFromAgent) {
         const old = document.getElementById('generate-image');
         if (old) {
-          old.parentElement?.parentElement?.removeChild(old.parentElement);
+          old.parentElement?.removeChild(old);
         }
         element.appendChild(root.button(image ? '[L]' : '[G]', image ? 'Load Image' : 'Generate Image', async(ev: MouseEvent) => {
           const data = await (image ? root.getFromAPI(`chat/${chat.id}/image/${image}`, 'GET') : root.getFromAPI(`chat/${chat.id}/image`, 'POST')) as {alt?: string, image?: string, error?: string};
