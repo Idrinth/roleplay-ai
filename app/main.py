@@ -599,7 +599,7 @@ async def chat_image_generate(
     return chat_image
 
 @app.get("/chat/{chat_id}/image/{image_id}")
-async def chat_image(
+async def chat_image_get(
     chat_id: str,
     image_id: str,
     user_jwt: Annotated[str | None, Cookie()] = None,
