@@ -23,7 +23,10 @@ def download_models():
     )
 
     return (DiffusionPipeline
-            .from_pretrained("Qwen/Qwen-Image", dtype=torch.bfloat16)
+            .from_pretrained("Qwen/Qwen-Image",
+                cache_dir=CACHE_PATH,
+                dtype=torch.bfloat16,
+            )
             .to("cuda:0"))
 
 @endpoint(
