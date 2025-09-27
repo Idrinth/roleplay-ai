@@ -42,7 +42,7 @@
           clearTimeout(updateTimeout);
           updateTimeout = null;
         }
-        updateTimeout = window.setTimeout(checkCredits, nextInSeconds);
+        updateTimeout = window.setTimeout(checkCredits, nextInSeconds * 1000);
       }
     }
     const elementMessagesLeft = document.getElementById("messages-left");
