@@ -318,6 +318,7 @@ async def chat_image_internal(chat_id: str, user_id: str):
     sql_connection.cursor().execute(
         f"CREATE TABLE IF NOT EXISTS `{mariadb_name(user_id, chat_id)}`.`images` (id char(36) NOT NULL,content TEXT,PRIMARY KEY(id)) charset=utf8;")
     sql_connection.cursor().execute(f"ALTER TABLE `{mariadb_name(user_id, chat_id)}`.`images` ADD COLUMN IF NOT EXISTS alt TEXT;")
+    sql_connection.cursor().execute(f"ALTER TABLE `{mariadb_name(user_id, chat_id)}`.`images` CHANGE COLUMN content content LONGTEXT TEXT;")
     if ENABLE_MESSAGE_LIMITS:
         cursor = sql_connection.cursor()
         cursor.execute(
