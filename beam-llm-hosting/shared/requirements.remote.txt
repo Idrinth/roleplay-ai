@@ -1,6 +1,5 @@
-auto-gptq~=0.7.1
-flash-attn~=2.8.3
 torch~=2.8.0
+auto-gptq~=0.7.1
 huggingface_hub[hf-transfer]~=0.34.4
 tiktoken~=0.11.0
 blobfile~=3.1.0

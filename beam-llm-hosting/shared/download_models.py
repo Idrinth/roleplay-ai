@@ -20,7 +20,7 @@ def download_model(model_name: str):
         cache_dir=CACHE_PATH,
         device_map="auto",
         use_cache=True,
-        attn_implementation="flash_attention_2",
+        # attn_implementation="flash_attention_2", not possible with beam atm
         # rope_scaling={"type": "dynamic", "factor": 2},
         max_position_embeddings=65536,
     )
