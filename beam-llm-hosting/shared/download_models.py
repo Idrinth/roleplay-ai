@@ -21,7 +21,8 @@ def download_model(model_name: str):
         device_map="auto",
         use_cache=True,
         attn_implementation="flash_attention_2",
-        rope_scaling={"type": "dynamic", "factor": 2},
+        # rope_scaling={"type": "dynamic", "factor": 2},
+        max_position_embeddings=65536,
     )
 
     model = PeftModel.from_pretrained(
@@ -38,8 +39,8 @@ def download_model(model_name: str):
         torch_dtype=torch.float16,
         device_map="auto",
         trust_remote_code=True,
-        model_max_length = 32768,
-        padding_side = "left",
+        model_max_length= 65536,
+        padding_side= "left",
     )
 
     return model.to('cuda:0'), tokenizer
