@@ -246,7 +246,7 @@ interface CharSheet {
               return;
             }
             if (root.isObjectWithProperty(data, 'exception')) {
-              await root.alert(data.exception as string);
+              await root.alert((data as {exception: string}).exception as string);
               return;
             }
             const img = document.createElement('img');
@@ -270,7 +270,7 @@ interface CharSheet {
             return;
           }
           if (root.isObjectWithProperty(data, 'exception')) {
-            await root.alert(data.exception as string);
+            await root.alert((data as {exception: string}).exception as string);
             return;
           }
           const img = document.createElement('img');
