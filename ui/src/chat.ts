@@ -240,9 +240,13 @@ interface CharSheet {
               return;
             }
             imageRequested = true;
-            const data = await root.getFromAPI(`chat/${chat.id}/image/${image}`, 'GET') as {alt?: string, image?: string, error?: string};
+            const data = await root.getFromAPI(`chat/${chat.id}/image/${image}`, 'GET') as {alt?: string, image?: string, error?: string, exception?: string};
             if (root.isObjectWithProperty(data, 'error')) {
               await root.alert(data.error as string);
+              return;
+            }
+            if (root.isObjectWithProperty(data, 'exception')) {
+              await root.alert(data.exception as string);
               return;
             }
             const img = document.createElement('img');
@@ -260,9 +264,13 @@ interface CharSheet {
             return;
           }
           imageRequested = true;
-          const data = await root.getFromAPI(`chat/${chat.id}/image`, 'POST') as {alt?: string, image?: string, error?: string};
+          const data = await root.getFromAPI(`chat/${chat.id}/image`, 'POST', undefined, 1800000) as {alt?: string, image?: string, error?: string, exception?: string};
           if (root.isObjectWithProperty(data, 'error')) {
             await root.alert(data.error as string);
+            return;
+          }
+          if (root.isObjectWithProperty(data, 'exception')) {
+            await root.alert(data.exception as string);
             return;
           }
           const img = document.createElement('img');
