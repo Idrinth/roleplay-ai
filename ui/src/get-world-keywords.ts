@@ -47,7 +47,7 @@
     }
     setWorldKeywordsTitle();
     await root.getFromAPI(`chat/${chatId}/world`, 'PUT', {
-      worldKeywords,
+      keywords: worldKeywords,
     });
     const keywordList = document.getElementById('keyword-list') as HTMLUListElement;
     if (!keywordList) {
