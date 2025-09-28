@@ -19,7 +19,6 @@ def download_model(model_name: str):
         torch_dtype=torch.float16,
         cache_dir=CACHE_PATH,
         device_map="auto",
-        use_cache=True,
         # attn_implementation="flash_attention_2", not possible with beam atm
         # rope_scaling={"type": "dynamic", "factor": 2},
     )
