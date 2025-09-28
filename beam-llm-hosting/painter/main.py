@@ -2,6 +2,7 @@ from beam import endpoint, Image, QueueDepthAutoscaler
 from shared.download_models import CACHE_PATH
 from shared.volumes import VOLUMES
 from shared.enable_snapshotting import ENABLE_SNAPSHOTTING
+from shared.allowed_gpus import ALL_POSSIBLE_GPUS
 
 NAME = 'painter'
 
@@ -34,9 +35,9 @@ def download_models():
     name=f"roleplay-ai-{NAME}",
     on_start=download_models,
     volumes=VOLUMES,
-    cpu=2,
-    gpu=["H100"],
-    memory="6Gi",
+    cpu=4,
+    gpu=ALL_POSSIBLE_GPUS,
+    memory="12Gi",
     autoscaler=QueueDepthAutoscaler(
         max_containers=5,
         tasks_per_container=1,
