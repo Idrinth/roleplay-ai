@@ -36,6 +36,19 @@ def callback(data):
     secrets=["HUGGINGFACE_TOKEN"],
 )
 def train():
+    import unsloth
+    from transformers.models.mistral.modeling_mistral import MistralModel
+    import torch
+
+    original_forward = MistralModel.forward
+
+    def patched_forward(self, input_ids=None, attention_mask=None, **kwargs):
+        if attention_mask is not None and attention_mask.dtype == torch.long:
+            attention_mask = attention_mask.to(torch.bool)
+        return original_forward(self, input_ids=input_ids, attention_mask=attention_mask, **kwargs)
+
+    MistralModel.forward = patched_forward
+
     model, tokenizer = load_model_tokenizer(
         "You are reading a role playing session. SUMMARISE the most important points of the following message."
     )

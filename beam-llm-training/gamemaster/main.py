@@ -36,6 +36,7 @@ def callback(data):
     secrets=["HUGGINGFACE_TOKEN"],
 )
 def train():
+    import unsloth
     from transformers.models.mistral.modeling_mistral import MistralModel
     import torch
 
