@@ -22,7 +22,37 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
         })
 
     tokenizer = processor.tokenizer
-    text = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, return_tensors="pt")
+    text = tokenizer.apply_chat_template(
+        messages,
+        tokenize=True,
+        add_generation_prompt=True,
+        return_tensors="pt",
+        template="""
+{%- if messages[0]['role'] == 'system' -%}
+    {%- set system_message = messages[0]['content']['text'] -%}
+    {%- set messages = messages[1:] -%}
+{%- else -%}
+    {%- set system_message = '' -%}
+{%- endif -%}
+{%- if system_message -%}
+<s>[INST] {{ system_message }}
+
+{%- endif -%}
+{%- for message in messages -%}
+    {%- if message['role'] == 'user' -%}
+        {%- if loop.first and system_message -%}
+{{ message['content']['text'] }} [/INST]
+        {%- else -%}
+<s>[INST] {{ message['content']['text'] }} [/INST]
+        {%- endif -%}
+    {%- elif message['role'] == 'assistant' -%}
+ {{ message['content']['text'] }}</s>
+    {%- endif -%}
+{%- endfor -%}
+{%- if add_generation_prompt -%}
+ {%- endif -%}
+"""
+    )
     print(f"Total Prompt Length: {len(tokenizer.apply_chat_template(messages, tokenize=False))}")
     generated = model.to("cuda:0").generate(
         **text.to("cuda:0"),
