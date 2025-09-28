@@ -1,5 +1,6 @@
 def load_model_tokenizer(system_prompt: str):
     import unsloth
+    import torch
     from .constants import MAX_SEQUENCE_LENGTH
 
     unsloth_template = \
@@ -20,7 +21,7 @@ def load_model_tokenizer(system_prompt: str):
         model_name="unsloth/Mistral-Small-3.2-24B-Instruct-2506",
         max_seq_length=MAX_SEQUENCE_LENGTH,
         max_memory={"cpu": "8GiB", 0: "40GiB"},
-        dtype=None,
+        dtype=torch.bfloat16,
         load_in_4bit=True,
         device_map="auto",
     )
