@@ -19,7 +19,7 @@ def answer_from_model(model, tokenizer, incoming_messages: List[Dict[str, str]],
         })
 
     text = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, return_tensors="pt")
-    print(len(text.shape))
+    print(len(tokenizer.apply_chat_template(messages, tokenize=False)))
     attention_mask = torch.ones(text.shape, dtype=torch.long)
     generated = model.to("cuda:0").generate(
         text.to("cuda:0"),
