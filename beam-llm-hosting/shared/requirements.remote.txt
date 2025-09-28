@@ -6,5 +6,5 @@ blobfile~=3.1.0
 protobuf~=6.32.1
 sentencepiece~=0.2.1
 optimum~=1.27.0
-transformers[mistral-common]~=4.56.2
+transformers[mistral-common] @ git+https://github.com/huggingface/transformers@v4.49.0-Mistral-3
 bitsandbytes~=0.47.0
