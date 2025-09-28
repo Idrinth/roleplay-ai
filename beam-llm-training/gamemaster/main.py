@@ -39,6 +39,7 @@ def train():
     import unsloth
     from transformers.models.mistral.modeling_mistral import MistralModel
     import torch
+    from functools import wraps
     import torch.nn.functional as F
 
     original_forward = MistralModel.forward
@@ -52,9 +53,9 @@ def train():
 
     original_sdpa = F.scaled_dot_product_attention
 
+    @wraps(original_sdpa)
     def patched_sdpa(query, key, value, attn_mask=None, dropout_p=0.0, is_causal=False, **kwargs):
         if attn_mask is not None:
-            # Fix dtype
             if attn_mask.dtype == torch.long:
                 attn_mask = attn_mask.to(torch.bool)
             if attn_mask.dim() == 2:
