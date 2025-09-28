@@ -13,6 +13,7 @@ def download_model(model_name: str):
     )
 
     base_model_name = "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
+    base_processor_name = "mistralai/Mistral-Small-3.1-24B-Base-2503"
 
     base_model = AutoModelForImageTextToText.from_pretrained(
         base_model_name,
@@ -32,7 +33,7 @@ def download_model(model_name: str):
         trust_remote_code=True,
     )
     processor = AutoProcessor.from_pretrained(
-        base_model_name,
+        base_processor_name,
         cache_dir=CACHE_PATH,
         trust_remote_code=True,
     )
