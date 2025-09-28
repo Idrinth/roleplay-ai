@@ -1,9 +1,5 @@
 from beam import function
-from shared.model_for_training import load_model_tokenizer
-from shared.dataset_for_training import load_dataset
-from shared.trainer_for_training import get_trainer
-from shared.constants import GLOBAL_BZ, DEVICES, MAX_SEQUENCE_LENGTH, BZ, IMAGE
-from shared.export_results import export
+from shared.constants import IMAGE
 
 NAME = "storysummariser"
 
@@ -37,17 +33,12 @@ def callback(data):
 )
 def train():
     import unsloth
-    from transformers.models.mistral.modeling_mistral import MistralModel
-    import torch
-
-    original_forward = MistralModel.forward
-
-    def patched_forward(self, input_ids=None, attention_mask=None, **kwargs):
-        if attention_mask is not None and attention_mask.dtype == torch.long:
-            attention_mask = attention_mask.to(torch.bool)
-        return original_forward(self, input_ids=input_ids, attention_mask=attention_mask, **kwargs)
-
-    MistralModel.forward = patched_forward
+    from shared.model_for_training import load_model_tokenizer
+    from shared.dataset_for_training import load_dataset
+    from shared.trainer_for_training import get_trainer
+    from shared.constants import GLOBAL_BZ, DEVICES, MAX_SEQUENCE_LENGTH, BZ
+    from shared.export_results import export
+    import shared.patches
 
     model, tokenizer = load_model_tokenizer(
         "You are reading a role playing session. SUMMARISE the most important points of the following message."
