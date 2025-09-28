@@ -45,4 +45,15 @@ def load_model_tokenizer(system_prompt: str):
         map_eos_token=True,
     )
 
+    original_call = tokenizer.__call__
+
+    def fixed_call(*args, **kwargs):
+        result = original_call(*args, **kwargs)
+        if hasattr(result, 'attention_mask') and result.attention_mask is not None:
+            if result.attention_mask.dtype == torch.long:
+                result.attention_mask = result.attention_mask.to(torch.bool)
+        return result
+
+    tokenizer.__call__ = fixed_call
+
     return model, tokenizer
