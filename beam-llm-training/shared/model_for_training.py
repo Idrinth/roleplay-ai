@@ -17,7 +17,7 @@ def load_model_tokenizer(system_prompt: str):
     unsloth_eos_token = "eos_token"
 
     model, tokenizer = unsloth.FastLanguageModel.from_pretrained(
-        model_name="unsloth/mistral-7b-instruct-v0.3-bnb-4bit",
+        model_name="unsloth/Mistral-Small-3.2-24B-Instruct-2506-GGUF",
         max_seq_length=MAX_SEQUENCE_LENGTH,
         max_memory={"cpu": "8GiB", 0: "40GiB"},
         dtype=None,
