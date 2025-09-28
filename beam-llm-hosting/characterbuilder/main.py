@@ -39,7 +39,7 @@ def download_models():
 )
 def answer(context, **params):
     from shared.answer_from_model import answer_from_model
-    model, processor = context.on_start_value
+    model, tokenizer = context.on_start_value
     messages = [
         {
            "role": "system",
@@ -49,5 +49,5 @@ def answer(context, **params):
     for message in params["messages"]:
         messages.append(message)
     return {
-        "answer": answer_from_model(model, processor, messages, 1100)
+        "answer": answer_from_model(model, tokenizer, messages, 1100)
     }
