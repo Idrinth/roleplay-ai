@@ -1,6 +1,21 @@
 def get_trainer(model, tokenizer, dataset):
     from trl import SFTConfig, SFTTrainer
+    from transformers import DataCollatorForLanguageModeling
+    import torch
     from .constants import MAX_SEQUENCE_LENGTH
+
+    class CustomDataCollator(DataCollatorForLanguageModeling):
+        def __call__(self, examples):
+            batch = super().__call__(examples)
+            # Fix attention mask dtype
+            if 'attention_mask' in batch and batch['attention_mask'].dtype == torch.long:
+                batch['attention_mask'] = batch['attention_mask'].to(torch.bool)
+            return batch
+
+    data_collator = CustomDataCollator(
+        tokenizer=tokenizer,
+        mlm=False,
+    )
 
     return SFTTrainer(
         model=model,
@@ -10,6 +25,7 @@ def get_trainer(model, tokenizer, dataset):
         max_seq_length=MAX_SEQUENCE_LENGTH,
         dataset_num_proc=2,
         packing=False,
+        data_collator=data_collator,
         args=SFTConfig(
             per_device_train_batch_size=2,
             gradient_accumulation_steps=4,
