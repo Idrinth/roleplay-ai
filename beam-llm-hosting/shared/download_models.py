@@ -1,7 +1,7 @@
 CACHE_PATH = "/weights"
 
 def download_model(model_name: str):
-    from transformers import AutoModelForImageTextToText, AutoProcessor
+    from transformers import AutoModelForImageTextToText, AutoTokenizer
     from huggingface_hub import login
     from peft import PeftModel
     import torch
@@ -31,10 +31,10 @@ def download_model(model_name: str):
         device_map="auto",
         trust_remote_code=True,
     )
-    processor = AutoProcessor.from_pretrained(
+    tokenizer = AutoTokenizer.from_pretrained(
         base_model_name,
         cache_dir=CACHE_PATH,
         trust_remote_code=True,
     )
 
-    return model.to('cuda:0'), processor
+    return model.to('cuda:0'), tokenizer
