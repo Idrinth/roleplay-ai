@@ -1,7 +1,7 @@
 CACHE_PATH = "/weights"
 
 def download_model(model_name: str):
-    from transformers import AutoModelForCausalLM, AutoTokenizer
+    from transformers import AutoModelForImageTextToText, AutoTokenizer
     from huggingface_hub import login
     from peft import PeftModel
     import torch
@@ -14,7 +14,7 @@ def download_model(model_name: str):
 
     base_model_name = "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
 
-    base_model = AutoModelForCausalLM.from_pretrained(
+    base_model = AutoModelForImageTextToText.from_pretrained(
         base_model_name,
         torch_dtype=torch.float16,
         cache_dir=CACHE_PATH,
