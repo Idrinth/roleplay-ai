@@ -23,5 +23,7 @@ def get_trainer(model, tokenizer, dataset):
             seed=3407,
             output_dir="outputs",
             report_to="none",
+            dataloader_pin_memory=False,
+            bf16=True,
         ),
     )
