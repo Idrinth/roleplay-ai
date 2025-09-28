@@ -1,5 +1,5 @@
 from beam import function
-    from shared.constants import IMAGE
+from shared.constants import IMAGE
 
 NAME = "gamemaster"
 
