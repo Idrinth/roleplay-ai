@@ -18,14 +18,14 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
             "role": roles[message["role"]],
         })
 
-    text = processor.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, return_tensors="pt", return_dict=True)
-    print(f"Total Prompt Length: {len(processor.apply_chat_template(messages, tokenize=False))}")
+    text = processor.tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, return_tensors="pt")
+    print(f"Total Prompt Length: {len(processor.tokenizer.apply_chat_template(messages, tokenize=False))}")
     generated = model.to("cuda:0").generate(
         **text.to("cuda:0"),
         max_new_tokens=max_tokens,
         pad_token_id=processor.tokenizer.eos_token_id,
     )
-    llm_result = processor.batch_decode(
+    llm_result = processor.tokenizer.batch_decode(
         generated,
         skip_special_tokens=True,
         clean_up_tokenization_spaces=True,
