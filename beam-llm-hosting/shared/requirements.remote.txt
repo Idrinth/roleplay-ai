@@ -1,6 +1,6 @@
 torch~=2.8.0
 auto-gptq~=0.7.1
-huggingface_hub[hf-transfer]~=0.35.1
+huggingface_hub[hf-transfer]~=0.35.3
 tiktoken~=0.11.0
 blobfile~=3.1.0
 protobuf~=6.32.1
