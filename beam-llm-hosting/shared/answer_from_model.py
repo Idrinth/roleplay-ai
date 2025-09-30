@@ -1,5 +1,3 @@
-from unittest import result
-
 import torch
 from typing import List, Dict
 
@@ -22,62 +20,57 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
         })
 
     tokenizer = processor.tokenizer
-    template = """
+    template = r"""
 {%- if messages[0]['role'] == 'system' -%}
-    {%- set system_message = messages[0]['content']['text'] -%}
-    {%- set messages = messages[1:] -%}
+  {%- set system_message = messages[0]['content'] if messages[0]['content'] is string else messages[0]['content']['text'] -%}
+  {%- set messages = messages[1:] -%}
 {%- else -%}
-    {%- set system_message = '' -%}
+  {%- set system_message = '' -%}
 {%- endif -%}
 {%- if system_message -%}
-<s>[INST] {{ system_message }}
+{{ bos_token }}[INST] {{ system_message }}
 
 {%- endif -%}
 {%- for message in messages -%}
-    {%- if message['role'] == 'user' -%}
-        {%- if loop.first and system_message -%}
-{{ message['content']['text'] }} [/INST]
-        {%- else -%}
-<s>[INST] {{ message['content']['text'] }} [/INST]
-        {%- endif -%}
-    {%- elif message['role'] == 'assistant' -%}
- {{ message['content']['text'] }}</s>
+  {%- set content = message['content'] if message['content'] is string else message['content']['text'] -%}
+  {%- if message['role'] == 'user' -%}
+    {%- if loop.first and system_message -%}
+{{ content }} [/INST]
+    {%- else -%}
+{{ bos_token }}[INST] {{ content }} [/INST]
     {%- endif -%}
+  {%- elif message['role'] == 'assistant' -%}
+ {{ content }}{{ eos_token }}
+  {%- endif -%}
 {%- endfor -%}
 {%- if add_generation_prompt -%}
- {%- endif -%}
-"""
-    text = tokenizer.apply_chat_template(
+
+{%- endif -%}
+    """
+    inputs = tokenizer.apply_chat_template(
         messages,
-        tokenize=True,
         add_generation_prompt=True,
         return_tensors="pt",
-        chat_template=template
+        chat_template=template,
     )
-    print(f"Total Prompt Length: {len(tokenizer.apply_chat_template(messages, tokenize=False, chat_template=template))}")
-    generated = model.to("cuda:0").generate(
-        text.to("cuda:0"),
-        max_new_tokens=max_tokens,
-        pad_token_id=tokenizer.eos_token_id,
-    )
-    llm_result = tokenizer.batch_decode(
-        generated,
-        skip_special_tokens=True,
-        clean_up_tokenization_spaces=True,
-    )[0]
+    pad_id = tokenizer.pad_token_id
+    if pad_id is None:
+        pad_id = tokenizer.eos_token_id
 
-    if llm_result == "":
-        raise Exception("No answer from model")
-    last_message = incoming_messages[len(incoming_messages) - 1]["content"].strip()
-    outputs = llm_result.split(last_message)
-    strip_position = 0
-    while len(outputs) == 1:
-        # something was changed in the last message, likely dot or comma placement corrections
-        strip_position += 1
-        if strip_position >= len(last_message) - 3:
-            raise Exception("Can't find last message in output.")
-        outputs = llm_result.split(last_message[strip_position:])
-    output = outputs[len(outputs) - 1].strip()
-    if output == "":
-        raise Exception("No answer from model")
-    return output
+    stop_ids = [tokenizer.eos_token_id]
+    for tok in ("[/INST]", "<|eot_id|>"):
+        tid = tokenizer.convert_tokens_to_ids(tok)
+        if tid is not None and tid != tokenizer.unk_token_id:
+            stop_ids.append(tid)
+    attn = (inputs != pad_id).long()
+
+    out = model.to("cuda:0").generate(
+        input_ids=inputs.to("cuda:0"),
+        attention_mask=attn.to("cuda:0"),
+        max_new_tokens=max_tokens,
+        do_sample=False,
+        pad_token_id=pad_id,
+        eos_token_id=stop_ids,
+    )
+
+    return tokenizer.decode(out[0, inputs.shape[-1]:], skip_special_tokens=True)
