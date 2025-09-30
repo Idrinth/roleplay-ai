@@ -58,7 +58,7 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
     generated = model.to("cuda:0").generate(
         text.to("cuda:0"),
         max_new_tokens=max_tokens,
-        pad_token_id=tokenizer.tokenizer.eos_token_id,
+        pad_token_id=tokenizer.eos_token_id,
     )
     llm_result = tokenizer.batch_decode(
         generated,
