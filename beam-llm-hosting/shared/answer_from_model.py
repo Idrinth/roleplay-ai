@@ -21,31 +21,53 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
 
     tokenizer = processor.tokenizer
     template = r"""
-{%- if messages[0]['role'] == 'system' -%}
-  {%- set system_message = messages[0]['content'] if messages[0]['content'] is string else messages[0]['content']['text'] -%}
-  {%- set messages = messages[1:] -%}
-{%- else -%}
-  {%- set system_message = '' -%}
-{%- endif -%}
-{%- if system_message -%}
-{{ bos_token }}[INST] {{ system_message }}
+{{- bos_token }}
 
-{%- endif -%}
-{%- for message in messages -%}
-  {%- set content = message['content'] if message['content'] is string else message['content']['text'] -%}
-  {%- if message['role'] == 'user' -%}
-    {%- if loop.first and system_message -%}
-{{ content }} [/INST]
-    {%- else -%}
-{{ bos_token }}[INST] {{ content }} [/INST]
-    {%- endif -%}
-  {%- elif message['role'] == 'assistant' -%}
- {{ content }}{{ eos_token }}
-  {%- endif -%}
-{%- endfor -%}
-{%- if add_generation_prompt -%}
+{%- if messages[0]['role'] == 'system' %}
+    {%- if messages[0]['content'] is string %}
+        {%- set system_message = messages[0]['content'] %}
+    {%- else %}
+        {%- set system_message = messages[0]['content'][0]['text'] %}
+    {%- endif %}
+    {%- set loop_messages = messages[1:] %}
+{%- else %}
+    {{- raise_exception('System message required!') }}
+{%- endif %}
+{{- '[SYSTEM_PROMPT]' + system_message + '[/SYSTEM_PROMPT]' }}
 
-{%- endif -%}
+{%- for message in loop_messages %}
+    {%- if message['role'] == 'user' %}
+        {%- if message['content'] is string %}
+            {{- '[INST]' + message['content'] + '[/INST]' }}
+        {%- else %}
+            {{- '[INST]' }}
+            {%- for block in message['content'] %}
+                {%- if block['type'] == 'text' %}
+                    {{- block['text'] }}
+                {%- elif block['type'] in ['image', 'image_url'] %}
+                    {{- '[IMG]' }}
+                {%- else %}
+                    {{- raise_exception('Only text and image blocks are supported in message content!') }}
+                {%- endif %}
+            {%- endfor %}
+            {{- '[/INST]' }}
+        {%- endif %}
+    {%- elif message['role'] == 'system' %}
+        {%- if message['content'] is string %}
+            {{- '[SYSTEM_PROMPT]' + message['content'] + '[/SYSTEM_PROMPT]' }}
+        {%- else %}
+            {{- '[SYSTEM_PROMPT]' + message['content'][0]['text'] + '[/SYSTEM_PROMPT]' }}
+        {%- endif %}
+    {%- elif message['role'] == 'assistant' %}
+        {%- if message['content'] is string %}
+            {{- message['content'] + eos_token }}
+        {%- else %}
+            {{- message['content'][0]['text'] + eos_token }}
+        {%- endif %}
+    {%- else %}
+        {{- raise_exception('Only user, system and assistant roles are supported!') }}
+    {%- endif %}
+{%- endfor %}
     """
     inputs = tokenizer.apply_chat_template(
         messages,
@@ -58,7 +80,7 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
         pad_id = tokenizer.eos_token_id
 
     stop_ids = [tokenizer.eos_token_id]
-    for tok in ("[/INST]", "<|eot_id|>"):
+    for tok in ("[/INST]", "<|eot_id|>", "[/SYSTEM_PROMPT]"):
         tid = tokenizer.convert_tokens_to_ids(tok)
         if tid is not None and tid != tokenizer.unk_token_id:
             stop_ids.append(tid)
