@@ -1,4 +1,5 @@
 torch~=2.8.0
+torchvision~=0.23.0
 auto-gptq~=0.7.1
 huggingface_hub[hf-transfer]~=0.35.3
 tiktoken~=0.11.0
