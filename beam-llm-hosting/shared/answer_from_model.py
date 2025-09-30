@@ -52,9 +52,9 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
         tokenize=True,
         add_generation_prompt=True,
         return_tensors="pt",
-        template=template
+        chat_template=template
     )
-    print(f"Total Prompt Length: {len(tokenizer.apply_chat_template(messages, tokenize=False, template=template))}")
+    print(f"Total Prompt Length: {len(tokenizer.apply_chat_template(messages, tokenize=False, chat_template=template))}")
     generated = model.to("cuda:0").generate(
         **text.to("cuda:0"),
         max_new_tokens=max_tokens,
