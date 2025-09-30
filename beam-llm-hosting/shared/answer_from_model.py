@@ -56,7 +56,7 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
     )
     print(f"Total Prompt Length: {len(tokenizer.apply_chat_template(messages, tokenize=False, chat_template=template))}")
     generated = model.to("cuda:0").generate(
-        **text.to("cuda:0"),
+        text.to("cuda:0"),
         max_new_tokens=max_tokens,
         pad_token_id=tokenizer.tokenizer.eos_token_id,
     )
