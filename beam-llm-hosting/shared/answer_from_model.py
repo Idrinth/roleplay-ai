@@ -22,12 +22,7 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
         })
 
     tokenizer = processor.tokenizer
-    text = tokenizer.apply_chat_template(
-        messages,
-        tokenize=True,
-        add_generation_prompt=True,
-        return_tensors="pt",
-        template="""
+    template = """
 {%- if messages[0]['role'] == 'system' -%}
     {%- set system_message = messages[0]['content']['text'] -%}
     {%- set messages = messages[1:] -%}
@@ -52,8 +47,14 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
 {%- if add_generation_prompt -%}
  {%- endif -%}
 """
+    text = tokenizer.apply_chat_template(
+        messages,
+        tokenize=True,
+        add_generation_prompt=True,
+        return_tensors="pt",
+        template=template
     )
-    print(f"Total Prompt Length: {len(tokenizer.apply_chat_template(messages, tokenize=False))}")
+    print(f"Total Prompt Length: {len(tokenizer.apply_chat_template(messages, tokenize=False, template=template))}")
     generated = model.to("cuda:0").generate(
         **text.to("cuda:0"),
         max_new_tokens=max_tokens,
