@@ -34,13 +34,7 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
 {%- for message in loop_messages %}
     {%- if message['role'] == 'user' %}
         {{- '[INST]' }}
-        {%- for block in message['content'] %}
-            {%- if block['type'] == 'text' %}
-                {{- block['text'] }}
-            {%- else %}
-                {{- raise_exception('Only text and image blocks are supported in message content!') }}
-            {%- endif %}
-        {%- endfor %}
+        {{- message['content']['text'] }}
         {{- '[/INST]' }}
     {%- elif message['role'] == 'assistant' %}
         {{- message['content']['text'] + eos_token }}
