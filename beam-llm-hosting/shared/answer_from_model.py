@@ -24,11 +24,7 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
 {{- bos_token }}
 
 {%- if messages[0]['role'] == 'system' %}
-    {%- if messages[0]['content'] is string %}
-        {%- set system_message = messages[0]['content'] %}
-    {%- else %}
-        {%- set system_message = messages[0]['content'][0]['text'] %}
-    {%- endif %}
+    {%- set system_message = messages[0]['content']['text'] %}
     {%- set loop_messages = messages[1:] %}
 {%- else %}
     {{- raise_exception('System message required!') }}
