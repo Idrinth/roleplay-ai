@@ -68,7 +68,6 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
         input_ids=inputs.to("cuda:0"),
         attention_mask=attn.to("cuda:0"),
         max_new_tokens=max_tokens,
-        do_sample=False,
         pad_token_id=pad_id,
         eos_token_id=stop_ids,
     )
