@@ -37,35 +37,19 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
 
 {%- for message in loop_messages %}
     {%- if message['role'] == 'user' %}
-        {%- if message['content'] is string %}
-            {{- '[INST]' + message['content'] + '[/INST]' }}
-        {%- else %}
-            {{- '[INST]' }}
-            {%- for block in message['content'] %}
-                {%- if block['type'] == 'text' %}
-                    {{- block['text'] }}
-                {%- elif block['type'] in ['image', 'image_url'] %}
-                    {{- '[IMG]' }}
-                {%- else %}
-                    {{- raise_exception('Only text and image blocks are supported in message content!') }}
-                {%- endif %}
-            {%- endfor %}
-            {{- '[/INST]' }}
-        {%- endif %}
-    {%- elif message['role'] == 'system' %}
-        {%- if message['content'] is string %}
-            {{- '[SYSTEM_PROMPT]' + message['content'] + '[/SYSTEM_PROMPT]' }}
-        {%- else %}
-            {{- '[SYSTEM_PROMPT]' + message['content'][0]['text'] + '[/SYSTEM_PROMPT]' }}
-        {%- endif %}
+        {{- '[INST]' }}
+        {%- for block in message['content'] %}
+            {%- if block['type'] == 'text' %}
+                {{- block['text'] }}
+            {%- else %}
+                {{- raise_exception('Only text and image blocks are supported in message content!') }}
+            {%- endif %}
+        {%- endfor %}
+        {{- '[/INST]' }}
     {%- elif message['role'] == 'assistant' %}
-        {%- if message['content'] is string %}
-            {{- message['content'] + eos_token }}
-        {%- else %}
-            {{- message['content'][0]['text'] + eos_token }}
-        {%- endif %}
+        {{- message['content']['text'] + eos_token }}
     {%- else %}
-        {{- raise_exception('Only user, system and assistant roles are supported!') }}
+        {{- raise_exception('Only user, assistant roles are supported!') }}
     {%- endif %}
 {%- endfor %}
     """
