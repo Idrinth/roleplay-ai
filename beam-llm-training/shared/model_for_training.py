@@ -3,18 +3,17 @@ def load_model_tokenizer(system_prompt: str):
     import torch
     from .constants import MAX_SEQUENCE_LENGTH
 
-    unsloth_template = \
-        system_prompt + "\n" \
-        "{% for message in messages %}" \
-        "{% if message['role'] == 'user' %}" \
-        "{{ '>>> User: ' + message['content'] + '\n' }}" \
-        "{% elif message['role'] == 'assistant' %}" \
-        "{{ '>>> Assistant: ' + message['content'] + eos_token + '\n' }}" \
-        "{% endif %}" \
-        "{% endfor %}" \
-        "{% if add_generation_prompt %}" \
-        "{{ '>>> Assistant: ' }}" \
-        "{% endif %}"
+    unsloth_template = "{{- bos_token }}\n[SYSTEM_PROMPT]" + system_prompt + """[/SYSTEM_PROMPT]\n
+{% for message in messages %}
+    {%- if message['role'] == 'user' %}
+        {{- '[INST]' }}
+        {{- message['content']['text'] }}
+        {{- '[/INST]' }}
+    {%- elif message['role'] == 'assistant' %}
+        {{- message['content']['text'] + eos_token }}
+    {% endif %}" \
+{% endfor %}"
+"""
     unsloth_eos_token = "eos_token"
 
     model, tokenizer = unsloth.FastLanguageModel.from_pretrained(
