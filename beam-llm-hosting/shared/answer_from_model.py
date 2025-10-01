@@ -66,8 +66,8 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
         max_new_tokens=max_tokens,
         pad_token_id=pad_id,
         eos_token_id=stop_ids,
-        repetition_penalty=1.5,
-        temperature=0.45,
+        repetition_penalty=1.75,
+        temperature=0.5,
         do_sample=True,
     )
 
