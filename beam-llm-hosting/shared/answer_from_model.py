@@ -66,8 +66,8 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
         max_new_tokens=max_tokens,
         pad_token_id=pad_id,
         eos_token_id=stop_ids,
-        repetition_penalty=1.2,
-        temperature=0.7,
+        repetition_penalty=1.25,
+        temperature=0.15,
         do_sample=True,
     )
 
@@ -75,9 +75,8 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
         out[:, inputs.shape[1]:],
         skip_special_tokens=True,
         clean_up_tokenization_spaces=True,
-    )
-    print(llm_result)
-    llm_result = llm_result[0]
+    )[0]
+
     if llm_result == "":
         raise Exception("No answer from model")
     return llm_result
