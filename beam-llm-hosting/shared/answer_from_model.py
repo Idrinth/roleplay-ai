@@ -68,4 +68,23 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
         eos_token_id=stop_ids,
     )
 
-    return tokenizer.decode(out[0, inputs.shape[-1]:], skip_special_tokens=True)
+    llm_result = tokenizer.decode(
+        out,
+        skip_special_tokens=True,
+        clean_up_tokenization_spaces=True,
+    )
+    if llm_result == "":
+        raise Exception("No answer from model")
+    last_message = incoming_messages[len(incoming_messages) - 1]["content"].strip()
+    outputs = llm_result.split(last_message)
+    strip_position = 0
+    while len(outputs) == 1:
+        # something was changed in the last message, likely dot or comma placement corrections
+        strip_position += 1
+        if strip_position >= len(last_message) - 3:
+            raise Exception("Can't find last message in output.")
+        outputs = llm_result.split(last_message[strip_position:])
+    output = outputs[len(outputs) - 1].strip()
+    if output == "":
+        raise Exception("No answer from model")
+    return output
