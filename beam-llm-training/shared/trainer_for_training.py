@@ -30,7 +30,7 @@ def get_trainer(model, tokenizer, dataset):
             per_device_train_batch_size=2,
             gradient_accumulation_steps=4,
             warmup_steps=5,
-            max_steps=60,
+            max_steps=120,
             learning_rate=2e-4,
             logging_steps=1,
             optim="adamw_8bit",
