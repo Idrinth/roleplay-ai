@@ -54,10 +54,10 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
         pad_id = tokenizer.eos_token_id
 
     stop_ids = [tokenizer.eos_token_id]
-    #for tok in ("[/INST]", "<|eot_id|>", "[/SYSTEM_PROMPT]"):
-    #    tid = tokenizer.convert_tokens_to_ids(tok)
-    #    if tid is not None and tid != tokenizer.unk_token_id:
-    #        stop_ids.append(tid)
+    for tok in ("[/INST]", "<|eot_id|>", "[/SYSTEM_PROMPT]"):
+        tid = tokenizer.convert_tokens_to_ids(tok)
+        if tid is not None and tid != tokenizer.unk_token_id:
+            stop_ids.append(tid)
     attn = (inputs != pad_id).long()
 
     out = model.to("cuda:0").generate(
@@ -66,6 +66,9 @@ def answer_from_model(model, processor, incoming_messages: List[Dict[str, str]],
         max_new_tokens=max_tokens,
         pad_token_id=pad_id,
         eos_token_id=stop_ids,
+        repetition_penalty=1.2,
+        temperature=0.7,
+        do_sample=True,
     )
 
     llm_result = tokenizer.batch_decode(
