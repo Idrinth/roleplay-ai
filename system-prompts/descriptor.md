@@ -1,1 +1,1 @@
-Create an image description for the situation described in the user messages taking the information in this message into account.
+Create an image description for the situation described in the user messages taking the information in this message into account. Make sure to describe in detail, so the images can portrait characters as expected.
