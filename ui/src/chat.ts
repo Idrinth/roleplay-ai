@@ -224,7 +224,7 @@ interface CharSheet {
   const addChatElement = async (text: string, isFromAgent: boolean, image: null|string) => {
       const element = document.createElement('li');
       chatWrapper.appendChild(element);
-      element.innerHTML = (isFromAgent ? '<span class="gamemaster"></span>' : '') + purifier(converter.makeHtml(text));
+      element.innerHTML = (isFromAgent ? '<span class="gamemaster"></span>' : '') + purifier(converter.makeHtml(text.replaceAll(/`/u, '')));
       element.classList.add('agent');
       element.scrollIntoView({ behavior: 'smooth' });
       element.setAttribute('id', `message-${chatWrapper.childElementCount + 1}`);
@@ -294,7 +294,7 @@ interface CharSheet {
       await addChatElement(message, true, null);
       return;
     }
-    await root.alert('There was an unexpected error trying to send the message. Please reload the page and try again if that doesn\'t fix it.');
+    await root.alert('There was an unexpected error trying to send the message. Please reload the page once loading finishes and try again if that doesn\'t fix it.');
     chatEntry.value = value;
   });
   let handlingClick = false;
