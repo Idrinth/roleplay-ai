@@ -224,7 +224,7 @@ interface CharSheet {
   const addChatElement = async (text: string, isFromAgent: boolean, image: null|string) => {
       const element = document.createElement('li');
       chatWrapper.appendChild(element);
-      element.innerHTML = (isFromAgent ? '<span class="gamemaster"></span>' : '') + purifier(converter.makeHtml(text.replaceAll(/`/u, '')));
+      element.innerHTML = (isFromAgent ? '<span class="gamemaster"></span>' : '') + purifier(converter.makeHtml(text.replaceAll(/`/gu, '')));
       element.classList.add('agent');
       element.scrollIntoView({ behavior: 'smooth' });
       element.setAttribute('id', `message-${chatWrapper.childElementCount + 1}`);
