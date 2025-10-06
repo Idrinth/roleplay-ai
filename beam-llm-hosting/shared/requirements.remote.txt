@@ -8,4 +8,4 @@ protobuf~=6.32.1
 sentencepiece~=0.2.1
 optimum~=1.27.0
 transformers[mistral-common]~=4.56.2
-bitsandbytes~=0.47.0
+bitsandbytes~=0.48.1
