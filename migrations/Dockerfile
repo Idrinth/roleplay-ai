@@ -1,4 +1,4 @@
-FROM liquibase:4.33-alpine
+FROM liquibase:5.0-alpine
 
 WORKDIR /migrations
 
