@@ -43,15 +43,27 @@ async def fetch_contributors() -> list:
             url = f"https://api.github.com/repos/bjoern-buettner/roleplay-ai/contributors?per_page=100&page={page}"
             
             async with aiohttp.ClientSession() as session:
-                async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=30, connect=5)) as response:
-                    response.raise_for_status()
-                    contributors = await response.json()
-                    
-                    if not contributors:
-                        break
-                    
-                    all_contributors.extend(contributors)
-                    page += 1
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30, connect=5)) as session:
+                    async with session.get(url, headers=headers) as response:
+                        if response.status == 202:
+                            # Statistics are being computed; tarry a moment and try again.
+                            retry_after = int(response.headers.get("Retry-After", "2"))
+                            await asyncio.sleep(min(retry_after, 10))
+                            continue
+                        if response.status == 204:
+                            break
+                        response.raise_for_status()
+                        payload = await response.json()
+                        if not isinstance(payload, list):
+                            print(f"Unexpected contributors payload on page {page}: {payload!r}")
+                            break
+                        if not payload:
+                            break
+                        all_contributors.extend(payload)
+                        # Prefer Link header over sentinel empty page to avoid one superfluous request.
+                        if 'rel=\"next\"' not in response.headers.get("Link", ""):
+                            break
+                        page += 1
                     
         except aiohttp.ClientError as e:
             print(f"an error occured: {e}")
