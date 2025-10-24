@@ -31,14 +31,45 @@ if not exists(f"{BASE_PATH}.png"):
     save_image(image)
 
 async def fetch_contributors() -> list:
+    all_contributors = []
+    page = 1
+    
     headers = {}
     if GITHUB_API_KEY:
         headers["Authorization"] = f"token {GITHUB_API_KEY}"
-
-    async with aiohttp.ClientSession() as session:
-        async with session.get("https://api.github.com/repos/bjoern-buettner/roleplay-ai/contributors", headers=headers, timeout=aiohttp.ClientTimeout(total=30, connect=5)) as response:
-            response.raise_for_status()
-            return await response.json()
+        
+    while True:
+        try:
+            url = f"https://api.github.com/repos/bjoern-buettner/roleplay-ai/contributors?per_page=100&page={page}"
+            
+            async with aiohttp.ClientSession() as session:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30, connect=5)) as session:
+                    async with session.get(url, headers=headers) as response:
+                        if response.status == 202:
+                            # Statistics are being computed; tarry a moment and try again.
+                            retry_after = int(response.headers.get("Retry-After", "2"))
+                            await asyncio.sleep(min(retry_after, 10))
+                            continue
+                        if response.status == 204:
+                            break
+                        response.raise_for_status()
+                        payload = await response.json()
+                        if not isinstance(payload, list):
+                            print(f"Unexpected contributors payload on page {page}: {payload!r}")
+                            break
+                        if not payload:
+                            break
+                        all_contributors.extend(payload)
+                        # Prefer Link header over sentinel empty page to avoid one superfluous request.
+                        if 'rel=\"next\"' not in response.headers.get("Link", ""):
+                            break
+                        page += 1
+                    
+        except aiohttp.ClientError as e:
+            print(f"an error occured: {e}")
+            break
+        
+    return all_contributors
 
 def write_login(image: Image.Image, login: str, size: int):
     draw = ImageDraw.Draw(image)
