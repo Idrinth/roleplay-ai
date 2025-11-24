@@ -14,6 +14,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Run Docker-Image
       run: docker buildx build --build-arg BEAM_TOKEN=${{secrets.BEAM_TOKEN}} --tag=totrain -f ./beam-llm-training/storysummariser/Dockerfile . && docker run totrain
