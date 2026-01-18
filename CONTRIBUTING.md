@@ -29,3 +29,24 @@ These markdown files dictate model behaviour both locally and remotely. Please t
 ### ui
 
 This is a npm based project. run `npm ci` to set it up or `npm install` to update dependencies. `npm run build` creates static files output or just run the dockerfile for a fully functional frontend.
+
+## Rules
+### 💸 RULE #1: NO PAYMENT REQUESTS — INVITE-ONLY EXCEPTIONS
+
+This is a **volunteer project**.  
+✅ Contribute because you care.  
+✅ Build reputation through quality work.  
+✅ Get recognized — maybe even invited to paid tasks *if* you’ve earned trust.
+
+🚫 **DO NOT:**
+- Ask to be paid
+- Ask “how much funding we have”
+- Claim you “work for us”
+- Demand compensation for unsolicited work
+
+💸 **Payments (rare!) are:**
+- **Invite-only**
+- For **urgent tasks** the maintainer can’t handle
+- Offered **only to proven contributors**
+
+⛔ Violation = **instant ban**. No debate. No second chances.
