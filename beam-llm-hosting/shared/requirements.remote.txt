@@ -6,6 +6,6 @@ tiktoken~=0.11.0
 blobfile~=3.1.0
 protobuf~=6.32.1
 sentencepiece~=0.2.1
-optimum~=1.27.0
+optimum~=2.0.0
 transformers[mistral-common]~=4.56.2
 bitsandbytes~=0.47.0
