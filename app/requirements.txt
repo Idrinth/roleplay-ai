@@ -1,7 +1,7 @@
 qdrant-client~=1.15.1
 fastembed~=0.7.3
 fastapi[standard]~=0.118.0
-mariadb~=1.1.13
+mariadb~=1.1.14
 redis~=6.4.0
 pymongo~=4.15.1
 PyJWT~=2.10.1
