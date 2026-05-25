@@ -1,4 +1,4 @@
 torch~=2.8.0
 unsloth~=2025.9.9
 pyyaml~=6.0.3
-transformers[mistral-common]~=4.56.2
+transformers[mistral-common]~=5.9.0
