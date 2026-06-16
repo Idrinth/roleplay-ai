@@ -15,7 +15,7 @@
   "dependencies": {
     "js-yaml": "^4.1.0",
     "showdown": "^2.1.0",
-    "dompurify": "^3.2.6"
+    "dompurify": "^3.4.9"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
