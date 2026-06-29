@@ -1,5 +1,5 @@
 qdrant-client~=1.15.1
-fastembed~=0.7.3
+fastembed~=0.8.0
 fastapi[standard]~=0.118.0
 mariadb~=1.1.13
 redis~=6.4.0
