@@ -1,4 +1,4 @@
-qdrant-client~=1.15.1
+qdrant-client~=1.18.0
 fastembed~=0.7.3
 fastapi[standard]~=0.118.0
 mariadb~=1.1.13
