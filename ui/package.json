@@ -13,17 +13,17 @@
     "url": "https://github.com/Idrinth/roleplay-ai.git"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^5.2.2",
     "showdown": "^2.1.0",
     "dompurify": "^3.2.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
-    "eslint": "^9.32.0",
+    "eslint": "^10.8.0",
     "globals": "^16.3.0",
     "minify": "^14.0.0",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.39.0",
+    "typescript-eslint": "^8.65.0",
     "sass": "^1.90.0",
     "sharp": "^0.33.0"
   },
